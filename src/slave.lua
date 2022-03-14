@@ -1,20 +1,23 @@
--- TODO proper way to express/configure commands
+COMMANDS = {
+	kill = function(args) os.shutdown() end,
+	run = function(args) return os.run({}, unpack(args)) end,
+	qfuel = function(args) return turtle.getFuelLevel() end
+}
+
 function parse_msg(msg)
-	-- TODO perf: make this global?
-	local f = string.gmatch(msg, "[^-]+")
+	-- syntax: cmd-arg1,argN
+	-- syntax for run: run-FULLPATH,arg1,argN
+	local f = string.gmatch(msg, "[^:]+")
 	local cmd = f()
-	local arg_string = f()
+	local as = f()
 	local args = {}
-	for v in string.gmatch(arg_string, "[^,]+") do table.insert(args, v) end
+	if as then for v in string.gmatch(as, "[^,]+") do table.insert(args, v) end end
 	return cmd, args
 end
 
 function exec_cmd(cmd, args)
-	if cmd == "run" then
-		os.run({}, unpack(args))
-	else
-		if cmd == "kill" then os.shutdown() end
-	end
+	if not COMMANDS[cmd] then return "Invalid command '" .. cmd .. "'" end
+	return COMMANDS[cmd](args)
 end
 
 function listen(modem, ch)
@@ -24,7 +27,8 @@ function listen(modem, ch)
 	while true do
 		_e, _s, _c, rep_ch, msg, _d = os.pullEvent("modem_message")
 		cmd, args = parse_msg(msg)
-		exec_cmd(cmd, args)
+		reply = exec_cmd(cmd, args)
+		modem.transmit(rep_ch, 0, reply)
 	end
 end
 
