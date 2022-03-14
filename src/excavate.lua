@@ -8,7 +8,6 @@ function dig_cuboid(x, y, z)
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
 			tunnel_down(2)
-			turtle.digDown()
 			dig_rectangle(x, y, true, true)
 			tunnel_down(1)
 			i = i - 3
@@ -88,24 +87,6 @@ function fn_tunnel_forward(up, down)
 		end
 	end
 end
-
--- TODO legacy: get rid of this function
---[[
-function tunnel_forward(x, up, down)
-	up = up or false
-	down = down or false
-	for i = 1, x, 1 do
-		dig_forward()
-		turtle.forward()
-		if up then
-			turtle.digUp()
-		end
-		if down then
-			turtle.digDown()
-		end
-	end
-end
-]]--
 
 function tunnel_down(y)
 	for i = 1, y, 1 do
