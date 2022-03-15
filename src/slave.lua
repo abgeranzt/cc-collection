@@ -63,7 +63,7 @@ function work_queue()
 			status = reply.err and "err" or "ok"
 			-- TODO more info in reply?
 			modem.transmit(task.reply_ch, 0,
-			               task.job_id .. ":" .. status .. ":" .. tostring(reply.msg))
+				task.job_id .. ":" .. status .. ":" .. tostring(reply.msg))
 		else
 			sleep(0.1)
 		end
