@@ -4,11 +4,22 @@ COMMANDS = {
 	qfuel = function(args) return turtle.getFuelLevel() end
 }
 
-local queue = {}
+local queue = {fpos = 1, lpos = 1, len = 0}
 
 -- TODO efficient and ordered queue implementation
-function queue.push(task) table.insert(queue, task) end
-function queue.pop() return table.remove(queue) end
+function queue.push(task)
+	queue[queue.fpos] = task
+	queue.fpos = queue.fpos + 1
+	queue.len = queue.len + 1
+end
+
+function queue.pop()
+	task = queue[queue.lpos]
+	queue[queue.lpos] = nil
+	queue.lpos = queue.lpos + 1
+	queue.len = queue.len - 1
+	return task
+end
 
 modem = peripheral.find("modem")
 ch = ...
@@ -34,6 +45,7 @@ function listen()
 	local _e, _s, _c, rep_ch, msg, _d
 	local task
 	while true do
+		os.startTimer(1)
 		_e, _s, _c, reply_ch, msg, _d = os.pullEvent("modem_message")
 		task = parse_message(msg, reply_ch)
 		queue.push(task)
@@ -57,7 +69,7 @@ end
 function work_queue()
 	local reply, status, task
 	while true do
-		if #queue > 0 then
+		if queue.len > 0 then
 			task = queue.pop()
 			reply = exec_task(task)
 			status = reply.err and "err" or "ok"
