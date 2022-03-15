@@ -4,43 +4,83 @@ COMMANDS = {
 	qfuel = function(args) return turtle.getFuelLevel() end
 }
 
-function parse_msg(msg)
+local queue = {}
+
+-- TODO efficient and ordered queue implementation
+function queue.push(task) table.insert(queue, task) end
+function queue.pop() return table.remove(queue) end
+
+modem = peripheral.find("modem")
+ch = ...
+ch = tonumber(ch)
+
+function parse_message(msg, reply_ch)
+	local task = {reply_ch = reply_ch}
 	-- syntax: cmd-arg1,argN
 	-- syntax for run: run-FULLPATH,arg1,argN
 	local f = string.gmatch(msg, "[^:]+")
-	local cmd = f()
-	local as = f()
-	local args = {}
-	if as then for v in string.gmatch(as, "[^,]+") do table.insert(args, v) end end
-	return cmd, args
+	task.job_id = f()
+	task.cmd = f()
+	task.args = {}
+	local args = f()
+	if args and #args > 0 then
+		for a in string.gmatch(args, "[^,]+") do table.insert(task.args, a) end
+	end
+	return task
 end
 
-function exec_cmd(cmd, args)
-	if not COMMANDS[cmd] then return "Invalid command '" .. cmd .. "'" end
-	return COMMANDS[cmd](args)
-end
-
-function listen(modem, ch)
+function listen()
 	modem.open(ch)
 	local _e, _s, _c, rep_ch, msg, _d
-	local cmd, args
+	local task
 	while true do
-		_e, _s, _c, rep_ch, msg, _d = os.pullEvent("modem_message")
-		cmd, args = parse_msg(msg)
-		reply = exec_cmd(cmd, args)
-		modem.transmit(rep_ch, 0, reply)
+		_e, _s, _c, reply_ch, msg, _d = os.pullEvent("modem_message")
+		task = parse_message(msg, reply_ch)
+		queue.push(task)
+		modem.transmit(reply_ch, ch, task.job_id .. ":ack")
 	end
 end
 
-function main(ch)
-	local modem = peripheral.find("modem")
-	if not (modem) then
-		print("No wireless modem detected. Quitting!")
+function exec_task(task)
+	local reply = {err = true}
+	if not task.cmd then
+		reply.msg = "No command provided"
+	elseif not COMMANDS[task.cmd] then
+		reply.msg = "Invalid command '" .. task.cmd .. "'"
+	else
+		reply.msg = COMMANDS[task.cmd](task.args)
+		reply.err = false
+	end
+	return reply
+end
+
+function work_queue()
+	local reply, status, task
+	while true do
+		if #queue > 0 then
+			task = queue.pop()
+			reply = exec_task(task)
+			status = reply.err and "err" or "ok"
+			-- TODO more info in reply?
+			modem.transmit(task.reply_ch, 0,
+			               task.job_id .. ":" .. status .. ":" .. tostring(reply.msg))
+		else
+			sleep(0.1)
+		end
+	end
+end
+
+function main()
+	if not modem then
+		print("No wireless modem detected. Quitting")
 		return
 	end
-	listen(modem, ch)
+	if not ch then
+		print("No channel specified. Quiting")
+		return
+
+	end
+	parallel.waitForAll(listen, work_queue)
 end
 
-local ch = ...
-ch = tonumber(ch)
-main(ch)
+main()
