@@ -1,3 +1,5 @@
+local turtle_name = os.getComputerLabel()
+
 COMMANDS = {
 	kill = function(args) os.shutdown() end,
 	run = function(args) return os.run({}, unpack(args)) end,
@@ -6,13 +8,13 @@ COMMANDS = {
 
 local queue = {fpos = 1, lpos = 1, len = 0}
 
--- TODO efficient and ordered queue implementation
 function queue.push(task)
 	queue[queue.fpos] = task
 	queue.fpos = queue.fpos + 1
 	queue.len = queue.len + 1
 end
 
+-- Remove and return the first element from the queue.
 function queue.pop()
 	task = queue[queue.lpos]
 	queue[queue.lpos] = nil
@@ -25,11 +27,13 @@ modem = peripheral.find("modem")
 ch = ...
 ch = tonumber(ch)
 
+-- Parse message and create a task from it. Return the latter.
 function parse_message(msg, reply_ch)
 	local task = {reply_ch = reply_ch}
 	-- syntax: cmd-arg1,argN
 	-- syntax for run: run-FULLPATH,arg1,argN
 	local f = string.gmatch(msg, "[^:]+")
+	task.master = f()
 	task.job_id = f()
 	task.cmd = f()
 	task.args = {}
@@ -40,19 +44,21 @@ function parse_message(msg, reply_ch)
 	return task
 end
 
+-- Listen for modem messages and handle them. Reply with confirmation message.
 function listen()
 	modem.open(ch)
+	-- unnused values returned by the modem_message event
 	local _e, _s, _c, rep_ch, msg, _d
 	local task
 	while true do
-		os.startTimer(1)
 		_e, _s, _c, reply_ch, msg, _d = os.pullEvent("modem_message")
 		task = parse_message(msg, reply_ch)
 		queue.push(task)
-		modem.transmit(reply_ch, ch, task.job_id .. ":ack")
+		modem.transmit(reply_ch, ch, turtle_name .. ":" .. task.job_id .. ":ack")
 	end
 end
 
+-- Execute task and return reply containing completion info.
 function exec_task(task)
 	local reply = {err = true}
 	if not task.cmd then
@@ -66,6 +72,7 @@ function exec_task(task)
 	return reply
 end
 
+-- Execute tasks in queue and send back a completion message for each.
 function work_queue()
 	local reply, status, task
 	while true do
@@ -75,9 +82,10 @@ function work_queue()
 			status = reply.err and "err" or "ok"
 			-- TODO more info in reply?
 			modem.transmit(task.reply_ch, 0,
-				task.job_id .. ":" .. status .. ":" .. tostring(reply.msg))
+				turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
+					tostring(reply.msg))
 		else
-			sleep(0.1)
+			sleep(0.5)
 		end
 	end
 end
