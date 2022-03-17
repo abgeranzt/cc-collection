@@ -91,11 +91,10 @@ end
 
 function send_task_status(task, reply)
 	status = reply.err and "err" or "ok"
-	os.queueEvent("master_msg",
-		turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
-			tostring(reply.msg))
+	msg = turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
+		      tostring(reply.msg)
+	os.queueEvent("master_msg", msg)
 end
-
 -- Execute tasks in queue and send back a completion message for each.
 function work_queue()
 	local reply, status, task
@@ -113,7 +112,7 @@ end
 -- Listen for os-wide master_msg events and propagate them to the taskmaster.
 function notify_master()
 	while true do
-		_, msg = os.pullEvent('master_msg')
+		_, msg = os.pullEvent("master_msg")
 		modem.transmit(master_ch, 0, msg)
 	end
 end

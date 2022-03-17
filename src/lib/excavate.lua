@@ -85,6 +85,10 @@ local function is_full()
 end
 
 local dump = {}
+function dump.notify_master()
+	msg = os.getComputerLabel() .. ":x:" .. "dumped"
+	os.queueEvent("master_msg", msg)
+end
 -- TODO check if chest is full? emit event?
 function dump.inv()
 	turtle.back()
@@ -93,6 +97,7 @@ function dump.inv()
 		turtle.select(i)
 		turtle.drop(64)
 	end
+	dump.notify_master()
 	turtle.turnLeft()
 	turtle.forward()
 end
@@ -120,7 +125,6 @@ function dump.inv_return(rpos)
 end
 
 -- TODO handle unbreakable blocks
--- TODO empty into chest
 function dig_rectangle(x, y, z, tunnel_fw)
 	local rpos = 1
 	for i = 1, y, 1 do
