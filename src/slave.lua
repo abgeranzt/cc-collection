@@ -1,9 +1,23 @@
 local turtle_name = os.getComputerLabel()
 
+-- TODO seperate commands for commonly used
 COMMANDS = {
-	kill = function(args) os.shutdown() end,
-	run = function(args) return os.run({}, unpack(args)) end,
-	qfuel = function(args) return turtle.getFuelLevel() end
+	excavate = function(args)
+		dofile('/ccc/lib/excavate.lua')
+		x, y, z = table.unpack(args)
+		if dig_cuboid(tonumber(x), tonumber(y), tonumber(z)) then
+			return "excavation completed"
+		end
+	end,
+	kill = function(args)
+		os.shutdown()
+	end,
+	run = function(args)
+		return os.run({}, unpack(args))
+	end,
+	qfuel = function(args)
+		return turtle.getFuelLevel()
+	end
 }
 
 local queue = {fpos = 1, lpos = 1, len = 0}
@@ -24,14 +38,15 @@ function queue.pop()
 end
 
 modem = peripheral.find("modem")
-ch = ...
+ch, master_ch = ...
 ch = tonumber(ch)
+master_ch = tonumber(master_ch)
 
 -- Parse message and create a task from it. Return the latter.
 function parse_message(msg, reply_ch)
 	local task = {reply_ch = reply_ch}
-	-- syntax: cmd-arg1,argN
-	-- syntax for run: run-FULLPATH,arg1,argN
+	-- syntax: master:job_id:cmd:arg1,argN
+	-- syntax for run: run:FULLPATH,arg1,argN
 	local f = string.gmatch(msg, "[^:]+")
 	task.master = f()
 	task.job_id = f()
@@ -39,7 +54,9 @@ function parse_message(msg, reply_ch)
 	task.args = {}
 	local args = f()
 	if args and #args > 0 then
-		for a in string.gmatch(args, "[^,]+") do table.insert(task.args, a) end
+		for a in string.gmatch(args, "[^,]+") do
+			table.insert(task.args, a)
+		end
 	end
 	return task
 end
@@ -72,6 +89,13 @@ function exec_task(task)
 	return reply
 end
 
+function send_task_status(task, reply)
+	status = reply.err and "err" or "ok"
+	os.queueEvent("master_msg",
+		turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
+			tostring(reply.msg))
+end
+
 -- Execute tasks in queue and send back a completion message for each.
 function work_queue()
 	local reply, status, task
@@ -79,28 +103,29 @@ function work_queue()
 		if queue.len > 0 then
 			task = queue.pop()
 			reply = exec_task(task)
-			status = reply.err and "err" or "ok"
-			-- TODO more info in reply?
-			modem.transmit(task.reply_ch, 0,
-				turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
-					tostring(reply.msg))
+			send_task_status(task, reply)
 		else
 			sleep(0.5)
 		end
 	end
 end
 
+-- Listen for os-wide master_msg events and propagate them to the taskmaster.
+function notify_master()
+	while true do
+		_, msg = os.pullEvent('master_msg')
+		modem.transmit(master_ch, 0, msg)
+	end
+end
+
 function main()
 	if not modem then
 		print("No wireless modem detected. Quitting")
-		return
-	end
-	if not ch then
+	elseif not ch then
 		print("No channel specified. Quiting")
-		return
-
+	else
+		parallel.waitForAll(listen, work_queue, notify_master)
 	end
-	parallel.waitForAll(listen, work_queue)
 end
 
 main()
