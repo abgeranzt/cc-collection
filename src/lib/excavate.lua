@@ -80,24 +80,32 @@ function tunnel.down(z)
 	end
 end
 
-local function is_full()
+local dump = {}
+function dump.inv_full()
 	return turtle.getItemCount(14) > 0
 end
-
-local dump = {}
 function dump.notify_master()
-	msg = os.getComputerLabel() .. ":x:" .. "dumped"
+	-- TODO format for messages to taskmaster
+	msg = os.getComputerLabel() .. ":x:" .. "dumping inventory"
 	os.queueEvent("master_msg", msg)
 end
--- TODO check if chest is full? emit event?
 function dump.inv()
 	turtle.back()
 	turtle.turnRight()
-	for i = 16, 1, -1 do
-		turtle.select(i)
-		turtle.drop(64)
-	end
 	dump.notify_master()
+	while true do
+		local dump_failed = false
+		for i = 16, 1, -1 do
+			turtle.select(i)
+			if not turtle.drop(64) then
+				dump_failed = true
+			end
+		end
+		if not dump_failed then
+			break
+		end
+		sleep(10)
+	end
 	turtle.turnLeft()
 	turtle.forward()
 end
@@ -131,7 +139,7 @@ function dig_rectangle(x, y, z, tunnel_fw)
 		tunnel_fw(x - 1)
 		pos.x = pos.x + (x - 1) * rpos
 		rpos = rpos * -1
-		if is_full() then
+		if dump.inv_full() then
 			dump.inv_return(rpos)
 		end
 		-- Prepare for next column
