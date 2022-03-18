@@ -1,3 +1,5 @@
+local go = dofile("/ccc/lib/navigate.lua").go
+
 local pos = {x = 1, y = 1, z = 1}
 
 local dig = {}
@@ -18,8 +20,6 @@ function dig.up()
 	return true
 end
 
-local go = dofile("/ccc/lib/navigate.lua").go
-
 local function turn()
 	turtle.turnRight()
 	turtle.turnRight()
@@ -31,7 +31,7 @@ function tunnel.forward.push()
 	dig.forward()
 	turtle.forward()
 end
--- Dig x blocks and move forward
+-- Dig n blocks and move forward
 function tunnel.forward.one(x)
 	for i = 1, x, 1 do
 		tunnel.forward.push()
@@ -52,7 +52,14 @@ function tunnel.forward.three(x)
 		turtle.digDown()
 	end
 end
--- Dig x blocks and move downwards.
+-- Dig n blocks and move upwards.
+function tunnel.up(z)
+	for i = 1, z, 1 do
+		dig.up()
+		turtle.up()
+	end
+end
+-- Dig n blocks and move downwards.
 function tunnel.down(z)
 	for i = 1, z, 1 do
 		turtle.digDown()
@@ -115,7 +122,7 @@ function dump.inv_return(rpos)
 end
 
 -- TODO handle unbreakable blocks
-function dig_rectangle(x, y, z, tunnel_fw)
+local function dig_rectangle(x, y, z, tunnel_fw)
 	local rpos = 1
 	for i = 1, y, 1 do
 		tunnel_fw(x - 1)
@@ -157,7 +164,7 @@ function dig_rectangle(x, y, z, tunnel_fw)
 	return true
 end
 
-function dig_cuboid(x, y, z)
+local function dig_cuboid(x, y, z)
 	local i = z
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
@@ -186,3 +193,12 @@ function dig_cuboid(x, y, z)
 	dump.inv()
 	return true
 end
+
+-- Export
+local excavate = {
+	dig = dig,
+	dig_cuboid = dig_cuboid,
+	dig_rectangle = dig_rectangle,
+	tunnel = tunnel
+}
+return excavate

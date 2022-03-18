@@ -3,7 +3,7 @@ local turtle_name = os.getComputerLabel()
 -- TODO seperate commands for commonly used
 COMMANDS = {
 	excavate = function(args)
-		dofile('/ccc/lib/excavate.lua')
+		local dig_cuboid = dofile('/ccc/lib/excavate.lua').dig_cuboid
 		x, y, z = table.unpack(args)
 		if dig_cuboid(tonumber(x), tonumber(y), tonumber(z)) then
 			return "excavation completed"

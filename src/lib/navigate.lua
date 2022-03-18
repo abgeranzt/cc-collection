@@ -67,4 +67,6 @@ function lane.go_up(x, z)
 	go.back(x)
 end
 
-return {go = go, turn = turn}
+-- Export
+local navigate = {go = go, turn = turn}
+return navigate
