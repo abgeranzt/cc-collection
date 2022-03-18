@@ -18,27 +18,7 @@ function dig.up()
 	return true
 end
 
-local go = {}
-function go.forward(x)
-	for i = 1, x, 1 do
-		turtle.forward()
-	end
-end
-function go.back(x)
-	for i = 1, x, 1 do
-		turtle.back()
-	end
-end
-function go.up(z)
-	for i = 1, z, 1 do
-		turtle.up()
-	end
-end
-function go.down(z)
-	for i = 1, z, 1 do
-		turtle.down()
-	end
-end
+local go = dofile("/ccc/lib/navigate.lua").go
 
 local function turn()
 	turtle.turnRight()
@@ -96,9 +76,11 @@ function dump.inv()
 	while true do
 		local dump_failed = false
 		for i = 16, 1, -1 do
-			turtle.select(i)
-			if not turtle.drop(64) then
-				dump_failed = true
+			if turtle.getItemCount(i) > 0 then
+				turtle.select(i)
+				if not turtle.drop(64) then
+					dump_failed = true
+				end
 			end
 		end
 		if not dump_failed then
