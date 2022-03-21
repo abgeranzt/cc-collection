@@ -1,6 +1,7 @@
 -- Not equivalent to Minecraft coordinates local pos = {x = 1, y = 1, z = 1}
 local go = {}
 function go.forward(x)
+	x = x or 1
 	local i = 1
 	while i <= x do
 		if turtle.forward() then
@@ -11,6 +12,7 @@ function go.forward(x)
 	end
 end
 function go.back(x)
+	x = x or 1
 	local i = 1
 	while i <= x do
 		if turtle.back() then
@@ -21,6 +23,7 @@ function go.back(x)
 	end
 end
 function go.up(z)
+	z = z or 1
 	local i = 1
 	while i <= z do
 		if turtle.up() then
@@ -31,6 +34,7 @@ function go.up(z)
 	end
 end
 function go.down(z)
+	z = z or 1
 	local i = 1
 	while i <= z do
 		if turtle.down() then

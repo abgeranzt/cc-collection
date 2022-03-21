@@ -1,9 +1,7 @@
 local function import()
 	local nv = dofile("/ccc/lib/navigate.lua")
-	local go = nv.go
-	local turn = nv.turn
 	local exc = dofile("/ccc/lib/excavate.lua")
-	return go, turn, exc.dig, exc.tunnel
+	return nv.go, nv.turn, exc.dig, exc.tunnel
 end
 local go, turn, dig, tunnel = import()
 
