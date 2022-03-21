@@ -19,11 +19,13 @@ local function dig_lanes(steps)
 		tunnel.forward.one(1)
 		turtle.turnLeft()
 		dig.forward()
+		turtle.place()
 		turtle.turnRight()
 		turtle.back()
 		turtle.turnLeft()
 		h = h + s
 	end
+	turtle.turnRight()
 	tunnel.forward.one(2)
 	tunnel.up(h)
 	turn()
