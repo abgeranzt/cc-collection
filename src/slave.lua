@@ -1,12 +1,20 @@
 local turtle_name = os.getComputerLabel()
 
 -- TODO seperate commands for commonly used
+-- TODO navigation command using grid system (x:n)
 COMMANDS = {
 	excavate = function(args)
-		local dig_cuboid = dofile('/ccc/lib/excavate.lua').dig_cuboid
+		local dig_cuboid = dofile("/ccc/lib/excavate.lua").dig_cuboid
 		x, y, z = table.unpack(args)
 		if dig_cuboid(tonumber(x), tonumber(y), tonumber(z)) then
 			return "excavation completed"
+		end
+	end,
+	fetch = function(args)
+		local fetch = dofile("/ccc/lib/haul.lua").fetch
+		z = table.unpack(args)
+		if fetch(z) then
+			return "fetch job complete"
 		end
 	end,
 	kill = function(args)
