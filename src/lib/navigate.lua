@@ -1,57 +1,68 @@
--- Not equivalent to Minecraft coordinates local pos = {x = 1, y = 1, z = 1}
+-- TODO handle navigation errors
+
+-- Navigate using relative coordinates.
+-- Not equivalent to Minecraft coordinates
 local go = {}
-function go.forward(x)
-	x = x or 1
-	local i = 1
-	while i <= x do
+
+--- @param n number | nil
+function go.forward(n)
+	n = n or 1
+	for _ = 1, n, 0 do
 		if turtle.forward() then
-			i = 1 + 1
+			_ = _ + 1
 		else
 			sleep(1)
 		end
 	end
 end
-function go.back(x)
-	x = x or 1
-	local i = 1
-	while i <= x do
+
+--- @param n number | nil
+function go.back(n)
+	n = n or 1
+	for _ = 1, n, 0 do
 		if turtle.back() then
-			i = i + 1
+			_ = _ + 1
 		else
 			sleep(1)
 		end
 	end
 end
-function go.up(z)
-	z = z or 1
-	local i = 1
-	while i <= z do
+
+--- @param n number | nil
+function go.up(n)
+	n = n or 1
+	for _ = 1, n, 0 do
 		if turtle.up() then
-			i = i + 1
+			_ = _ + 1
 		else
 			sleep(1)
 		end
 	end
 end
-function go.down(z)
-	z = z or 1
-	local i = 1
-	while i <= z do
+
+--- @param n number | nil
+function go.down(n)
+	n = n or 1
+	for _ = 1, n, 0 do
 		if turtle.down() then
-			i = i + 1
+			_ = _ + 1
 		else
 			sleep(1)
 		end
 	end
 end
-function go.left(y)
+
+--- @param n number | nil
+function go.left(n)
 	turtle.turnLeft()
-	go.forward(y)
+	go.forward(n)
 	turtle.turnRight()
 end
-function go.right(y)
+
+--- @param n number | nil
+function go.right(n)
 	turtle.turnRight()
-	go.forward(y)
+	go.forward(n)
 	turtle.turnLeft()
 end
 
@@ -60,17 +71,5 @@ local function turn()
 	turtle.turnRight()
 end
 
-local lane = {}
--- Move forward and down
-function lane.go_down(x, z)
-	go.forward(x)
-	go.down(z)
-end
-function lane.go_up(x, z)
-	go.up(z)
-	go.back(x)
-end
-
 -- Export
-local navigate = {go = go, turn = turn}
-return navigate
+return { go = go, turn = turn }
