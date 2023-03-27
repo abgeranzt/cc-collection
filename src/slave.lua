@@ -10,13 +10,6 @@ COMMANDS = {
 			return "excavation completed"
 		end
 	end,
-	fetch = function(args)
-		local fetch = dofile("/ccc/lib/haul.lua").fetch
-		z = table.unpack(args)
-		if fetch(z) then
-			return "fetch job complete"
-		end
-	end,
 	kill = function(args)
 		os.shutdown()
 	end,
@@ -100,7 +93,7 @@ end
 function send_task_status(task, reply)
 	status = reply.err and "err" or "ok"
 	msg = turtle_name .. ":" .. task.job_id .. ":" .. status .. ":" ..
-		      tostring(reply.msg)
+		tostring(reply.msg)
 	os.queueEvent("master_msg", msg)
 end
 -- Execute tasks in queue and send back a completion message for each.
