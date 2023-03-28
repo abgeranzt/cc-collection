@@ -1,4 +1,4 @@
-local util = require("util")
+local util = require("lib.util")
 
 -- TODO handle unbreakable blocks
 
@@ -77,6 +77,10 @@ end
 --- @param y number
 --- @param tunnel_fw fun(n: number)
 local function dig_rectangle(x, y, tunnel_fw)
+	while turtle.getFuelLevel() < x * 2 or turtle.getFuelLevel() < 1000 do
+		util.refuel()
+	end
+
 	local rpos = 1
 	for i = 1, y, 1 do
 		tunnel_fw(x - 1)
@@ -145,7 +149,7 @@ local function dig_cuboid(x, y, z)
 		turtle.up()
 	end
 	pos.z = 1
-	dump()
+	util.dump()
 	return true
 end
 
