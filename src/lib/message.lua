@@ -16,7 +16,8 @@ local status_types = {
 --- @param master_ch number
 --- @param queue {push: fun(task: table)}
 --- @param modem {open: fun(channel: number)}
-local function worker_setup(ch, master_name, master_ch, queue, modem)
+--- @param logger logger
+local function worker_setup(ch, master_name, master_ch, queue, modem, logger)
 	local message = {
 	}
 
@@ -60,11 +61,6 @@ local function worker_setup(ch, master_name, master_ch, queue, modem)
 	end
 
 	--- @param msg msg
-	function message._print(msg)
-		print("info: [msg] " .. msg.type .. " " .. msg.payload.id)
-	end
-
-	--- @param msg msg
 	function message._create_task(msg)
 		local task = {
 			reply_ch = master_ch,
@@ -85,11 +81,16 @@ local function worker_setup(ch, master_name, master_ch, queue, modem)
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
 			if message.validate(msg) then
 				--- @cast msg msg
-				message._print(msg)
+				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "cmd" then
+					logger.info("creating task " .. msg.payload.id)
 					message._create_task(msg)
 					message.reply(msg.payload.id, "ack")
+				else
+					logger.debug("dropping non-command message")
 				end
+			else
+				logger.debug("dropping invalid message")
 			end
 		end
 	end

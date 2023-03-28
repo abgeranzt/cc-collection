@@ -16,7 +16,7 @@ local master_ch = 8005
 local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 --- @cast logger logger
 
-local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem)
+local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 
 --- @alias command "excavate" | "navigate" | "exec"
 local commands = {
@@ -99,11 +99,12 @@ local function work_queue()
 			local task = queue.pop()
 			--- @alias task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 			--- @cast task task
+			logger.info("executing task " .. task.id)
 			if commands[task.body.cmd] then
 				local status, error = commands[task.body.cmd](task.body.params)
 				if status then
 					logger.info("command '" .. task.body.cmd .. "' successful")
-					logger.info("task" .. task.id .. " completed")
+					logger.info("task " .. task.id .. " complete")
 					message.reply(task.id, "ok")
 				else
 					logger.error(error)
