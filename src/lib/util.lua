@@ -77,7 +77,14 @@ local function refuel()
 	end
 end
 
+--- @return string | nil
+local function get_label()
+	---@diagnostic disable-next-line: undefined-field
+	return os.getComputerLabel()
+end
+
 return {
 	dump = dump,
-	refuel = refuel
+	refuel = refuel,
+	get_label = get_label
 }

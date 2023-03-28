@@ -18,7 +18,7 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 			success, error = turtle[dir]()
 			if success then
 				---@diagnostic disable-next-line: undefined-field
-				os.queue_event("gps_update")
+				os.queueEvent("gps_update")
 				n = n - 1
 				try = 1
 			else

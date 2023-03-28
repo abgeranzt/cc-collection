@@ -1,21 +1,27 @@
---- @param gps_ch number
---- @param worker_ch number
---- @param modem {transmit: fun(c: number, rc: number, s: string)}
-local function worker_setup(gps_ch, worker_ch, modem)
+--- @param send_gps fun(payload: { id: number, body:  { x: number, z: number, y: number }})
+local function worker_setup(send_gps)
+	local id = 1
 	-- broadcast my position on the configured gps channel
-	---@diagnostic disable-next-line: undefined-field
-	local _worker_name = os.getComputerLabel()
 	local function monitor()
 		while true do
 			--- @diagnostic disable-next-line: undefined-field
 			_ = os.pullEvent("gps_update")
 			local x, z, y = gps.locate()
-
-			local msg = "[" .. _worker_name .. "] x" .. x .. " z" .. z .. " y" .. y
-			modem.transmit(gps_ch, worker_ch, msg)
+			local payload = {
+				id = id,
+				body = {
+					x = x,
+					z = z,
+					y = y
+				}
+			}
+			send_gps(payload)
+			id = id + 1
 		end
 	end
-	return { monitor = monitor }
+	return {
+		monitor = monitor
+	}
 end
 
 return {
