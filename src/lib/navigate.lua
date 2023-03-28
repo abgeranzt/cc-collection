@@ -8,15 +8,16 @@ local MAX_TRIES = 5
 for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 	--- @param n number | nil
 	go[dir] = function(n)
+		n = n or 1
 		local try = 1
-		local success, error
+		local ok, err
 		while n > 0 do
 			if try > MAX_TRIES then
-				return false, error
+				return false, err
 			end
 
-			success, error = turtle[dir]()
-			if success then
+			ok, err = turtle[dir]()
+			if ok then
 				---@diagnostic disable-next-line: undefined-field
 				os.queueEvent("gps_update")
 				n = n - 1
@@ -33,26 +34,26 @@ end
 --- @param n number | nil
 function go.left(n)
 	turtle.turnLeft()
-	local success, error = go.forward(n)
-	if success then
+	local ok, err = go.forward(n)
+	if ok then
 		turtle.turnRight()
 		return true
 	else
 		turtle.turnRight()
-		return false, error
+		return false, err
 	end
 end
 
 --- @param n number | nil
 function go.right(n)
 	turtle.turnRight()
-	local success, error = go.forward(n)
-	if success then
+	local ok, err = go.forward(n)
+	if ok then
 		turtle.turnLeft()
 		return true
 	else
 		turtle.turnLeft()
-		return false, error
+		return false, err
 	end
 end
 

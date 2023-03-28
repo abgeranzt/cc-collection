@@ -8,71 +8,120 @@ local pos = { x = 1, y = 1, z = 1 }
 local dig = {}
 
 function dig.forward()
+	local ok = true
+	local err
 	while turtle.detect() do
-		if not turtle.dig() then
-			return false
-		end
+		ok, err = turtle.dig()
+		if not ok then break end
 	end
-	return true
+	return ok, err
 end
 
 function dig.up()
+	local ok = true
+	local err
 	while turtle.detectUp() do
-		if not turtle.digUp() then
-			return false
-		end
+		ok, err = turtle.digUp()
+		if not ok then break end
 	end
-	return true
+	return ok, err
 end
 
-local tunnel = { forward = {} }
+local tunnel = {}
 -- Dig a single block and move forward.
-function tunnel.forward.push()
-	dig.forward()
-	go.forward()
+function tunnel.forward_push()
+	local ok, err = dig.forward()
+	if not ok then return false, err end
+	ok, err = go.forward()
+	return ok, err
 end
 
 --- @param n number
-function tunnel.forward.one(n)
+function tunnel.forward(n)
+	local ok, err
 	for _ = 1, n, 1 do
-		tunnel.forward.push()
+		ok, err = tunnel.forward_push()
+		if not ok then break end
 	end
+	return ok, err
 end
 
--- Same as tunnel.forward.one but also dig upwards.
+-- Same as tunnel.forward but also dig upwards.
 --- @param n number
-function tunnel.forward.two(n)
+function tunnel.forward_two(n)
+	local ok, err
 	for _ = 1, n, 1 do
-		tunnel.forward.push()
-		dig.up()
+		ok, err = tunnel.forward_push()
+		if not ok then break end
+		ok, err = dig.up()
+		if not ok then break end
 	end
+	return ok, err
 end
 
--- Same as tunnel.forward.one but also dig upwards and downwards.
+-- Same as tunnel.forward but also dig upwards and downwards.
 --- @param n number
-function tunnel.forward.three(n)
+function tunnel.forward_three(n)
+	local ok, err
 	for _ = 1, n, 1 do
-		tunnel.forward.push()
-		dig.up()
-		turtle.digDown()
+		ok, err = tunnel.forward_push()
+		if not ok then break end
+		ok, err = dig.up()
+		if not ok then break end
+		ok, err = turtle.digDown()
+		if not ok then break end
 	end
+	return ok, err
+end
+
+--- @param n number
+function tunnel.back(n)
+	util.turn()
+	local ok, err = tunnel.forward(n)
+	util.turn()
+	return ok, err
 end
 
 --- @param n number
 function tunnel.up(n)
+	local ok, err
 	for _ = 1, n, 1 do
-		dig.up()
-		go.up()
+		ok, err = dig.up()
+		if not ok then break end
+		ok, err = go.up()
+		if not ok then break end
 	end
+	return ok, err
 end
 
--- Dig n blocks and move downwards.
 --- @param n number
 function tunnel.down(n)
+	local ok, err
 	for _ = 1, n, 1 do
-		turtle.digDown()
-		go.down()
+		ok, err = turtle.digDown()
+		if not ok then break end
+		ok, err = go.down()
+		if not ok then break end
 	end
+	return ok, err
+end
+
+--- @param n number
+function tunnel.left(n)
+	local ok, err
+	turtle.turnLeft()
+	ok, err = tunnel.forward(n)
+	turtle.turnRight()
+	return ok, err
+end
+
+--- @param n number
+function tunnel.right(n)
+	local ok, err
+	turtle.turnRight()
+	ok, err = tunnel.forward(n)
+	turtle.turnLeft()
+	return ok, err
 end
 
 --- @param x number
@@ -131,19 +180,19 @@ local function dig_cuboid(x, y, z)
 		if math.floor(i / 3) > 0 then
 			tunnel.down(2)
 			pos.z = pos.z + 2
-			dig_rectangle(x, y, tunnel.forward.three)
+			dig_rectangle(x, y, tunnel.forward_three)
 			pos.z = pos.z + 1
 			tunnel.down(1)
 			i = i - 3
 		elseif math.floor(i / 2) > 0 then
 			tunnel.down(2)
 			pos.z = pos.z + 2
-			dig_rectangle(x, y, tunnel.forward.two)
+			dig_rectangle(x, y, tunnel.forward_two)
 			i = i - 2
 		else
 			tunnel.down(1)
 			pos.z = pos.z + 1
-			dig_rectangle(x, y, tunnel.forward.one)
+			dig_rectangle(x, y, tunnel.forward)
 			i = i - 1
 		end
 	end
