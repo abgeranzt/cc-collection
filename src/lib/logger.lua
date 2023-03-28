@@ -49,4 +49,6 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 	return logger
 end
 
+--- @alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
+
 return { setup = logger_setup }
