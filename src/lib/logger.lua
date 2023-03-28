@@ -1,7 +1,7 @@
 local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 
 --- @param log_ch number
---- @param modem {transmit: fun(c: number, cp: number, s: string) | nil}
+--- @param modem {transmit: fun(c: number, rc: number, s: string) | nil}
 --- @param log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
 local function logger_setup(log_ch, log_level, log_file, modem)
 	local logger = {

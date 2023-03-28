@@ -1,4 +1,6 @@
 local util = require("lib.util")
+-- This is used because it broadcasts our position when moving
+local go = require("lib.navigate").go
 
 -- TODO handle unbreakable blocks
 
@@ -27,7 +29,7 @@ local tunnel = { forward = {} }
 -- Dig a single block and move forward.
 function tunnel.forward.push()
 	dig.forward()
-	turtle.forward()
+	go.forward()
 end
 
 --- @param n number
@@ -60,7 +62,7 @@ end
 function tunnel.up(n)
 	for _ = 1, n, 1 do
 		dig.up()
-		turtle.up()
+		go.up()
 	end
 end
 
@@ -69,7 +71,7 @@ end
 function tunnel.down(n)
 	for _ = 1, n, 1 do
 		turtle.digDown()
-		turtle.down()
+		go.down()
 	end
 end
 
@@ -104,7 +106,7 @@ local function dig_rectangle(x, y, tunnel_fw)
 	end
 	if rpos == -1 then
 		for i = 1, x - 1, 1 do
-			turtle.back()
+			go.back()
 		end
 		pos.x = 1
 		rpos = rpos * -1
@@ -113,7 +115,7 @@ local function dig_rectangle(x, y, tunnel_fw)
 		turtle.turnRight()
 	end
 	for i = 1, y - 1, 1 do
-		turtle.forward()
+		go.forward()
 	end
 	pos.y = 1
 	turtle.turnRight()
@@ -146,7 +148,7 @@ local function dig_cuboid(x, y, z)
 		end
 	end
 	for _ = 1, z, 1 do
-		turtle.up()
+		go.up()
 	end
 	pos.z = 1
 	util.dump()

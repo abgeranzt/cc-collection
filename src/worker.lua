@@ -13,10 +13,15 @@ end
 local worker_ch = 8000
 local master_name = "dev-master1"
 local master_ch = 8005
+local gps_ch = 9100
+
 local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
+-- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 --- @cast logger logger
 
 local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
+
+local gps = require("lib.gps").worker_setup(gps_ch, worker_ch, modem)
 
 --- @alias command "excavate" | "navigate" | "exec"
 local commands = {
@@ -121,10 +126,8 @@ local function work_queue()
 	end
 end
 
--- TODO track worker position
-
 local function main()
-	parallel.waitForAll(message.listen, work_queue)
+	parallel.waitForAll(message.listen, work_queue, gps.monitor)
 end
 
 main()

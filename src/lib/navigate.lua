@@ -1,4 +1,4 @@
--- TODO handle navigation errors
+-- TODO handle navigation errrors by returning to the original position
 
 -- Navigate using relative coordinates.
 -- Not equivalent to Minecraft coordinates
@@ -17,6 +17,8 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 
 			success, error = turtle[dir]()
 			if success then
+				---@diagnostic disable-next-line: undefined-field
+				os.queue_event("gps_update")
 				n = n - 1
 				try = 1
 			else

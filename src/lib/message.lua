@@ -11,13 +11,13 @@ local status_types = {
 	ok = true
 }
 
---- @param ch number
+--- @param worker_ch number
 --- @param master_name string
 --- @param master_ch number
 --- @param queue {push: fun(task: table)}
 --- @param modem {open: fun(channel: number)}
 --- @param logger logger
-local function worker_setup(ch, master_name, master_ch, queue, modem, logger)
+local function worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 	local message = {
 	}
 
@@ -75,7 +75,7 @@ local function worker_setup(ch, master_name, master_ch, queue, modem, logger)
 	-- - append it to the task queue if the message is a command
 	-- - reply ("acknowledge") to messages
 	function message.listen()
-		modem.open(ch)
+		modem.open(worker_ch)
 		while true do
 			--- @diagnostic disable-next-line: undefined-field
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
@@ -87,10 +87,10 @@ local function worker_setup(ch, master_name, master_ch, queue, modem, logger)
 					message._create_task(msg)
 					message.reply(msg.payload.id, "ack")
 				else
-					logger.debug("dropping non-command message")
+					logger.trace("dropping non-command message")
 				end
 			else
-				logger.debug("dropping invalid message")
+				logger.trace("dropping invalid message")
 			end
 		end
 	end
@@ -111,7 +111,7 @@ local function worker_setup(ch, master_name, master_ch, queue, modem, logger)
 			}
 		}
 		--- @diagnostic disable-next-line: undefined-field
-		modem.transmit(master_ch, ch, msg)
+		modem.transmit(master_ch, worker_ch, msg)
 	end
 
 	return message

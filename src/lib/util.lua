@@ -1,4 +1,7 @@
-local turn = require("lib.navigate").turn
+local function turn()
+	turtle.turnRight()
+	turtle.turnRight()
+end
 
 local function dump()
 	local slot = turtle.getSelectedSlot()
