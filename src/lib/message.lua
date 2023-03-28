@@ -96,7 +96,8 @@ local function worker_setup(ch, master_name, master_ch, queue, modem)
 
 	--- @param id number
 	--- @param status status
-	function message.reply(id, status)
+	--- @param text string | nil
+	function message.reply(id, status, text)
 		local msg = {
 			rec = master_name,
 			--- @diagnostic disable-next-line: undefined-field
@@ -104,7 +105,8 @@ local function worker_setup(ch, master_name, master_ch, queue, modem)
 			type = "res",
 			payload = {
 				id = id,
-				status = status
+				status = status,
+				text = text,
 			}
 		}
 		--- @diagnostic disable-next-line: undefined-field
