@@ -19,7 +19,7 @@ local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 --- @cast logger logger
 
 local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
-local gps = require("lib.gps").worker_setup(message.send_gps)
+local gps = require("lib.gps").worker_setup(message.send_gps, logger)
 
 --- @alias command "excavate" | "tunnel" | "navigate" | "exec"
 local commands = {}

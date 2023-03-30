@@ -17,6 +17,98 @@ local status_types = {
 --- @alias msg_body {cmd: string | nil, params: table | nil, x: number | nil, z: number | nil, y: number | nil}
 --- @alias msg_payload {id: number, body: msg_body | nil, status: status | nil}
 --- @alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
+--
+--- @param master_ch number
+--- @param modem modem
+--- @param workers {[string]: true}
+--- @param logger logger
+local function master_setup(master_ch, modem, workers, logger)
+	local message = {
+		_id = 1,
+		_label = get_label()
+	}
+
+	--- @param target_ch number
+	--- @param msg_target string
+	--- @param msg_type msg_type
+	--- @param payload msg_payload
+	function message._send(target_ch, msg_target, msg_type, payload)
+		local msg = {
+			snd = message._label,
+			rec = msg_target,
+			type = msg_type,
+			payload = payload
+		}
+		logger.debug("sending '" .. msg_type .. "' message " .. msg.payload.id)
+		modem.transmit(target_ch, master_ch, msg)
+	end
+
+	--- @param msg msg
+	function message._validate(msg)
+		-- Drop the message if it is malformed or not intended for us.
+		if type(msg) ~= "table"
+			or not msg.rec
+			or msg.rec ~= message._label
+			or not msg.snd
+			or not workers[msg.snd]
+			or not message_types[msg.type]
+			or not msg.payload
+			or type(msg.payload) ~= "table"
+			or not msg.payload.id
+			or type(msg.payload.id) ~= "number"
+		then
+			logger.trace("dropped: malformed")
+			return false
+		end
+		-- Validate response
+		if msg.type == "res" then
+			if not msg.payload.status
+				or not status_types[msg.payload.status]
+			then
+				logger.trace("dropped: malformed res")
+				return false
+			end
+			return true
+			-- Validate gps update
+		elseif msg.type == "gps" then
+			if not msg.payload.body
+				or type(msg.payload.body) ~= "table"
+			then
+				logger.trace("dropped: malformed gps")
+				return false
+			end
+			for _, c in ipairs({ "x", "y", "z" }) do
+				if not msg.payload.body[c]
+					or type(msg.payload.body[c]) ~= "number"
+				then
+					logger.trace("dropped: malformed gps (coordinates)")
+					return false
+				end
+			end
+			return true
+		end
+	end
+
+	function message.listen()
+		modem.open(master_ch)
+		while true do
+			--- @diagnostic disable-next-line: undefined-field, unused-local
+			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
+			if message._validate(msg) then
+				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
+				if msg.type == "gps" then
+					--- @diagnostic disable-next-line: undefined-field
+					os.queueEvent("gps_update", msg)
+				end
+			else
+				logger.trace("dropping invalid message")
+			end
+		end
+	end
+
+	return message
+end
+
 
 --- @param worker_ch number
 --- @param master_name string
@@ -122,4 +214,8 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	return message
 end
 
-return { worker_setup = worker_setup }
+
+return {
+	master_setup = master_setup,
+	worker_setup = worker_setup
+}
