@@ -19,6 +19,9 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 			local log_msg = "[" .. logger._label .. "] - " .. msg
 			modem.transmit(log_ch, 0, log_msg)
 		end
+	else
+		function logger._sendlog(_)
+		end
 	end
 
 	local skip = false
@@ -27,15 +30,6 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 			---@diagnostic disable-next-line: assign-type-mismatch
 			logger[l] = function(_)
 			end
-		elseif modem then
-			--- @param msg string
-			---@diagnostic disable-next-line: assign-type-mismatch
-			logger[l] = function(msg)
-				local log_msg = string.upper(l) .. ": " .. msg
-				print(log_msg)
-				logger._file.writeLine(log_msg)
-				logger._sendlog(log_msg)
-			end
 		else
 			--- @param msg string
 			---@diagnostic disable-next-line: assign-type-mismatch
@@ -43,6 +37,7 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 				local log_msg = string.upper(l) .. ": " .. msg
 				print(log_msg)
 				logger._file.writeLine(log_msg)
+				logger._sendlog(log_msg)
 			end
 		end
 		if l == log_level then
