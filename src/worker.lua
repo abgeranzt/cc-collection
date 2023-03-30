@@ -21,7 +21,6 @@ local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 local gps = require("lib.gps").worker_setup(message.send_gps, logger)
 
---- @alias command "excavate" | "tunnel" | "navigate" | "exec"
 local commands = {}
 
 --- @param params {x: number, y: number, z: number}
@@ -48,7 +47,6 @@ function commands.excavate(params)
 	end
 end
 
---- @alias direction "forward" | "back" | "up" | "down" | "left" | "right"
 local directions = {
 	forward = true,
 	back = true,
@@ -58,7 +56,7 @@ local directions = {
 	right = true
 }
 
---- @param params {direction: direction, distance: number}
+--- @param params {direction: cmd_direction, distance: number}
 function commands.tunnel(params)
 	-- validate params
 	if not params.direction then
@@ -94,7 +92,7 @@ function commands.tunnel(params)
 	end
 end
 
---- @param params {direction: direction, distance: number}
+--- @param params {direction: cmd_direction, distance: number}
 function commands.navigate(params)
 	-- validate params
 	if not params.direction then
@@ -134,7 +132,6 @@ local function work_queue()
 	while true do
 		if queue.len > 0 then
 			local task = queue.pop()
-			--- @alias task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 			--- @cast task task
 			logger.info("executing task " .. task.id)
 			if commands[task.body.cmd] then

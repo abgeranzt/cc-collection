@@ -1,23 +1,16 @@
 local get_label = require("lib.util").get_label
 
---- @alias msg_type "cmd" | "res" | "gps"
 local message_types = {
 	cmd = true,
 	res = true,
 	gps = true,
 }
 
---- @alias status "err" | "ok"
 local status_types = {
 	err = true,
 	ok = true
 }
 
---- @alias modem {open: fun(channel: number), transmit: fun(c: number, rc: number, msg: string | table)}
---- @alias msg_body {cmd: string | nil, params: table | nil, x: number | nil, z: number | nil, y: number | nil}
---- @alias msg_payload {id: number, body: msg_body | nil, status: status | nil}
---- @alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
---
 --- @param master_ch number
 --- @param modem modem
 --- @param workers {[string]: true}
@@ -200,7 +193,7 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	end
 
 	--- @param id number
-	--- @param status status
+	--- @param status msg_status
 	--- @param text string | nil
 	function message.reply(id, status, text)
 		local payload = {

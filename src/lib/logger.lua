@@ -8,7 +8,6 @@ local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 local function logger_setup(log_ch, log_level, log_file, modem)
 	local logger = {
 		_label = get_label(),
-		--- @alias file_handle {close: fun(), flush: fun(), write: fun(s: string), writeLine: fun(s: string) }
 		_file = fs.open(log_file, "w")
 		--- @diagnostic disable-next-line: unknown-cast-variable
 		--- @cast _file file_handle
@@ -48,7 +47,5 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 
 	return logger
 end
-
---- @alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
 
 return { setup = logger_setup }
