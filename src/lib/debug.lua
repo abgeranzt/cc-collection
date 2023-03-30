@@ -5,6 +5,9 @@ local function print_table(t, indent)
 			print(indent .. "'" .. k .. "':")
 			print_table(v, (indent .. "  "))
 		else
+			if type(v) == "boolean" then
+				v = v and "true" or "false"
+			end
 			print(indent .. "'" .. k .. "': '" .. v .. "'")
 		end
 	end
