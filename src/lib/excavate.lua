@@ -27,6 +27,16 @@ function dig.up()
 	return ok, err
 end
 
+function dig.down()
+	local ok = true
+	local err
+	while turtle.detectDown() do
+		ok, err = turtle.digDown()
+		if not ok then break end
+	end
+	return ok, err
+end
+
 local tunnel = {}
 -- Dig a single block and move forward.
 function tunnel.forward_push()
@@ -98,7 +108,7 @@ end
 function tunnel.down(n)
 	local ok, err
 	for _ = 1, n, 1 do
-		ok, err = turtle.digDown()
+		ok, err = dig.down()
 		if not ok then break end
 		ok, err = go.down()
 		if not ok then break end
