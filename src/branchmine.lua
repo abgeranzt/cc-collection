@@ -1,13 +1,13 @@
 -- TODO documentation & refactoring
 -- TODO verbose logs
 
-function dig_forward()
-		while turtle.detect() do
-			turtle.dig()
-		end
+local function dig_forward()
+	while turtle.detect() do
+		turtle.dig()
+	end
 end
 
-function place_torch()
+local function place_torch()
 	turtle.turnLeft()
 	dig_forward()
 	turtle.forward()
@@ -21,7 +21,7 @@ function place_torch()
 	turtle.turnRight()
 end
 
-function main(len)
+local function main(len)
 	turtle.up()
 	for i = 1, len, 1 do
 		dig_forward()
@@ -35,7 +35,7 @@ function main(len)
 			turtle.turnRight()
 			dig_forward()
 			turtle.turnLeft()
-		-- Place torch
+			-- Place torch
 		elseif (i % 5) - 3 == 0 then
 			place_torch()
 		end
@@ -49,7 +49,7 @@ function main(len)
 	dump_to_chest(1, 16)
 end
 
-function return_to_chest(len)
+local function return_to_chest(len)
 	turtle.down()
 	turtle.turnLeft()
 	turtle.turnLeft()
@@ -62,7 +62,7 @@ function return_to_chest(len)
 	end
 end
 
-function return_to_pos(len)
+local function return_to_pos(len)
 	turtle.turnLeft()
 	turtle.turnLeft()
 	turtle.up()
@@ -71,7 +71,7 @@ function return_to_pos(len)
 	end
 end
 
-function dump_to_chest(from, to)
+local function dump_to_chest(from, to)
 	for i = from, to, 1 do
 		turtle.select(i)
 		turtle.drop()
