@@ -126,6 +126,7 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 			or not msg.payload
 			or type(msg.payload) ~= "table"
 		then
+			logger.trace("dropped: malformed")
 			return false
 		end
 		-- Validate command
@@ -135,6 +136,7 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 				or not msg.payload.body.cmd
 				or type(msg.payload.body.cmd) ~= "string"
 			then
+				logger.trace("dropped: malformed cmd")
 				return false
 			end
 		end
