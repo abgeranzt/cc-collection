@@ -1,3 +1,11 @@
+-- This is only useful for development
+if not turtle then
+	---@diagnostic disable-next-line: lowercase-global
+	turtle = {}
+	--- @diagnostic disable-next-line: unknown-cast-variable
+	--- @cast turtle turtle
+end
+
 local function turn()
 	turtle.turnRight()
 	turtle.turnRight()

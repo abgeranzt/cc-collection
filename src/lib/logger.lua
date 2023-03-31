@@ -8,6 +8,7 @@ local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 local function logger_setup(log_ch, log_level, log_file, modem)
 	local logger = {
 		_label = get_label(),
+		--- @diagnostic disable-next-line: undefined-global
 		_file = fs.open(log_file, "w")
 		--- @diagnostic disable-next-line: unknown-cast-variable
 		--- @cast _file file_handle

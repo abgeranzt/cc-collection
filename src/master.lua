@@ -1,8 +1,10 @@
 local master_ch = 8000
 
+--- @diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
 if not modem then
 	print("No modem found, exiting!")
+	--- @diagnostic disable-next-line: undefined-global
 	exit()
 end
 

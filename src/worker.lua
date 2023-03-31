@@ -2,9 +2,11 @@ local excavate = require("lib.excavate")
 local queue = require("lib.queue").queue
 local go = require("lib.navigate").go
 
+--- @diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
 if not modem then
 	print("No modem found, exiting!")
+	--- @diagnostic disable-next-line: undefined-global
 	exit()
 end
 
@@ -132,7 +134,7 @@ local function work_queue()
 	while true do
 		if queue.len > 0 then
 			local task = queue.pop()
-			--- @cast task task
+			--- @cast task worker_task
 			logger.info("executing task " .. task.id)
 			if commands[task.body.cmd] then
 				local status, err = commands[task.body.cmd](task.body.params)
@@ -150,12 +152,14 @@ local function work_queue()
 				message.reply(task.id, "err", err)
 			end
 		else
+			--- @diagnostic disable-next-line: undefined-global
 			sleep(0.5)
 		end
 	end
 end
 
 local function main()
+	--- @diagnostic disable-next-line: undefined-global
 	parallel.waitForAll(message.listen, work_queue, gps.monitor)
 end
 

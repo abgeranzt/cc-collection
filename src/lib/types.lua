@@ -1,5 +1,7 @@
 -- This file does not do anything, it only exists to provide type definitions for the language server.
 
+-- type defs for built-in APIs
+--- @alias turtle {detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(), dropUp: fun(), dropDown: fun(), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil)}
 --- @alias modem {open: fun(c: number), close: fun(c: number), transmit: fun(c: number, rc: number, msg: string | table)}
 
 --- @alias msg_body_cmd {cmd: string, params: table}
@@ -13,7 +15,7 @@
 --- @alias cmd_type "excavate" | "tunnel" | "navigate" | "dump"
 --- @alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
---- @alias task {reply_ch: number, id: number, body: {cmd: string, params: table}}
+--- @alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 
 --- @alias gps_position {x: number, y: number, z: number}
 --- @alias gps_event_data {label: string, position: gps_position}

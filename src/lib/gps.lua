@@ -26,6 +26,7 @@ local function worker_setup(send_gps, logger)
 		while true do
 			--- @diagnostic disable-next-line: undefined-field
 			local _ = os.pullEvent("gps_update")
+			--- @diagnostic disable-next-line: undefined-global
 			local x, z, y = gps.locate()
 			local payload = {
 				id = id,

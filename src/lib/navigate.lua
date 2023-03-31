@@ -24,6 +24,7 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 				try = 1
 			else
 				try = try + 1
+				---@ diagnostic disable-next-line: undefined-global
 				sleep(1)
 			end
 		end
