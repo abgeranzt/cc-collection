@@ -15,6 +15,7 @@
 --- @alias cmd_type "excavate" | "tunnel" | "navigate" | "dump"
 --- @alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
+--- @alias worker { label: string, channel: number, deployed: boolean, position: gps_position | nil}
 --- @alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 
 --- @alias gps_position {x: number, y: number, z: number}
@@ -23,3 +24,5 @@
 --- @alias file_handle {close: fun(), flush: fun(), write: fun(s: string), writeLine: fun(s: string) }
 
 --- @alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
+
+--- @alias task {worker: string, completed: boolean, status: msg_status}

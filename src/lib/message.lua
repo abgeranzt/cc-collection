@@ -11,30 +11,17 @@ local status_types = {
 	ok = true
 }
 
+
 --- @param master_ch number
 --- @param modem modem
 --- @param workers {[string]: true}
 --- @param logger logger
 local function master_setup(master_ch, modem, workers, logger)
+	-- TODO refactor this to only return public functions (see gps/task)
 	local message = {
 		_id = 1,
 		_label = get_label()
 	}
-
-	--- @param target_ch number
-	--- @param msg_target string
-	--- @param msg_type msg_type
-	--- @param payload msg_payload
-	function message._send(target_ch, msg_target, msg_type, payload)
-		local msg = {
-			snd = message._label,
-			rec = msg_target,
-			type = msg_type,
-			payload = payload
-		}
-		logger.debug("sending '" .. msg_type .. "' message " .. msg.payload.id)
-		modem.transmit(target_ch, master_ch, msg)
-	end
 
 	--- @param msg msg
 	function message._validate(msg)
@@ -87,16 +74,41 @@ local function master_setup(master_ch, modem, workers, logger)
 		while true do
 			--- @diagnostic disable-next-line: undefined-field, unused-local
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
+			--- @cast msg msg
 			if message._validate(msg) then
 				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "gps" then
 					--- @diagnostic disable-next-line: undefined-field
 					os.queueEvent("gps_update", msg)
+				elseif msg.type == "res" then
+					--- @diagnostic disable-next-line: undefined-field
+					os.queueEvent("task_update", msg.payload.id, msg.payload.status)
 				end
 			else
 				logger.trace("dropping invalid message")
 			end
 		end
+	end
+
+	--- @param target_ch number
+	--- @param msg_target string
+	--- @param msg_type msg_type
+	--- @param payload msg_payload
+	function message._send(target_ch, msg_target, msg_type, payload)
+		local msg = {
+			snd = message._label,
+			rec = msg_target,
+			type = msg_type,
+			payload = payload
+		}
+		logger.debug("sending '" .. msg_type .. "' message " .. msg.payload.id .. " to '" .. msg_target .. "'")
+		modem.transmit(target_ch, master_ch, msg)
+	end
+
+	--- @param msg_target string
+	--- @param payload msg_payload
+	function message.send_task(target_ch, msg_target, payload)
+		message._send(target_ch, msg_target, "cmd", payload)
 	end
 
 	return message
