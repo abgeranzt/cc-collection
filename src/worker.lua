@@ -2,11 +2,11 @@ local excavate = require("lib.excavate")
 local queue = require("lib.queue").queue
 local go = require("lib.navigate").go
 
---- @diagnostic disable-next-line: undefined-global
+---@diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
 if not modem then
 	print("No modem found, exiting!")
-	--- @diagnostic disable-next-line: undefined-global
+	---@diagnostic disable-next-line: undefined-global
 	exit()
 end
 
@@ -18,24 +18,24 @@ local master_ch = 8000
 
 local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
---- @cast logger logger
+---@cast logger logger
 
 local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 local gps = require("lib.gps").worker_setup(message.send_gps, logger)
 
 local commands = {}
 
---- @param params {x: number, y: number, z: number}
+---@param params {x: number, y: number, z: number}
 function commands.excavate(params)
 	-- validate params
 	for _, c in ipairs({ "x", "y", "z" }) do
 		if not params[c] then
 			local e = "missing parameter '" .. c .. "'"
-			--- @cast e string
+			---@cast e string
 			return false, e
 		elseif type(params[c]) ~= "number" then
 			local e = "invalid parameter '" .. c .. "'"
-			--- @cast e string
+			---@cast e string
 			return false, e
 		end
 	end
@@ -43,7 +43,7 @@ function commands.excavate(params)
 	if ok then
 		return true
 	else
-		--- @cast err string
+		---@cast err string
 		logger.error(err)
 		return false, "excavate command failed"
 	end
@@ -58,29 +58,29 @@ local directions = {
 	right = true
 }
 
---- @param params {direction: cmd_direction, distance: number}
+---@param params {direction: cmd_direction, distance: number}
 function commands.tunnel(params)
 	-- validate params
 	if not params.direction then
 		local e = "missing parameter direction"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if not directions[params.direction]
 		or type(params.direction) ~= "string"
 	then
 		local e = "invalid parameter direction '" .. params.direction .. "'"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if not params.distance then
 		local e = "missing parameter distance"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if type(params.distance) ~= "number" then
 		local e = "invalid parameter distance '" .. params.distance .. "'"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 
@@ -88,35 +88,35 @@ function commands.tunnel(params)
 	if ok then
 		return true
 	else
-		--- @cast err string
+		---@cast err string
 		logger.error(err)
 		return false, "tunnel command failed"
 	end
 end
 
---- @param params {direction: cmd_direction, distance: number}
+---@param params {direction: cmd_direction, distance: number}
 function commands.navigate(params)
 	-- validate params
 	if not params.direction then
 		local e = "missing parameter direction"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if not directions[params.direction]
 		or type(params.direction) ~= "string"
 	then
 		local e = "invalid parameter direction '" .. params.direction .. "'"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if not params.distance then
 		local e = "missing parameter distance"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 	if type(params.distance) ~= "number" then
 		local e = "invalid parameter distance '" .. params.distance .. "'"
-		--- @cast e string
+		---@cast e string
 		return false, e
 	end
 
@@ -124,7 +124,7 @@ function commands.navigate(params)
 	if ok then
 		return true
 	else
-		--- @cast err string
+		---@cast err string
 		logger.error(err)
 		return false, "navigate command failed"
 	end
@@ -134,7 +134,7 @@ local function work_queue()
 	while true do
 		if queue.len > 0 then
 			local task = queue.pop()
-			--- @cast task worker_task
+			---@cast task worker_task
 			logger.info("executing task " .. task.id)
 			if commands[task.body.cmd] then
 				local status, err = commands[task.body.cmd](task.body.params)
@@ -152,14 +152,14 @@ local function work_queue()
 				message.reply(task.id, "err", err)
 			end
 		else
-			--- @diagnostic disable-next-line: undefined-global
+			---@diagnostic disable-next-line: undefined-global
 			sleep(0.5)
 		end
 	end
 end
 
 local function main()
-	--- @diagnostic disable-next-line: undefined-global
+	---@diagnostic disable-next-line: undefined-global
 	parallel.waitForAll(message.listen, work_queue, gps.monitor)
 end
 

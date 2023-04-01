@@ -1,13 +1,13 @@
---- @param workers {[string]: {position: gps_position}}
+---@param workers {[string]: {position: gps_position}}
 local function master_setup(workers, logger)
 	local function monitor()
 		while true do
-			--- @diagnostic disable-next-line: undefined-field
+			---@diagnostic disable-next-line: undefined-field
 			local _, msg = os.pullEvent("gps_update")
-			--- @cast msg msg
+			---@cast msg msg
 			local pos = msg.payload.body
-			--- @diagnostic disable-next-line: cast-type-mismatch
-			--- @cast pos gps_position
+			---@diagnostic disable-next-line: cast-type-mismatch
+			---@cast pos gps_position
 			logger.debug("updating position for worker '" .. msg.snd .. "'")
 			workers[msg.snd].position = pos
 		end
@@ -17,16 +17,16 @@ local function master_setup(workers, logger)
 	}
 end
 
---- @param send_gps fun(payload: { id: number, body:  msg_body_gps})
---- @param logger logger
+---@param send_gps fun(payload: { id: number, body:  msg_body_gps})
+---@param logger logger
 local function worker_setup(send_gps, logger)
 	local id = 1
 	-- broadcast my position on the configured gps channel
 	local function monitor()
 		while true do
-			--- @diagnostic disable-next-line: undefined-field
+			---@diagnostic disable-next-line: undefined-field
 			local _ = os.pullEvent("gps_update")
-			--- @diagnostic disable-next-line: undefined-global
+			---@diagnostic disable-next-line: undefined-global
 			local x, z, y = gps.locate()
 			local payload = {
 				id = id,

@@ -6,7 +6,7 @@ local go = {}
 local MAX_TRIES = 5
 
 for _, dir in ipairs({ "forward", "back", "up", "down" }) do
-	--- @param n number | nil
+	---@param n number | nil
 	go[dir] = function(n)
 		n = n or 1
 		local try = 1
@@ -32,7 +32,7 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 	end
 end
 
---- @param n number | nil
+---@param n number | nil
 function go.left(n)
 	turtle.turnLeft()
 	local ok, err = go.forward(n)
@@ -45,7 +45,7 @@ function go.left(n)
 	end
 end
 
---- @param n number | nil
+---@param n number | nil
 function go.right(n)
 	turtle.turnRight()
 	local ok, err = go.forward(n)

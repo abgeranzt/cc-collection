@@ -2,8 +2,8 @@
 if not turtle then
 	---@diagnostic disable-next-line: lowercase-global
 	turtle = {}
-	--- @diagnostic disable-next-line: unknown-cast-variable
-	--- @cast turtle turtle
+	---@diagnostic disable-next-line: unknown-cast-variable
+	---@cast turtle turtle
 end
 
 local function turn()
@@ -85,7 +85,7 @@ local function refuel()
 	end
 end
 
---- @return string | nil
+---@return string | nil
 local function get_label()
 	---@diagnostic disable-next-line: undefined-field
 	return os.getComputerLabel()

@@ -2,8 +2,8 @@
 if not turtle then
 	---@diagnostic disable-next-line: lowercase-global
 	turtle = {}
-	--- @diagnostic disable-next-line: unknown-cast-variable
-	--- @cast turtle turtle
+	---@diagnostic disable-next-line: unknown-cast-variable
+	---@cast turtle turtle
 end
 
 local util = require("lib.util")
@@ -54,7 +54,7 @@ function tunnel.forward_push()
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.forward(n)
 	local ok, err
 	for _ = 1, n, 1 do
@@ -65,7 +65,7 @@ function tunnel.forward(n)
 end
 
 -- Same as tunnel.forward but also dig upwards.
---- @param n number
+---@param n number
 function tunnel.forward_two(n)
 	local ok, err
 	for _ = 1, n, 1 do
@@ -78,7 +78,7 @@ function tunnel.forward_two(n)
 end
 
 -- Same as tunnel.forward but also dig upwards and downwards.
---- @param n number
+---@param n number
 function tunnel.forward_three(n)
 	local ok, err
 	for _ = 1, n, 1 do
@@ -92,7 +92,7 @@ function tunnel.forward_three(n)
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.back(n)
 	util.turn()
 	local ok, err = tunnel.forward(n)
@@ -100,7 +100,7 @@ function tunnel.back(n)
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.up(n)
 	local ok, err
 	for _ = 1, n, 1 do
@@ -112,7 +112,7 @@ function tunnel.up(n)
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.down(n)
 	local ok, err
 	for _ = 1, n, 1 do
@@ -124,7 +124,7 @@ function tunnel.down(n)
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.left(n)
 	local ok, err
 	turtle.turnLeft()
@@ -133,7 +133,7 @@ function tunnel.left(n)
 	return ok, err
 end
 
---- @param n number
+---@param n number
 function tunnel.right(n)
 	local ok, err
 	turtle.turnRight()
@@ -142,9 +142,9 @@ function tunnel.right(n)
 	return ok, err
 end
 
---- @param x number
---- @param y number
---- @param tunnel_fw fun(n: number)
+---@param x number
+---@param y number
+---@param tunnel_fw fun(n: number)
 local function dig_rectangle(x, y, tunnel_fw)
 	while turtle.getFuelLevel() < x * 2 or turtle.getFuelLevel() < 1000 do
 		util.refuel()
@@ -189,9 +189,9 @@ local function dig_rectangle(x, y, tunnel_fw)
 	return true
 end
 
---- @param x number
---- @param y number
---- @param z number
+---@param x number
+---@param y number
+---@param z number
 local function dig_cuboid(x, y, z)
 	local i = z
 	while (i > 0) do
