@@ -1,15 +1,16 @@
 ---@param send_msg fun(target_ch: number, msg_target: string, payload: msg_payload)
 ---@param logger logger
-local function master_setup(send_msg, logger)
+---@param worker {get: fun(label: string): worker}
+local function master_setup(send_msg, worker, logger)
 	local _id = 1
 	local _tasks = {}
 	---@cast _tasks task[]
 
-	---@param worker worker
+	---@param label string
 	---@param command cmd_type
 	---@param params table
-	local function create(worker, command, params)
-		logger.info("creating '" .. command .. "' task for '" .. worker.label .. "'")
+	local function create(label, command, params)
+		logger.info("creating '" .. command .. "' task for '" .. label .. "'")
 		local payload = {
 			id = _id,
 			body = {
@@ -18,10 +19,10 @@ local function master_setup(send_msg, logger)
 			}
 		}
 		logger.trace("sending task to worker")
-		send_msg(worker.channel, worker.label, payload)
+		send_msg(worker.get(label).channel, label, payload)
 		local t = {
 			completed = false,
-			worker = worker.label
+			worker = label
 		}
 		_tasks[_id] = t
 		_id = _id + 1

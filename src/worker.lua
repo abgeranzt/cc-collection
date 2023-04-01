@@ -13,7 +13,7 @@ end
 -- TODO program parameters
 -- local worker_name = "dev-worker1"
 local worker_ch = 8001
-local master_name = "dev-master1"
+local master_name = "dev-master-1"
 local master_ch = 8000
 
 local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
@@ -159,6 +159,7 @@ local function work_queue()
 end
 
 local function main()
+	logger.debug("STARTING worker test")
 	---@diagnostic disable-next-line: undefined-global
 	parallel.waitForAll(message.listen, work_queue, gps.monitor)
 end

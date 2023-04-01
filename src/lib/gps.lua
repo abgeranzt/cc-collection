@@ -1,5 +1,6 @@
----@param workers {[string]: {position: gps_position}}
-local function master_setup(workers, logger)
+---@param worker {get: fun(label: string)}
+---@param logger logger
+local function master_setup(worker, logger)
 	local function monitor()
 		while true do
 			---@diagnostic disable-next-line: undefined-field
@@ -9,7 +10,7 @@ local function master_setup(workers, logger)
 			---@diagnostic disable-next-line: cast-type-mismatch
 			---@cast pos gps_position
 			logger.debug("updating position for worker '" .. msg.snd .. "'")
-			workers[msg.snd].position = pos
+			worker.get(msg.snd).position = pos
 		end
 	end
 	return {

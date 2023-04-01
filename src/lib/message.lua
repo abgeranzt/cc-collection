@@ -14,9 +14,9 @@ local status_types = {
 
 ---@param master_ch number
 ---@param modem modem
----@param workers {[string]: true}
+---@param worker {get: fun(label: string)}
 ---@param logger logger
-local function master_setup(master_ch, modem, workers, logger)
+local function master_setup(master_ch, modem, worker, logger)
 	-- TODO refactor this to only return public functions (see gps/task)
 	local message = {
 		_id = 1,
@@ -30,7 +30,7 @@ local function master_setup(master_ch, modem, workers, logger)
 			or not msg.rec
 			or msg.rec ~= message._label
 			or not msg.snd
-			or not workers[msg.snd]
+			or not worker.get(msg.snd)
 			or not message_types[msg.type]
 			or not msg.payload
 			or type(msg.payload) ~= "table"

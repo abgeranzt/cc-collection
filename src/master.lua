@@ -1,3 +1,4 @@
+-- TODO make this configurable
 local master_ch = 8000
 
 ---@diagnostic disable-next-line: undefined-global
@@ -8,41 +9,23 @@ if not modem then
 	exit()
 end
 
-local workers = {}
----@cast workers worker[]
-
----@param label string
----@param worker_ch number
-function workers.create(label, worker_ch)
-	workers[label] = {
-		label = label,
-		channel = worker_ch,
-		deployed = false,
-	}
-end
-
-local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
+local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 ---@cast logger logger
 
-local message = require("lib.message").master_setup(master_ch, modem, workers, logger)
-local gps = require("lib.gps").master_setup(workers, logger)
-local task = require("lib.task").master_setup(message.send_task, logger)
+local worker = require("lib.worker").master_setup(logger)
+local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
+local gps = require("lib.gps").master_setup(worker, logger)
+local task = require("lib.task").master_setup(message.send_task, worker, logger)
 
-local function test_print_workers()
-	while true do
-		require("lib.debug").print_table(workers["dev-worker1"])
-		---@diagnostic disable-next-line: undefined-global
-		sleep(3)
-	end
+local function test_master()
+	worker.create("dev-worker-1", "miner", 8001)
+	worker.deploy("dev-worker-1")
+	task.create("dev-worker-1", "navigate", {
+		direction = "forward",
+		distance = 2
+	})
 end
 
-workers.create("dev-worker1", 8001)
-
-task.create(workers['dev-worker1'], "tunnel", { direction = "down", distance = 5 })
-task.create(workers['dev-worker1'], "tunnel", { direction = "right", distance = 3 })
-task.create(workers['dev-worker1'], "tunnel", { direction = "up", distance = 5 })
-task.create(workers['dev-worker1'], "tunnel", { direction = "left", distance = 3 })
-
 ---@diagnostic disable-next-line: undefined-global
-parallel.waitForAll(message.listen, gps.monitor, task.monitor)
+parallel.waitForAll(message.listen, gps.monitor, task.monitor, test_master)
