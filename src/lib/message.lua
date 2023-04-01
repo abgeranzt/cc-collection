@@ -17,18 +17,14 @@ local status_types = {
 ---@param worker {get: fun(label: string)}
 ---@param logger logger
 local function master_setup(master_ch, modem, worker, logger)
-	-- TODO refactor this to only return public functions (see gps/task)
-	local message = {
-		_id = 1,
-		_label = get_label()
-	}
+	local _label = get_label()
 
 	---@param msg msg
-	function message._validate(msg)
+	local function _validate(msg)
 		-- Drop the message if it is malformed or not intended for us.
 		if type(msg) ~= "table"
 			or not msg.rec
-			or msg.rec ~= message._label
+			or msg.rec ~= _label
 			or not msg.snd
 			or not worker.get(msg.snd)
 			or not message_types[msg.type]
@@ -69,13 +65,13 @@ local function master_setup(master_ch, modem, worker, logger)
 		end
 	end
 
-	function message.listen()
+	local function listen()
 		modem.open(master_ch)
 		while true do
 			---@diagnostic disable-next-line: undefined-field, unused-local
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
 			---@cast msg msg
-			if message._validate(msg) then
+			if _validate(msg) then
 				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "gps" then
 					---@diagnostic disable-next-line: undefined-field
@@ -94,9 +90,9 @@ local function master_setup(master_ch, modem, worker, logger)
 	---@param msg_target string
 	---@param msg_type msg_type
 	---@param payload msg_payload
-	function message._send(target_ch, msg_target, msg_type, payload)
+	local function _send(target_ch, msg_target, msg_type, payload)
 		local msg = {
-			snd = message._label,
+			snd = _label,
 			rec = msg_target,
 			type = msg_type,
 			payload = payload
@@ -107,11 +103,14 @@ local function master_setup(master_ch, modem, worker, logger)
 
 	---@param msg_target string
 	---@param payload msg_payload
-	function message.send_task(target_ch, msg_target, payload)
-		message._send(target_ch, msg_target, "cmd", payload)
+	local function send_task(target_ch, msg_target, payload)
+		_send(target_ch, msg_target, "cmd", payload)
 	end
 
-	return message
+	return {
+		listen = listen,
+		send_task = send_task
+	}
 end
 
 
@@ -122,16 +121,14 @@ end
 ---@param modem modem
 ---@param logger logger
 local function worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
-	local message = {
-		_label = get_label()
-	}
+	local _label = get_label()
 
 	---@param msg msg
-	function message._validate(msg)
+	local function _validate(msg)
 		-- Drop the message if it is malformed or not intended for us.
 		if type(msg) ~= "table"
 			or not msg.rec
-			or msg.rec ~= message._label
+			or msg.rec ~= _label
 			or not msg.snd
 			or msg.snd ~= master_name
 			or not message_types[msg.type]
@@ -156,7 +153,7 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	end
 
 	---@param msg msg
-	function message._create_task(msg)
+	local function _create_task(msg)
 		local task = {
 			reply_ch = master_ch,
 			id = msg.payload.id,
@@ -169,17 +166,17 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	-- - decide whether to keep or drop messages
 	-- - append it to the task queue if the message is a command
 	-- - reply ("acknowledge") to messages
-	function message.listen()
+	local function listen()
 		modem.open(worker_ch)
 		while true do
 			---@diagnostic disable-next-line: undefined-field, unused-local
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
-			if message._validate(msg) then
+			if _validate(msg) then
 				---@cast msg msg
 				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "cmd" then
 					logger.info("creating task " .. msg.payload.id)
-					message._create_task(msg)
+					_create_task(msg)
 				else
 					logger.trace("dropping non-command message")
 				end
@@ -191,10 +188,10 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 
 	---@param type msg_type
 	---@param payload msg_payload
-	function message._send(type, payload)
+	local function _send(type, payload)
 		local msg = {
 			rec = master_name,
-			snd = message._label,
+			snd = _label,
 			type = type,
 			payload = payload
 		}
@@ -202,23 +199,27 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	end
 
 	---@param payload msg_payload
-	function message.send_gps(payload)
-		message._send("gps", payload)
+	local function send_gps(payload)
+		_send("gps", payload)
 	end
 
 	---@param id number
 	---@param status msg_status
 	---@param text string | nil
-	function message.reply(id, status, text)
+	local function reply(id, status, text)
 		local payload = {
 			id = id,
 			status = status,
 			text = text
 		}
-		message._send("res", payload)
+		_send("res", payload)
 	end
 
-	return message
+	return {
+		listen = listen,
+		send_gps = send_gps,
+		reply = reply
+	}
 end
 
 
