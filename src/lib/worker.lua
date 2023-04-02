@@ -52,7 +52,7 @@ local function master_setup(logger)
 
 	---@param label string
 	local function deploy(label)
-		logger.info("deploying worker '" .. "'")
+		logger.info("deploying worker '" .. label .. "'")
 		-- TODO error handling
 
 		logger.trace("placing helper chests")
