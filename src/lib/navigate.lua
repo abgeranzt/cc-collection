@@ -64,4 +64,5 @@ local function turn()
 	return true
 end
 
+---@cast go go
 return { go = go, turn = turn }

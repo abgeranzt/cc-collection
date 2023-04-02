@@ -28,6 +28,30 @@ local function miner_setup(logger)
 		end
 	end
 
+	---@param params {x: number, y: number}
+	local function excavate_bedrock(params)
+		-- validate params
+		for _, c in ipairs({ "x", "y" }) do
+			if not params[c] then
+				local e = "missing parameter '" .. c .. "'"
+				---@cast e string
+				return false, e
+			elseif type(params[c]) ~= "number" then
+				local e = "invalid parameter '" .. c .. "'"
+				---@cast e string
+				return false, e
+			end
+		end
+		local ok, err = exc.dig_cuboid_bedrock(params.x, params.y)
+		if ok then
+			return true
+		else
+			---@cast err string
+			logger.error(err)
+			return false, "excavate_bedrock command failed"
+		end
+	end
+
 	local directions = {
 		forward = true,
 		back = true,
@@ -142,6 +166,7 @@ local function miner_setup(logger)
 
 	return {
 		excavate = excavate,
+		excavate_bedrock = excavate_bedrock,
 		tunnel = tunnel,
 		navigate = navigate,
 		get_fuel = get_fuel,

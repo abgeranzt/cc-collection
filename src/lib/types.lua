@@ -13,7 +13,7 @@
 ---@alias msg_type "cmd" | "res" | "gps"
 ---@alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
 
----@alias cmd_type "excavate" | "tunnel" | "navigate" | "dump" | "get_fuel" | "refuel"
+---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "navigate" | "dump" | "get_fuel" | "refuel"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
 ---@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gps_position | nil}
@@ -30,3 +30,5 @@
 ---@alias task {worker: string, completed: boolean, status: msg_status, data: string | nil}
 
 ---@alias peripheral_inventory { size: fun(), list: fun(), getItemDetail: fun(s: number), getItemLimit: fun(s:number) }
+
+---@alias go {forward: fun(n: number | nil), back: fun(n: number | nil), up: fun(n: number | nil), down: fun(n: number | nil), left: fun(n: number | nil), right: fun(n: number | nil)}

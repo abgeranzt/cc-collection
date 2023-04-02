@@ -101,7 +101,7 @@ end
 
 ---@param n number
 function tunnel.up(n)
-	local ok, er3
+	local ok, err
 	for _ = 1, n, 1 do
 		ok, err = dig.up()
 		if not ok then break end
@@ -168,17 +168,12 @@ local function dig_rectangle(x, y, tunnel_fw)
 		end
 	end
 	if rpos == -1 then
-		for i = 1, x - 1, 1 do
-			go.back()
-		end
-		rpos = rpos * -1
+		go.back(x - 1)
 		turtle.turnLeft()
 	else
 		turtle.turnRight()
 	end
-	for i = 1, y - 1, 1 do
-		go.forward()
-	end
+	go.forward(y - 1)
 	turtle.turnRight()
 	return true
 end
@@ -213,9 +208,62 @@ local function dig_cuboid(x, y, z)
 	return true
 end
 
+---@param x number
+---@param y number
+local function dig_cuboid_bedrock(x, y)
+	do
+		local fuel = turtle.getFuelLevel()
+		while fuel < x * 6 + y * 2 or fuel < 1000 do
+			util.refuel()
+		end
+	end
+
+	local function scrape()
+		local zpos = 0
+		while true do
+			local ok, _ = dig.down()
+			if not ok then break end
+			go.down()
+			zpos = zpos + 1
+		end
+		go.up(zpos)
+	end
+
+	local rpos = 1
+	for i = 1, y do
+		for j = 1, x - 1 do
+			scrape()
+			tunnel.forward_push()
+		end
+		scrape()
+		if i < y then
+			if (rpos == 1) then
+				turtle.turnRight()
+				tunnel.forward_push()
+				turtle.turnRight()
+			else
+				turtle.turnLeft()
+				tunnel.forward_push()
+				turtle.turnLeft()
+			end
+		end
+		rpos = rpos * -1
+	end
+	if rpos == -1 then
+		go.back(x - 1)
+		turtle.turnLeft()
+	else
+		turtle.turnRight()
+	end
+	go.forward(y - 1)
+	turtle.turnRight()
+	return true
+end
+
 return {
 	dig = dig,
-	dig_cuboid = dig_cuboid,
 	dig_rectangle = dig_rectangle,
+	dig_cuboid = dig_cuboid,
+	dig_cuboid_bedrock = dig_cuboid_bedrock,
 	tunnel = tunnel
 }

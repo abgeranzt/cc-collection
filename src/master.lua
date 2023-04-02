@@ -24,24 +24,27 @@ local function test_master()
 	worker.deploy("dev-worker-1")
 	local w1_t1 = task.create("dev-worker-1", "tunnel", {
 		direction = "down",
-		distance = 5
+		distance = 1
 	})
 	local w1_t2 = task.create("dev-worker-1", "excavate", {
-		x = 5, y = 5, z = 5
+		x = 3, y = 3, z = 2
+	})
+	local w1_t3 = task.create("dev-worker-1", "excavate_bedrock", {
+		x = 3, y = 3
 	})
 	task.await(w1_t1)
 	worker.deploy("dev-worker-2")
 	local w2_t1 = task.create("dev-worker-2", "excavate", {
-		x = 5, y = 5, z = 5
+		x = 3, y = 3, z = 1
 	})
 	task.await(w2_t1)
 	worker.collect("dev-worker-2")
-	task.await(w1_t2)
-	local w1_t3 = task.create("dev-worker-1", "navigate", {
-		direction = "up",
-		distance = 5
-	})
 	task.await(w1_t3)
+	local w1_t4 = task.create("dev-worker-1", "navigate", {
+		direction = "up",
+		distance = 1
+	})
+	task.await(w1_t4)
 	worker.collect("dev-worker-1")
 end
 
