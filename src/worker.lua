@@ -8,11 +8,12 @@ if not modem then
 	exit()
 end
 
--- TODO program parameters
--- local worker_name = "dev-worker1"
-local worker_ch = 8001
-local master_name = "dev-master-1"
-local master_ch = 8000
+-- TODO error handling + help
+local worker_ch, master_name, master_ch = ...
+worker_ch = tonumber(worker_ch)
+---@cast worker_ch number
+master_ch = tonumber(master_ch)
+---@cast master_ch number
 
 local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)

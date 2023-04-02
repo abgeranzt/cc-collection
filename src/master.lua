@@ -20,16 +20,28 @@ local task = require("lib.task").master_setup(message.send_task, worker, logger)
 
 local function test_master()
 	worker.create("dev-worker-1", "miner", 8001)
+	worker.create("dev-worker-2", "miner", 8002)
 	worker.deploy("dev-worker-1")
-	task.create("dev-worker-1", "navigate", {
-		direction = "forward",
-		distance = 2
+	local w1_t1 = task.create("dev-worker-1", "tunnel", {
+		direction = "down",
+		distance = 5
 	})
-	local tid = task.create("dev-worker-1", "navigate", {
-		direction = "back",
-		distance = 2
+	local w1_t2 = task.create("dev-worker-1", "excavate", {
+		x = 5, y = 5, z = 5
 	})
-	task.await(tid)
+	task.await(w1_t1)
+	worker.deploy("dev-worker-2")
+	local w2_t1 = task.create("dev-worker-2", "excavate", {
+		x = 5, y = 5, z = 5
+	})
+	task.await(w2_t1)
+	worker.collect("dev-worker-2")
+	task.await(w1_t2)
+	local w1_t3 = task.create("dev-worker-1", "navigate", {
+		direction = "up",
+		distance = 5
+	})
+	task.await(w1_t3)
 	worker.collect("dev-worker-1")
 end
 

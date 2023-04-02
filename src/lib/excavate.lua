@@ -12,7 +12,6 @@ local go = require("lib.navigate").go
 
 -- TODO handle unbreakable blocks
 
-local pos = { x = 1, y = 1, z = 1 }
 local dig = {}
 
 function dig.forward()
@@ -153,7 +152,6 @@ local function dig_rectangle(x, y, tunnel_fw)
 	local rpos = 1
 	for i = 1, y, 1 do
 		tunnel_fw(x - 1)
-		pos.x = pos.x + (x - 1) * rpos
 		rpos = rpos * -1
 		util.dump()
 		-- Prepare for next column
@@ -161,12 +159,10 @@ local function dig_rectangle(x, y, tunnel_fw)
 			if rpos == -1 then
 				turtle.turnRight()
 				tunnel_fw(1)
-				pos.y = pos.y + 1
 				turtle.turnRight()
 			else
 				turtle.turnLeft()
 				tunnel_fw(1)
-				pos.y = pos.y + 1
 				turtle.turnLeft()
 			end
 		end
@@ -175,7 +171,6 @@ local function dig_rectangle(x, y, tunnel_fw)
 		for i = 1, x - 1, 1 do
 			go.back()
 		end
-		pos.x = 1
 		rpos = rpos * -1
 		turtle.turnLeft()
 	else
@@ -184,7 +179,6 @@ local function dig_rectangle(x, y, tunnel_fw)
 	for i = 1, y - 1, 1 do
 		go.forward()
 	end
-	pos.y = 1
 	turtle.turnRight()
 	return true
 end
@@ -197,26 +191,24 @@ local function dig_cuboid(x, y, z)
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
 			tunnel.down(1)
-			pos.z = pos.z + 2
 			dig_rectangle(x, y, tunnel.forward_three)
-			pos.z = pos.z + 1
 			tunnel.down(1)
 			i = i - 3
 		elseif math.floor(i / 2) > 0 then
 			tunnel.down(1)
-			pos.z = pos.z + 2
 			dig_rectangle(x, y, tunnel.forward_two)
 			i = i - 2
 		else
-			pos.z = pos.z + 1
 			dig_rectangle(x, y, tunnel.forward)
 			i = i - 1
+		end
+		if (i > 0) then
+			tunnel.down(1)
 		end
 	end
 	for _ = 1, z - 1 do
 		go.up()
 	end
-	pos.z = 1
 	util.dump()
 	return true
 end
