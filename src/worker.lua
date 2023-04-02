@@ -1,6 +1,4 @@
-local excavate = require("lib.excavate")
 local queue = require("lib.queue").queue
-local go = require("lib.navigate").go
 
 ---@diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
@@ -22,113 +20,7 @@ local logger = require("lib.logger").setup(9000, "debug", "/log", modem)
 
 local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 local gps = require("lib.gps").worker_setup(message.send_gps, logger)
-
-local commands = {}
-
----@param params {x: number, y: number, z: number}
-function commands.excavate(params)
-	-- validate params
-	for _, c in ipairs({ "x", "y", "z" }) do
-		if not params[c] then
-			local e = "missing parameter '" .. c .. "'"
-			---@cast e string
-			return false, e
-		elseif type(params[c]) ~= "number" then
-			local e = "invalid parameter '" .. c .. "'"
-			---@cast e string
-			return false, e
-		end
-	end
-	local ok, err = excavate.dig_cuboid(params.x, params.y, params.z)
-	if ok then
-		return true
-	else
-		---@cast err string
-		logger.error(err)
-		return false, "excavate command failed"
-	end
-end
-
-local directions = {
-	forward = true,
-	back = true,
-	up = true,
-	down = true,
-	left = true,
-	right = true
-}
-
----@param params {direction: cmd_direction, distance: number}
-function commands.tunnel(params)
-	-- validate params
-	if not params.direction then
-		local e = "missing parameter direction"
-		---@cast e string
-		return false, e
-	end
-	if not directions[params.direction]
-		or type(params.direction) ~= "string"
-	then
-		local e = "invalid parameter direction '" .. params.direction .. "'"
-		---@cast e string
-		return false, e
-	end
-	if not params.distance then
-		local e = "missing parameter distance"
-		---@cast e string
-		return false, e
-	end
-	if type(params.distance) ~= "number" then
-		local e = "invalid parameter distance '" .. params.distance .. "'"
-		---@cast e string
-		return false, e
-	end
-
-	local ok, err = excavate.tunnel[params.direction](params.distance)
-	if ok then
-		return true
-	else
-		---@cast err string
-		logger.error(err)
-		return false, "tunnel command failed"
-	end
-end
-
----@param params {direction: cmd_direction, distance: number}
-function commands.navigate(params)
-	-- validate params
-	if not params.direction then
-		local e = "missing parameter direction"
-		---@cast e string
-		return false, e
-	end
-	if not directions[params.direction]
-		or type(params.direction) ~= "string"
-	then
-		local e = "invalid parameter direction '" .. params.direction .. "'"
-		---@cast e string
-		return false, e
-	end
-	if not params.distance then
-		local e = "missing parameter distance"
-		---@cast e string
-		return false, e
-	end
-	if type(params.distance) ~= "number" then
-		local e = "invalid parameter distance '" .. params.distance .. "'"
-		---@cast e string
-		return false, e
-	end
-
-	local ok, err = go[params.direction](params.distance)
-	if ok then
-		return true
-	else
-		---@cast err string
-		logger.error(err)
-		return false, "navigate command failed"
-	end
-end
+local command = require("lib.command").miner_setup(logger)
 
 local function work_queue()
 	while true do
@@ -136,8 +28,8 @@ local function work_queue()
 			local task = queue.pop()
 			---@cast task worker_task
 			logger.info("executing task " .. task.id)
-			if commands[task.body.cmd] then
-				local status, err = commands[task.body.cmd](task.body.params)
+			if command[task.body.cmd] then
+				local status, err = command[task.body.cmd](task.body.params)
 				if status then
 					logger.info("command '" .. task.body.cmd .. "' successful")
 					logger.info("task " .. task.id .. " complete")
