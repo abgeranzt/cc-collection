@@ -26,6 +26,7 @@ local function master_setup(send_msg, worker, logger)
 		}
 		_tasks[_id] = t
 		_id = _id + 1
+		return payload.id
 	end
 
 	---@param id number

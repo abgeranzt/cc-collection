@@ -101,6 +101,7 @@ local function master_setup(logger)
 		turtle.dropDown(1)
 		turtle.select(2)
 		turtle.dropDown(1)
+		_workers[label].deployed = true
 
 		logger.trace("removing helper chests")
 		turtle.select(3)
@@ -110,13 +111,31 @@ local function master_setup(logger)
 		logger.trace("starting worker")
 		---@diagnostic disable-next-line: undefined-global
 		peripheral.call("bottom", "turnOn")
+		-- Yield execution to allow the worker to start
+		---@diagnostic disable-next-line: undefined-global
+		sleep(1)
+	end
+
+	---@param label string
+	local function collect(label)
+		local slot = _workers[label].type == "miner" and 4 or 5
+		turtle.select(slot)
+		turtle.placeUp()
+		-- Have the chests go into the right slots
+		turtle.select(1)
+		turtle.digDown()
+		_workers[label].deployed = false
+		turtle.select(slot)
+		turtle.dropUp()
+		turtle.digUp()
 	end
 
 	return {
 		create = create,
 		load_from_file = load_from_file,
 		get = get,
-		deploy = deploy
+		deploy = deploy,
+		collect = collect
 	}
 end
 
