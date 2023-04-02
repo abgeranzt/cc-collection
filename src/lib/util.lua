@@ -43,8 +43,8 @@ local function dump()
 		turn()
 	end
 
-
 	turtle.select(slot)
+	return true
 end
 
 local function refuel()

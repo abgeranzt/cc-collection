@@ -1,6 +1,6 @@
 local exc = require("lib.excavate")
 local go = require("lib.navigate").go
-local refuel = require("lib.util").refuel
+local util = require("lib.util")
 
 ---@param logger logger
 local function miner_setup(logger)
@@ -100,7 +100,7 @@ local function miner_setup(logger)
 		end
 		-- TODO have the master control the refuelling?
 		while turtle.getFuelLevel() < params.distance do
-			refuel()
+			util.refuel()
 		end
 
 		local ok, err = go[params.direction](params.distance)
@@ -113,10 +113,40 @@ local function miner_setup(logger)
 		end
 	end
 
+	---@return true, nil, number
+	local function get_fuel()
+		return true, nil, turtle.getFuelLevel()
+	end
+
+	local function refuel()
+		local ok, err = util.refuel()
+		if ok then
+			return true
+		else
+			---@cast err string
+			logger.error(err)
+			return false, "refuel command false"
+		end
+	end
+
+	local function dump()
+		local ok, err = util.dump()
+		if ok then
+			return true
+		else
+			---@cast err string
+			logger.error(err)
+			return false, "dump command false"
+		end
+	end
+
 	return {
 		excavate = excavate,
 		tunnel = tunnel,
-		navigate = navigate
+		navigate = navigate,
+		get_fuel = get_fuel,
+		refuel = refuel,
+		dump = dump
 	}
 end
 

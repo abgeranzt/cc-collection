@@ -78,7 +78,7 @@ local function master_setup(master_ch, modem, worker, logger)
 					os.queueEvent("gps_update", msg)
 				elseif msg.type == "res" then
 					---@diagnostic disable-next-line: undefined-field
-					os.queueEvent("task_update", msg.payload.id, msg.payload.status)
+					os.queueEvent("task_update", msg.payload.id, msg.payload.status, msg.payload.body)
 				end
 			else
 				logger.trace("dropping invalid message")
@@ -205,12 +205,12 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 
 	---@param id number
 	---@param status msg_status
-	---@param text string | nil
-	local function reply(id, status, text)
+	---@param body string | nil
+	local function reply(id, status, body)
 		local payload = {
 			id = id,
 			status = status,
-			text = text
+			body = body
 		}
 		_send("res", payload)
 	end

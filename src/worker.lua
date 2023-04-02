@@ -29,12 +29,13 @@ local function work_queue()
 			---@cast task worker_task
 			logger.info("executing task " .. task.id)
 			if command[task.body.cmd] then
-				local status, err = command[task.body.cmd](task.body.params)
+				local status, err, out = command[task.body.cmd](task.body.params)
 				if status then
 					logger.info("command '" .. task.body.cmd .. "' successful")
 					logger.info("task " .. task.id .. " complete")
-					message.reply(task.id, "ok")
+					message.reply(task.id, "ok", out)
 				else
+					---@cast err string
 					logger.error(err)
 					message.reply(task.id, "err", err)
 				end

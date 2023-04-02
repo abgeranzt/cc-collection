@@ -9,7 +9,7 @@ if not modem then
 	exit()
 end
 
-local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
+local logger = require("lib.logger").setup(9000, "info", "/log", modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 ---@cast logger logger
 
@@ -25,6 +25,12 @@ local function test_master()
 		direction = "forward",
 		distance = 2
 	})
+	local tid = task.create("dev-worker-1", "navigate", {
+		direction = "back",
+		distance = 2
+	})
+	task.await(tid)
+	worker.collect("dev-worker-1")
 end
 
 ---@diagnostic disable-next-line: undefined-global
