@@ -86,7 +86,7 @@ function tunnel.forward_three(n)
 		if not ok then break end
 		ok, err = dig.up()
 		if not ok then break end
-		ok, err = turtle.digDown()
+		ok, err = dig.down()
 		if not ok then break end
 	end
 	return ok, err
@@ -102,7 +102,7 @@ end
 
 ---@param n number
 function tunnel.up(n)
-	local ok, err
+	local ok, er3
 	for _ = 1, n, 1 do
 		ok, err = dig.up()
 		if not ok then break end
@@ -196,25 +196,24 @@ local function dig_cuboid(x, y, z)
 	local i = z
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
-			tunnel.down(2)
+			tunnel.down(1)
 			pos.z = pos.z + 2
 			dig_rectangle(x, y, tunnel.forward_three)
 			pos.z = pos.z + 1
 			tunnel.down(1)
 			i = i - 3
 		elseif math.floor(i / 2) > 0 then
-			tunnel.down(2)
+			tunnel.down(1)
 			pos.z = pos.z + 2
 			dig_rectangle(x, y, tunnel.forward_two)
 			i = i - 2
 		else
-			tunnel.down(1)
 			pos.z = pos.z + 1
 			dig_rectangle(x, y, tunnel.forward)
 			i = i - 1
 		end
 	end
-	for _ = 1, z, 1 do
+	for _ = 1, z - 1 do
 		go.up()
 	end
 	pos.z = 1
