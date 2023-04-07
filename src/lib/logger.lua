@@ -34,7 +34,7 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 			---@param msg string
 			---@diagnostic disable-next-line: assign-type-mismatch
 			logger[l] = function(msg)
-				local log_msg = string.upper(l) .. ": " .. msg
+				local log_msg = string.upper(l) .. ": " .. (msg or "")
 				print(log_msg)
 				logger._file.writeLine(log_msg)
 				logger._sendlog(log_msg)

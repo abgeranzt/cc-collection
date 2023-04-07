@@ -50,6 +50,25 @@ local function master_setup(logger)
 		return _workers[label]
 	end
 
+	-- Return a list of all workers (of a type)
+	---@param worker_type worker_type | nil
+	---@return string[]
+	local function get_labels(worker_type)
+		local workers = {}
+		if worker_type then
+			for _, w in pairs(_workers) do
+				if w.type == worker_type then
+					table.insert(workers, w.label)
+				end
+			end
+		else
+			for _, w in pairs(workers) do
+				table.insert(workers, w.label)
+			end
+		end
+		return workers
+	end
+
 	---@param label string
 	local function deploy(label)
 		logger.info("deploying worker '" .. label .. "'")
@@ -134,6 +153,7 @@ local function master_setup(logger)
 		create = create,
 		load_from_file = load_from_file,
 		get = get,
+		get_labels = get_labels,
 		deploy = deploy,
 		collect = collect
 	}

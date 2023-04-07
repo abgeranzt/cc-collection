@@ -32,3 +32,5 @@
 ---@alias peripheral_inventory { size: fun(), list: fun(), getItemDetail: fun(s: number), getItemLimit: fun(s:number) }
 
 ---@alias go {forward: fun(n: number | nil), back: fun(n: number | nil), up: fun(n: number | nil), down: fun(n: number | nil), left: fun(n: number | nil), right: fun(n: number | nil)}
+
+---@alias dimensions {w: number, l: number, h: number}
