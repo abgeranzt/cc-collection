@@ -18,50 +18,52 @@ local message = require("lib.message").master_setup(master_ch, modem, worker, lo
 local gps = require("lib.gps").master_setup(worker, logger)
 local task = require("lib.task").master_setup(message.send_task, worker, logger)
 
+-- Distribute the layers to mine evenly
+---@param n_workers number
+---@param h number
+---@return number[]
+local function spread_segment(n_workers, h)
+	local segments = {}
+	local base = math.floor(h / n_workers)
+	for i = 1, n_workers do
+		segments[i] = base
+	end
+	for rem = h % n_workers, 1, -1 do
+		segments[rem] = segments[rem] + 1
+	end
+	return segments
+end
+
 ---@param dim dimensions
 local function mine_cuboid(dim)
 	logger.trace("determining available workers")
 	local workers = worker.get_labels("miner")
 	local segments = {}
-	---@cast segments {worker: string, r_ypos: number}[] | number[][]
-	local segment_h = dim.h / #workers
-	---@cast segment_h number
+	---@cast segments { worker: string, r_ypos: number }[] | number[][]
+	local segment_h = spread_segment(#workers, dim.h)
 	-- Track the relative y-position of workers
-	local rem_h = dim.h - segment_h
+	local rem_h = dim.h - segment_h[1]
+
 	-- TODO bedrock scraping
-	-- Setup first worker
-	do
-		logger.info("deploying worker 1")
-		worker.deploy(workers[1])
-		task.await(task.create(workers[1], "refuel", { target = 1000 }))
-		-- Remaining height that could not be distributed evenly
-		local first_segment_h = segment_h + dim.h % #workers
-		segments[1] = {
-			worker = workers[1],
-			r_ypos = rem_h,
-			task.create(workers[1], "tunnel", { direction = "down", distance = rem_h }),
-			task.create(workers[1], "excavate", { l = dim.l, w = dim.w, h = first_segment_h })
-		}
-		rem_h = rem_h - first_segment_h
-	end
-	-- Setup remaining workers
 	for i, w in ipairs(workers) do
-		if i ~= 1 then
-			logger.info("deploying worker " .. i)
-			worker.deploy(workers[i])
-			task.await(task.create(workers[i], "refuel", { target = 1000 }))
-			table.insert(segments, i, {
-				worker = w,
-				r_ypos = rem_h,
-				task.create(w, "navigate", { direction = "down", distance = rem_h }),
-				task.create(w, "excavate", { l = dim.l, w = dim.w, h = segment_h })
-			})
-			rem_h = rem_h - segment_h
-		end
+		logger.info("deploying worker '" .. workers[i] .. "' for segment " .. i)
+		worker.deploy(workers[i])
+		task.await(task.create(workers[i], "refuel", { target = 1000 }))
+		table.insert(segments, i, {
+			worker = w,
+			r_ypos = rem_h,
+			task.create(w, "tunnel", { direction = "down", distance = rem_h }),
+			task.create(w, "excavate", { l = dim.l, w = dim.w, h = segment_h[i] })
+		})
+		rem_h = rem_h - segment_h[i]
+		-- Wait for arrival to prevent collisions
+		task.await(segments[i][1])
 	end
+
 	-- Collect workers
 	for i = #segments, 1, -1 do
 		task.await(segments[i][2])
+		logger.info("recalling worker '" .. segments[i].worker .. "' of segment " .. i)
 		task.await(task.create(segments[i].worker, "navigate", { direction = "up", distance = segments[i].r_ypos }))
 		worker.collect(segments[i].worker)
 	end
@@ -70,11 +72,11 @@ end
 local function test_master()
 	worker.create("dev-worker-1", "miner", 8001)
 	worker.create("dev-worker-2", "miner", 8002)
-	worker.create("dev-worker-3", "miner", 8003)
+	-- worker.create("dev-worker-3", "miner", 8003)
 	local dim = {
-		l = 3,
-		w = 3,
-		h = 9,
+		l = 4,
+		w = 4,
+		h = 10,
 	}
 	mine_cuboid(dim)
 end
