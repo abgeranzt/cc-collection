@@ -33,13 +33,7 @@ local function mine_cuboid(dim)
 	do
 		logger.info("deploying worker 1")
 		worker.deploy(workers[1])
-		-- TODO more robust fuel handling
-		-- Refuel
-		local ftid = task.create(workers[1], "get_fuel")
-		task.await(ftid)
-		if task.get_data(ftid) < 1000 then
-			task.await(task.create(workers[1], "refuel"))
-		end
+		task.await(task.create(workers[1], "refuel", { target = 1000 }))
 		-- Remaining height that could not be distributed evenly
 		local first_segment_h = segment_h + dim.h % #workers
 		segments[1] = {
@@ -55,12 +49,7 @@ local function mine_cuboid(dim)
 		if i ~= 1 then
 			logger.info("deploying worker " .. i)
 			worker.deploy(workers[i])
-			-- TODO more robust fuel handling
-			local ftid = task.create(workers[i], "get_fuel")
-			task.await(ftid)
-			if task.get_data(ftid) < 1000 then
-				task.await(task.create(workers[i], "refuel"))
-			end
+			task.await(task.create(workers[i], "refuel", { target = 1000 }))
 			table.insert(segments, i, {
 				worker = w,
 				r_ypos = rem_h,

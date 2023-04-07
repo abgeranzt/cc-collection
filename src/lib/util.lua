@@ -47,6 +47,7 @@ local function dump()
 	return true
 end
 
+-- TODO make this function more robust
 local function refuel()
 	if turtle.getItemCount(3) then
 		dump()
@@ -83,6 +84,7 @@ local function refuel()
 		turtle.select(slot)
 		turn()
 	end
+	return true
 end
 
 ---@return string | nil

@@ -142,16 +142,18 @@ local function miner_setup(logger)
 		return true, nil, turtle.getFuelLevel()
 	end
 
-	-- TODO optional target fuel level as parameter
-	local function refuel()
-		local ok, err = util.refuel()
-		if ok then
-			return true
-		else
-			---@cast err string
-			logger.error(err)
-			return false, "refuel command failed"
+	---@param params { target: number }
+	local function refuel(params)
+		local ok, err
+		while turtle.getFuelLevel() < params.target do
+			ok, err = util.refuel()
+			if not ok then
+				---@cast err string
+				logger.error(err)
+				return false, "refuel command failed"
+			end
 		end
+		return true
 	end
 
 	local function dump()
