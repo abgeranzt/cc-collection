@@ -34,6 +34,26 @@ function dig.up()
 	return ok, err
 end
 
+-- Prevent the mining of computers or turtles
+-- TODO is this still required?
+function dig.up_safe()
+	local MAX_TRIES = 5
+	while turtle.detectUp() do
+		for _ = 1, MAX_TRIES - 1 do
+			local b = turtle.inspectUp()
+			---@cast b {name: string}
+			if string.find(b.name, "computercraft:turtle")
+				or string.find(b.name, "computercraft:computer")
+			then
+				---@diagnostic disable-next-line: undefined-global
+				sleep(1)
+			else
+				turtle.digUp()
+			end
+		end
+	end
+end
+
 function dig.down()
 	local ok = true
 	local err

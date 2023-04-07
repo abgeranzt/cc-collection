@@ -15,15 +15,7 @@ local function dump()
 	local slot = turtle.getSelectedSlot()
 	turtle.select(1)
 
-	if not turtle.detectUp() then
-		turtle.placeUp()
-		for s = 3, 16 do
-			turtle.select(s)
-			turtle.dropUp()
-		end
-		turtle.select(1)
-		turtle.digUp()
-	elseif not turtle.detect() then
+	if not turtle.detect() then
 		turtle.place()
 		for s = 3, 16 do
 			turtle.select(s)
@@ -31,6 +23,14 @@ local function dump()
 		end
 		turtle.select(1)
 		turtle.dig()
+	elseif not turtle.detectUp() then
+		turtle.placeUp()
+		for s = 3, 16 do
+			turtle.select(s)
+			turtle.dropUp()
+		end
+		turtle.select(1)
+		turtle.digUp()
 	else
 		turn()
 		turtle.place()
@@ -54,16 +54,7 @@ local function refuel()
 	end
 
 	local slot = turtle.getSelectedSlot()
-	if not turtle.detectUp() then
-		turtle.select(2)
-		turtle.placeUp()
-		turtle.select(3)
-		turtle.suckUp()
-		turtle.refuel()
-		turtle.select(2)
-		turtle.digUp()
-		turtle.select(slot)
-	elseif not turtle.detect() then
+	if not turtle.detect() then
 		turtle.select(2)
 		turtle.place()
 		turtle.select(3)
@@ -71,6 +62,15 @@ local function refuel()
 		turtle.refuel()
 		turtle.select(2)
 		turtle.dig()
+		turtle.select(slot)
+	elseif not turtle.detectUp() then
+		turtle.select(2)
+		turtle.placeUp()
+		turtle.select(3)
+		turtle.suckUp()
+		turtle.refuel()
+		turtle.select(2)
+		turtle.digUp()
 		turtle.select(slot)
 	else
 		turn()
