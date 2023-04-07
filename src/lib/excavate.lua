@@ -141,21 +141,21 @@ function tunnel.right(n)
 	return ok, err
 end
 
----@param x number
----@param y number
+---@param l number
+---@param w number
 ---@param tunnel_fw fun(n: number)
-local function dig_rectangle(x, y, tunnel_fw)
-	while turtle.getFuelLevel() < x * 2 or turtle.getFuelLevel() < 1000 do
+local function dig_rectangle(l, w, tunnel_fw)
+	while turtle.getFuelLevel() < l * 2 or turtle.getFuelLevel() < 1000 do
 		util.refuel()
 	end
 
 	local rpos = 1
-	for i = 1, y, 1 do
-		tunnel_fw(x - 1)
+	for i = 1, w, 1 do
+		tunnel_fw(l - 1)
 		rpos = rpos * -1
 		util.dump()
 		-- Prepare for next column
-		if i < y then
+		if i < w then
 			if rpos == -1 then
 				turtle.turnRight()
 				tunnel_fw(1)
@@ -168,75 +168,75 @@ local function dig_rectangle(x, y, tunnel_fw)
 		end
 	end
 	if rpos == -1 then
-		go.back(x - 1)
+		go.back(l - 1)
 		turtle.turnLeft()
 	else
 		turtle.turnRight()
 	end
-	go.forward(y - 1)
+	go.forward(w - 1)
 	turtle.turnRight()
 	return true
 end
 
----@param x number
----@param y number
----@param z number
-local function dig_cuboid(x, y, z)
-	local i = z
+---@param l number
+---@param w number
+---@param h number
+local function dig_cuboid(l, w, h)
+	local i = h
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
 			tunnel.down(1)
-			dig_rectangle(x, y, tunnel.forward_three)
+			dig_rectangle(l, w, tunnel.forward_three)
 			tunnel.down(1)
 			i = i - 3
 		elseif math.floor(i / 2) > 0 then
 			tunnel.down(1)
-			dig_rectangle(x, y, tunnel.forward_two)
+			dig_rectangle(l, w, tunnel.forward_two)
 			i = i - 2
 		else
-			dig_rectangle(x, y, tunnel.forward)
+			dig_rectangle(l, w, tunnel.forward)
 			i = i - 1
 		end
 		if (i > 0) then
 			tunnel.down(1)
 		end
 	end
-	for _ = 1, z - 1 do
+	for _ = 1, h - 1 do
 		go.up()
 	end
 	util.dump()
 	return true
 end
 
----@param x number
----@param y number
-local function dig_cuboid_bedrock(x, y)
+---@param l number
+---@param w number
+local function dig_cuboid_bedrock(l, w)
 	do
 		local fuel = turtle.getFuelLevel()
-		while fuel < x * 6 + y * 2 or fuel < 1000 do
+		while fuel < l * 6 + w * 2 or fuel < 1000 do
 			util.refuel()
 		end
 	end
 
 	local function scrape()
-		local zpos = 0
+		local hpos = 0
 		while true do
 			local ok, _ = dig.down()
 			if not ok then break end
 			go.down()
-			zpos = zpos + 1
+			hpos = hpos + 1
 		end
-		go.up(zpos)
+		go.up(hpos)
 	end
 
 	local rpos = 1
-	for i = 1, y do
-		for j = 1, x - 1 do
+	for i = 1, w do
+		for j = 1, l - 1 do
 			scrape()
 			tunnel.forward_push()
 		end
 		scrape()
-		if i < y then
+		if i < w then
 			if (rpos == 1) then
 				turtle.turnRight()
 				tunnel.forward_push()
@@ -250,12 +250,12 @@ local function dig_cuboid_bedrock(x, y)
 		rpos = rpos * -1
 	end
 	if rpos == -1 then
-		go.back(x - 1)
+		go.back(l - 1)
 		turtle.turnLeft()
 	else
 		turtle.turnRight()
 	end
-	go.forward(y - 1)
+	go.forward(w - 1)
 	turtle.turnRight()
 	return true
 end

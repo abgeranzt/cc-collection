@@ -4,10 +4,10 @@ local util = require("lib.util")
 
 ---@param logger logger
 local function miner_setup(logger)
-	---@param params {x: number, y: number, z: number}
+	---@param params {l: number, w: number, h: number}
 	local function excavate(params)
 		-- validate params
-		for _, c in ipairs({ "x", "y", "z" }) do
+		for _, c in ipairs({ "l", "w", "h" }) do
 			if not params[c] then
 				local e = "missing parameter '" .. c .. "'"
 				---@cast e string
@@ -18,7 +18,7 @@ local function miner_setup(logger)
 				return false, e
 			end
 		end
-		local ok, err = exc.dig_cuboid(params.x, params.y, params.z)
+		local ok, err = exc.dig_cuboid(params.l, params.w, params.h)
 		if ok then
 			return true
 		else
@@ -28,10 +28,10 @@ local function miner_setup(logger)
 		end
 	end
 
-	---@param params {x: number, y: number}
+	---@param params {l: number, w: number}
 	local function excavate_bedrock(params)
 		-- validate params
-		for _, c in ipairs({ "x", "y" }) do
+		for _, c in ipairs({ "l", "w" }) do
 			if not params[c] then
 				local e = "missing parameter '" .. c .. "'"
 				---@cast e string
@@ -42,7 +42,7 @@ local function miner_setup(logger)
 				return false, e
 			end
 		end
-		local ok, err = exc.dig_cuboid_bedrock(params.x, params.y)
+		local ok, err = exc.dig_cuboid_bedrock(params.l, params.w)
 		if ok then
 			return true
 		else
@@ -142,6 +142,7 @@ local function miner_setup(logger)
 		return true, nil, turtle.getFuelLevel()
 	end
 
+	-- TODO optional target fuel level as parameter
 	local function refuel()
 		local ok, err = util.refuel()
 		if ok then
@@ -149,7 +150,7 @@ local function miner_setup(logger)
 		else
 			---@cast err string
 			logger.error(err)
-			return false, "refuel command false"
+			return false, "refuel command failed"
 		end
 	end
 
@@ -160,7 +161,7 @@ local function miner_setup(logger)
 		else
 			---@cast err string
 			logger.error(err)
-			return false, "dump command false"
+			return false, "dump command failed"
 		end
 	end
 
