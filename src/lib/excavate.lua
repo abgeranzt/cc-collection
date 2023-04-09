@@ -1,10 +1,5 @@
--- This is only useful for development
-if not turtle then
-	---@diagnostic disable-next-line: lowercase-global
-	turtle = {}
-	---@diagnostic disable-next-line: unknown-cast-variable
-	---@cast turtle turtle
-end
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast turtle turtle
 
 local util = require("lib.util")
 -- This is used because it broadcasts our position when moving

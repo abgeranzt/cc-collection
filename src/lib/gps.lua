@@ -1,9 +1,11 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 ---@param worker {get: fun(label: string)}
 ---@param logger logger
 local function master_setup(worker, logger)
 	local function monitor()
 		while true do
-			---@diagnostic disable-next-line: undefined-field
 			local _, msg = os.pullEvent("gps_update")
 			---@cast msg msg
 			local pos = msg.payload.body
@@ -25,7 +27,6 @@ local function worker_setup(send_gps, logger)
 	-- broadcast my position on the configured gps channel
 	local function monitor()
 		while true do
-			---@diagnostic disable-next-line: undefined-field
 			local _ = os.pullEvent("gps_update")
 			---@diagnostic disable-next-line: undefined-global
 			local x, z, y = gps.locate()

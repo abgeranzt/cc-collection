@@ -1,10 +1,7 @@
--- This is only useful for development
-if not turtle then
-	---@diagnostic disable-next-line: lowercase-global
-	turtle = {}
-	---@diagnostic disable-next-line: unknown-cast-variable
-	---@cast turtle turtle
-end
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast turtle turtle
 
 local function turn()
 	turtle.turnRight()
@@ -89,7 +86,6 @@ end
 
 ---@return string | nil
 local function get_label()
-	---@diagnostic disable-next-line: undefined-field
 	return os.getComputerLabel()
 end
 

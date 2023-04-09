@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast turtle turtle
+
 local exc = require("lib.excavate")
 local go = require("lib.navigate").go
 local util = require("lib.util")
@@ -139,6 +142,7 @@ local function miner_setup(logger)
 
 	---@return true, nil, number
 	local function get_fuel()
+		---@diagnostic disable-next-line: missing-return-value
 		return true, nil, turtle.getFuelLevel()
 	end
 

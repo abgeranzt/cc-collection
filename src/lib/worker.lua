@@ -1,10 +1,5 @@
--- This is only useful for development
-if not turtle then
-	---@diagnostic disable-next-line: lowercase-global
-	turtle = {}
-	---@diagnostic disable-next-line: unknown-cast-variable
-	---@cast turtle turtle
-end
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast turtle turtle
 
 ---@param logger logger
 local function master_setup(logger)

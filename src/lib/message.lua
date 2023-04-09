@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 local get_label = require("lib.util").get_label
 
 local message_types = {
@@ -68,16 +71,13 @@ local function master_setup(master_ch, modem, worker, logger)
 	local function listen()
 		modem.open(master_ch)
 		while true do
-			---@diagnostic disable-next-line: undefined-field, unused-local
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
 			---@cast msg msg
 			if _validate(msg) then
 				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "gps" then
-					---@diagnostic disable-next-line: undefined-field
 					os.queueEvent("gps_update", msg)
 				elseif msg.type == "res" then
-					---@diagnostic disable-next-line: undefined-field
 					os.queueEvent("task_update", msg.payload.id, msg.payload.status, msg.payload.body)
 				end
 			else
@@ -169,7 +169,6 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	local function listen()
 		modem.open(worker_ch)
 		while true do
-			---@diagnostic disable-next-line: undefined-field, unused-local
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
 			if _validate(msg) then
 				---@cast msg msg

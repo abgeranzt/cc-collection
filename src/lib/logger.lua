@@ -1,7 +1,10 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 
 ---@param log_ch number
----@param log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
+---@param log_level log_level
 ---@param log_file string | nil
 ---@param modem {transmit: fun(c: number, rc: number, s: string)} | nil
 local function logger_setup(log_ch, log_level, log_file, modem)
@@ -10,7 +13,8 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 	---@diagnostic disable-next-line: undefined-field
 	local _label = os.getComputerLabel()
 
-	local function write_log(_) end
+	local function write_log(_)
+	end
 	if log_file then
 		---@diagnostic disable-next-line: undefined-global
 		local _file = fs.open(log_file, "w")
@@ -20,7 +24,8 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 		end
 	end
 
-	local function send_log(_) end
+	local function send_log(_)
+	end
 	if modem then
 		send_log = function(msg)
 			local log_msg = "[" .. _label .. "] - " .. msg

@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 ---@param send_msg fun(target_ch: number, msg_target: string, payload: msg_payload)
 ---@param logger logger
 ---@param worker {get: fun(label: string): worker}
@@ -54,7 +57,6 @@ local function master_setup(send_msg, worker, logger)
 
 	local function monitor()
 		while true do
-			---@diagnostic disable-next-line: undefined-field
 			local _, id, status, data = os.pullEvent("task_update")
 			---@cast id number
 			---@cast status msg_status

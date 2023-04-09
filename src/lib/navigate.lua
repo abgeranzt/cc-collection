@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 -- TODO handle navigation errrors by returning to the original position
 
 -- Navigate using relative coordinates.
@@ -18,13 +21,12 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 
 			ok, err = turtle[dir]()
 			if ok then
-				---@diagnostic disable-next-line: undefined-field
 				os.queueEvent("gps_update")
 				n = n - 1
 				try = 1
 			else
 				try = try + 1
-				---@ diagnostic disable-next-line: undefined-global
+				---@diagnostic disable-next-line: undefined-global
 				sleep(1)
 			end
 		end
