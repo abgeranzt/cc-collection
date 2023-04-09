@@ -9,7 +9,7 @@ if not modem then
 	exit()
 end
 
-local logger = require("lib.logger").setup(9000, "info", "/log", modem)
+local logger = require("lib.logger").setup(9000, "info", nil, modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 ---@cast logger logger
 
@@ -18,6 +18,7 @@ local message = require("lib.message").master_setup(master_ch, modem, worker, lo
 local master_gps = require("lib.gps").master_setup(worker, logger)
 local task = require("lib.task").master_setup(message.send_task, worker, logger)
 
+-- TODO smarter speading: up to 3 per segment; avoid spreading on the first worker
 -- Distribute the layers to mine evenly
 ---@param n_workers number
 ---@param h number
