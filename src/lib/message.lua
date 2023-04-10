@@ -14,6 +14,38 @@ local status_types = {
 	ok = true
 }
 
+-- TODO error handling for this?
+---@param log_ch number
+---@param modem modem
+---@param log_level log_level
+local function log_server_setup(log_ch, modem, log_level)
+	---@param msg string
+	---@return {snd: string, lvl: log_level, msg: string}
+	local function _parse(msg)
+		local snd = string.match(msg, "%[.+%]%s%-%s")
+		snd = string.sub(snd, 2, string.len(snd) - 4)
+		msg = string.gsub(msg, "%[.+%]%s%-%s", "", 1)
+		local lvl = string.match(msg, "%a+: ")
+		lvl = string.lower(string.sub(lvl, 1, string.len(lvl) - 2))
+		msg = string.gsub(msg, "%a+: ", "", 1)
+		return {
+			snd = snd,
+			lvl = lvl,
+			msg = msg
+		}
+	end
+
+
+	local function listen()
+		modem.open(log_ch)
+		local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
+		os.queueEvent("log_message", _parse(msg))
+	end
+
+	return {
+		listen = listen
+	}
+end
 
 ---@param master_ch number
 ---@param modem modem
@@ -223,6 +255,7 @@ end
 
 
 return {
+	log_server_setup = log_server_setup,
 	master_setup = master_setup,
 	worker_setup = worker_setup
 }

@@ -1,7 +1,9 @@
 -- This file does not do anything, it only exists to provide type definitions for the language server.
 
 -- type defs for built-in APIs
-
+---@alias colors { white: number, orange: number, magenta: number, lightBlue: number, yellow: number, lime: number, pink: number, gray: number, lightGray: number, cyan: number, purple: number, blue: number, brown: number, green: number, red: number, black: number }
+---@diagnostic disable-next-line: lowercase-global
+if not colors then colors = {} end
 ---@alias modem {open: fun(c: number), close: fun(c: number), transmit: fun(c: number, rc: number, msg: string | table)}
 ---@alias os {pullEvent: fun(n: string), queueEvent: fun(n: string, ...), getComputerLabel: fun(): string}
 ---@alias turtle {detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(n: number | nil), dropUp: fun(n: number | nil), dropDown: fun(n: number | nil), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil), inspect: fun(), inspectUp: fun(), inspectDown: fun()}
