@@ -1,7 +1,9 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast peripheral peripheral
+
 -- TODO make this configurable
 local master_ch = 8000
 
----@diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
 if not modem then
 	print("No modem found, exiting!")
@@ -105,14 +107,15 @@ local function mine_cuboid(dim)
 	end
 end
 
+-- TODO get rid of this
 local function test_master()
 	worker.create("dev-worker-1", "miner", 8001)
 	worker.create("dev-worker-2", "miner", 8002)
 	worker.create("dev-worker-3", "miner", 8003)
 	local dim = {
-		l = 9,
+		l = 5,
 		w = 3,
-		h = 20,
+		h = 15,
 	}
 	mine_cuboid(dim)
 end

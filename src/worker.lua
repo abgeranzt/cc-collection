@@ -17,7 +17,7 @@ worker_ch = tonumber(worker_ch)
 master_ch = tonumber(master_ch)
 ---@cast master_ch number
 
-local logger = require("lib.logger").setup(9000, "debug", nil, modem)
+local logger = require("lib.logger").setup(9000, "info", nil, modem)
 -- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
 ---@cast logger logger
 

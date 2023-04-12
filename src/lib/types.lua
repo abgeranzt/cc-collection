@@ -1,10 +1,11 @@
 -- This file does not do anything, it only exists to provide type definitions for the language server.
 
 -- type defs for built-in APIs
----@alias colors { white: number, orange: number, magenta: number, lightBlue: number, yellow: number, lime: number, pink: number, gray: number, lightGray: number, cyan: number, purple: number, blue: number, brown: number, green: number, red: number, black: number }
+---@alias colors { white: integer, orange: integer, magenta: integer, lightBlue: integer, yellow: integer, lime: integer, pink: integer, gray: integer, lightGray: integer, cyan: integer, purple: integer, blue: integer, brown: integer, green: integer, red: integer, black: integer }
 ---@diagnostic disable-next-line: lowercase-global
 if not colors then colors = {} end
 ---@alias modem {open: fun(c: number), close: fun(c: number), transmit: fun(c: number, rc: number, msg: string | table)}
+---@alias monitor { setTextScale: fun(n: number), getCursorPos: fun(), setCursorPos: fun(x: integer, y: integer), blit: fun(t: string, tc: string, bc: string), write: fun(t: string), setTextColor: fun(c: integer), setBackgroundColor: fun(c: integer), getSize: fun(), scroll: fun(y: integer) }
 ---@alias os {pullEvent: fun(n: string), queueEvent: fun(n: string, ...), getComputerLabel: fun(): string}
 ---@alias peripheral { call: fun(d: string, c: string), find: fun(n: string), wrap: fun(d: string) }
 ---@diagnostic disable-next-line: lowercase-global
@@ -38,6 +39,7 @@ if not turtle then turtle = {} end
 
 ---@alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
 ---@alias log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
+---@alias log_event {snd: string, lvl: log_level, msg: string, raw: string}
 
 ---@alias task {worker: string, completed: boolean, status: msg_status, data: string | nil}
 

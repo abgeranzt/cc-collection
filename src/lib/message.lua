@@ -14,15 +14,27 @@ local status_types = {
 	ok = true
 }
 
+local log_levels = {
+	trace = 1,
+	debug = 2,
+	info = 3,
+	warn = 4,
+	error = 5,
+	fatal = 6
+}
+
 -- TODO error handling for this?
 ---@param log_ch number
 ---@param modem modem
 ---@param log_level log_level
 local function log_server_setup(log_ch, modem, log_level)
+	local log_level_num = log_levels[log_level]
+
 	---@param msg string
-	---@return {snd: string, lvl: log_level, msg: string}
+	---@return log_event
 	local function _parse(msg)
 		local snd = string.match(msg, "%[.+%]%s%-%s")
+		local msg_raw = msg
 		snd = string.sub(snd, 2, string.len(snd) - 4)
 		msg = string.gsub(msg, "%[.+%]%s%-%s", "", 1)
 		local lvl = string.match(msg, "%a+: ")
@@ -31,15 +43,22 @@ local function log_server_setup(log_ch, modem, log_level)
 		return {
 			snd = snd,
 			lvl = lvl,
-			msg = msg
+			msg = msg,
+			raw = msg_raw
 		}
 	end
 
 
 	local function listen()
 		modem.open(log_ch)
-		local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
-		os.queueEvent("log_message", _parse(msg))
+		while true do
+			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
+			print(msg)
+			local event = _parse(msg)
+			if log_levels[event.lvl] >= log_level_num then
+				os.queueEvent("log_message", _parse(msg))
+			end
+		end
 	end
 
 	return {
@@ -101,6 +120,7 @@ local function master_setup(master_ch, modem, worker, logger)
 	end
 
 	local function listen()
+		logger.info("listening on channel " .. master_ch)
 		modem.open(master_ch)
 		while true do
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
@@ -199,6 +219,7 @@ local function worker_setup(worker_ch, master_name, master_ch, queue, modem, log
 	-- - append it to the task queue if the message is a command
 	-- - reply ("acknowledge") to messages
 	local function listen()
+		logger.info("listening on channel " .. worker_ch)
 		modem.open(worker_ch)
 		while true do
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
