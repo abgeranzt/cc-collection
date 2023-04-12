@@ -1,6 +1,8 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast peripheral peripheral
+
 local queue = require("lib.queue").queue
 
----@diagnostic disable-next-line: undefined-global
 local modem = peripheral.find("modem")
 if not modem then
 	print("No modem found, exiting!")
@@ -53,7 +55,7 @@ local function work_queue()
 end
 
 local function main()
-	logger.debug("STARTING worker test")
+	logger.info("starting worker")
 	---@diagnostic disable-next-line: undefined-global
 	parallel.waitForAll(message.listen, work_queue, gps.monitor)
 end

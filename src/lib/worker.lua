@@ -1,4 +1,6 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
+---@cast peripheral peripheral
+---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
 ---@param logger logger
@@ -75,7 +77,6 @@ local function master_setup(logger)
 		local chest = nil
 		-- For some reason the chest cannot immediately be wrapped. Workaround: simply retry
 		while true do
-			---@diagnostic disable-next-line: undefined-global
 			chest = peripheral.wrap("front")
 			if chest then
 				break
@@ -123,7 +124,6 @@ local function master_setup(logger)
 		turtle.digUp()
 
 		logger.trace("starting worker")
-		---@diagnostic disable-next-line: undefined-global
 		peripheral.call("bottom", "turnOn")
 		-- Yield execution to allow the worker to start
 		---@diagnostic disable-next-line: undefined-global
