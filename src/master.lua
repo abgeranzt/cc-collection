@@ -1,25 +1,50 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast peripheral peripheral
 
--- TODO make this configurable
-local master_ch = 8000
+---@param args table The arguments provided to the program
+local function setup(args)
+	local modem = peripheral.find("modem")
+	if not modem then
+		print("No modem found, exiting!")
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	---@cast modem modem
 
-local modem = peripheral.find("modem")
-if not modem then
-	print("No modem found, exiting!")
-	---@diagnostic disable-next-line: undefined-global
-	exit()
+	local argparse = require("lib.argparse")
+	argparse.add_arg("log_ch", "-lc", "number", false, 9000)
+	argparse.add_arg("log_lvl", "-ll", "string", false, "info")
+	argparse.add_arg("master_ch", "-mc", "number", true)
+
+	local parsed_args, e = argparse.parse(args)
+	if not parsed_args then
+		print(e)
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	---@cast parsed_args table
+
+	local log_ch = parsed_args.log_ch
+	---@cast log_ch number
+	local log_lvl = parsed_args.log_lvl
+	---@cast log_lvl log_level
+	local master_ch = parsed_args.master_ch
+	---@cast master_ch number
+
+	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
+	---@cast logger logger
+
+	local worker = require("lib.worker").master_setup(logger)
+	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
+	local master_gps = require("lib.gps").master_setup(worker, logger)
+	local task = require("lib.task").master_setup(message.send_task, worker, logger)
+
+	return logger, master_gps, message, worker, task
 end
 
-local logger = require("lib.logger").setup(9000, "info", nil, modem)
--- local logger = require("lib.logger").setup(9000, "trace", "/log", modem)
----@cast logger logger
+local logger, master_gps, message, worker, task = setup({ ... })
 
-local worker = require("lib.worker").master_setup(logger)
-local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
-local master_gps = require("lib.gps").master_setup(worker, logger)
-local task = require("lib.task").master_setup(message.send_task, worker, logger)
-
+-- TODO move the quarry-related functions into a dedicated file
 -- TODO smarter speading: up to 3 per segment; avoid spreading on the first worker
 -- Distribute the layers to mine evenly
 ---@param n_workers number
@@ -56,6 +81,7 @@ end
 
 ---@param dim dimensions
 local function mine_cuboid(dim)
+	-- FIXME there seems to be bug that prevents a single layer from being mined (params l5 w3 h100)
 	logger.trace("determining available workers")
 	local workers = worker.get_labels("miner")
 	---@diagnostic disable-next-line: undefined-global
@@ -115,7 +141,7 @@ local function test_master()
 	local dim = {
 		l = 5,
 		w = 3,
-		h = 15,
+		h = 100,
 	}
 	mine_cuboid(dim)
 end
