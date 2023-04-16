@@ -16,6 +16,10 @@ if not turtle then turtle = {} end
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
+---@alias argparse_arg_type "string" | "number" | "boolean"
+---@alias argparse_arg_default string | number | boolean | nil
+---@alias argparse_arg {short: string, type: argparse_arg_type, required: boolean, default: argparse_arg_default}
+
 ---@alias msg_body_cmd {cmd: string, params: table}
 ---@alias msg_body_gps {x: number, y: number, z: number}
 ---@alias msg_body_res string | nil
