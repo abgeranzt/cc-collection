@@ -66,6 +66,7 @@ local function master_setup(logger)
 		return workers
 	end
 
+	-- TODO turtle.getItemDetail can return all the information we need, simply pass the 'detailed' as true
 	---@param label string
 	local function deploy(label)
 		logger.info("deploying worker '" .. label .. "'")
@@ -75,7 +76,7 @@ local function master_setup(logger)
 		turtle.select(3)
 		turtle.place()
 		local chest = nil
-		-- For some reason the chest cannot immediately be wrapped. Workaround: simply retry
+		-- For some reason the chest cannot immediately be wrapped. Workaround: simply yield and retry
 		while true do
 			chest = peripheral.wrap("front")
 			if chest then
