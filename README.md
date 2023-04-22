@@ -1,12 +1,12 @@
 # atref
-## Asynchronous Turtle Routine Execution Framework
+#### Asynchronous Turtle Routine Execution Framework
 
 ### Summary
 This is a collection of lua programs for the Minecraft [ComputerCraft](https://www.computercraft.info/) mod.
 In particular, this repository's code was written for the ComputerCraft fork [CC: Tweaked](https://computercraft.cc/)
 with additional features added by the [Advanced Peripherals](https://docs.intelligence-modding.de/) mod.
 
-The main function of this repository is to provide a framework for large scale [turtle](https://www.computercraft.info/wiki/Turtle) operations such as quarrying large areas or construction tasks.
+The goal of this repository is to provide a framework for large scale [turtle](https://www.computercraft.info/wiki/Turtle) operations such as quarrying large areas or construction tasks.
 
 The main feature is an asynchronous scalable controller-worker architecture using a task queuing system,
 a custom communication protocol on top of the built-in [modem API](https://tweaked.cc/peripheral/modem.html)
@@ -24,12 +24,12 @@ Also planned is a mining mode capable of fully autonomously and potentionally in
 The code consists of a collection of programs runnable with the in-game computers,
 the libraries they require and some development scripts.
 These programs can either be executed directly by user interaction or programatically.
-They are intended to be used in a survival playthrough to faciliate ressource acquisition and construction.
+They are intended to be used in a survival playthrough to facilitate ressource acquisition and construction.
 
 It is designed to be used in a heavily modded version of Minecraft. Because of this, other systems are expected to handle some elements of its operation (e.g. a logistic system for handling large quantities of in-game items or a fuel source).
 
 <!-- TODO create user instructions -->
-Various setup and configuration scripts have been created to speed up and faciliate user operation. See the instructions section for more information.
+Various setup and configuration scripts have been created to speed up and facilitate user operation. See the instructions section for more information.
 
 ### Showcase
 TODO
