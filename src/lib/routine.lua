@@ -39,11 +39,13 @@ local function master_setup(task, worker, gps, logger)
 
 	---@param dim dimensions
 	local function mine_cuboid(dim)
+		-- FIXME some malformed messsages are received at this time
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
-		-- FIXME there seems to be bug that prevents a single layer from being mined (params l5 w3 h100)
 
 		local _, y, _ = gps.locate()
+		-- Adjust actual operation y-level
+		y = y - 1
 		local segs = {}
 		local scrape_br = false
 		---@cast segs { worker: string, r_ypos: number }[] | number[][]
@@ -54,6 +56,10 @@ local function master_setup(task, worker, gps, logger)
 		end
 		logger.trace("spreading height on workers")
 		local seg_hs = spread_seg_heigth(#workers, dim.h)
+		-- DEBUG
+		for _, h in ipairs(seg_hs) do
+			logger.debug("SEG: " .. tostring(h))
+		end
 		-- Track the relative y-position of workers
 		local rem_h = dim.h - seg_hs[1]
 
@@ -71,9 +77,9 @@ local function master_setup(task, worker, gps, logger)
 					r_ypos = rem_h,
 					task.create(w, "tunnel", { direction = "down", distance = rem_h }),
 					task.create(w, "excavate", { l = dim.l, w = dim.w, h = seg_part_1 }),
-					task.create(w, "tunnel", { direction = "down", distance = seg_part_1 - 1 }),
+					task.create(w, "tunnel", { direction = "down", distance = seg_part_1 }),
 					task.create(w, "excavate_bedrock", { l = dim.l, w = dim.w }),
-					task.create(w, "tunnel", { direction = "up", distance = seg_part_1 - 1 })
+					task.create(w, "tunnel", { direction = "up", distance = seg_part_1 })
 				})
 			else
 				table.insert(segs, i, {
@@ -97,6 +103,8 @@ local function master_setup(task, worker, gps, logger)
 			task.await(task.create(segs[i].worker, "navigate", { direction = "up", distance = segs[i].r_ypos }))
 			worker.collect(segs[i].worker)
 		end
+		-- TODO error handling
+		return true
 	end
 
 	return {

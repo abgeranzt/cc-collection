@@ -126,7 +126,8 @@ local function master_setup(master_ch, modem, worker, logger)
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
 			---@cast msg msg
 			if _validate(msg) then
-				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
+				-- TODO re-enable it when development is finished
+				-- logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if msg.type == "gps" then
 					os.queueEvent("gps_update", msg)
 				elseif msg.type == "res" then

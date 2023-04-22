@@ -11,7 +11,8 @@ local function master_setup(worker, logger)
 			local pos = msg.payload.body
 			---@diagnostic disable-next-line: cast-type-mismatch
 			---@cast pos gps_position
-			logger.debug("updating position for worker '" .. msg.snd .. "'")
+			-- TODO re-enable it when development is finished
+			-- logger.debug("updating position for worker '" .. msg.snd .. "'")
 			worker.get(msg.snd).position = pos
 		end
 	end
