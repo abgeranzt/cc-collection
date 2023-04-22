@@ -6,6 +6,6 @@ for i in $(seq 0 $n); do
 	mkdir -p .local/computer/$i
 	d=.local/computer/$i/ccc
 	if [ ! -e $d ]; then
-		ln -s $(pwd)/src $d
+		ln -sf $(pwd)/src $d
 	fi
 done

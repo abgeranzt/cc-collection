@@ -4,6 +4,9 @@
 ---@alias colors { white: integer, orange: integer, magenta: integer, lightBlue: integer, yellow: integer, lime: integer, pink: integer, gray: integer, lightGray: integer, cyan: integer, purple: integer, blue: integer, brown: integer, green: integer, red: integer, black: integer }
 ---@diagnostic disable-next-line: lowercase-global
 if not colors then colors = {} end
+---@alias gps { locate: fun() }
+---@diagnostic disable-next-line: lowercase-global
+if not gps then gps = {} end
 ---@alias modem {open: fun(c: number), close: fun(c: number), transmit: fun(c: number, rc: number, msg: string | table)}
 ---@alias monitor { setTextScale: fun(n: number), getCursorPos: fun(), setCursorPos: fun(x: integer, y: integer), blit: fun(t: string, tc: string, bc: string), write: fun(t: string), setTextColor: fun(c: integer), setBackgroundColor: fun(c: integer), getSize: fun(), scroll: fun(y: integer) }
 ---@alias os { pullEvent: fun(n: string), queueEvent: fun(n: string, ...), getComputerLabel: fun(), setComputerLabel: fun(l: string) }
@@ -35,6 +38,10 @@ if not turtle then turtle = {} end
 ---@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gps_position | nil}
 ---@alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 ---@alias worker_type "miner" | "loader"
+--
+---@alias worker_lib_get fun(label: string): worker
+---@alias worker_lib_get_labels fun(worker_type: worker_type | nil): string[]
+---@alias worker_lib { create: fun(l: string, wt: worker_type, wch: number), load_from_file: fun(), get: worker_lib_get, get_labels: worker_lib_get_labels, deploy: fun(l: string), collect: fun(l: string) }
 
 ---@alias gps_position {x: number, y: number, z: number}
 ---@alias gps_event_data {label: string, position: gps_position}
@@ -46,6 +53,9 @@ if not turtle then turtle = {} end
 ---@alias log_event {snd: string, lvl: log_level, msg: string, raw: string}
 
 ---@alias task {worker: string, completed: boolean, status: msg_status, data: string | nil}
+
+---@alias task_lib_create fun(worker: string, command: cmd_type, params: table): number
+---@alias task_lib { await: fun(id: number), create: task_lib_create, get_data: fun(id: number), get_status: fun(id: number), is_completed: fun(id: number), monitor: fun() }
 
 ---@alias peripheral_inventory { size: fun(), list: fun(), getItemDetail: fun(s: number), getItemLimit: fun(s:number) }
 

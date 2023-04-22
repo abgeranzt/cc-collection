@@ -68,11 +68,11 @@ local function master_setup(send_msg, worker, logger)
 	end
 
 	return {
-		create = create,
-		get_status = get_status,
-		get_data = get_data,
-		is_completed = is_completed,
 		await = await,
+		create = create,
+		get_data = get_data,
+		get_status = get_status,
+		is_completed = is_completed,
 		monitor = monitor
 	}
 end
