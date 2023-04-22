@@ -70,7 +70,8 @@ end
 
 ---@param n number
 function tunnel.forward(n)
-	local ok, err
+	local ok = true
+	local err
 	for _ = 1, n, 1 do
 		ok, err = tunnel.forward_push()
 		if not ok then break end
@@ -81,7 +82,8 @@ end
 -- Same as tunnel.forward but also dig upwards.
 ---@param n number
 function tunnel.forward_two(n)
-	local ok, err
+	local ok = true
+	local err
 	for _ = 1, n, 1 do
 		ok, err = tunnel.forward_push()
 		if not ok then break end
@@ -94,7 +96,8 @@ end
 -- Same as tunnel.forward but also dig upwards and downwards.
 ---@param n number
 function tunnel.forward_three(n)
-	local ok, err
+	local ok = true
+	local err
 	for _ = 1, n, 1 do
 		ok, err = tunnel.forward_push()
 		if not ok then break end
@@ -116,7 +119,8 @@ end
 
 ---@param n number
 function tunnel.up(n)
-	local ok, err
+	local ok = true
+	local err
 	for _ = 1, n, 1 do
 		ok, err = dig.up()
 		if not ok then break end
@@ -128,7 +132,8 @@ end
 
 ---@param n number
 function tunnel.down(n)
-	local ok, err
+	local ok = true
+	local err
 	for _ = 1, n, 1 do
 		ok, err = dig.down()
 		if not ok then break end
@@ -140,7 +145,8 @@ end
 
 ---@param n number
 function tunnel.left(n)
-	local ok, err
+	local ok = true
+	local err
 	turtle.turnLeft()
 	ok, err = tunnel.forward(n)
 	turtle.turnRight()
@@ -149,7 +155,8 @@ end
 
 ---@param n number
 function tunnel.right(n)
-	local ok, err
+	local ok = true
+	local err
 	turtle.turnRight()
 	ok, err = tunnel.forward(n)
 	turtle.turnLeft()
