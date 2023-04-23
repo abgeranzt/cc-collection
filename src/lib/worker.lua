@@ -82,7 +82,6 @@ local function master_setup(logger)
 			if chest then
 				break
 			end
-			---@diagnostic disable-next-line: undefined-global
 			sleep(1)
 		end
 		---@cast chest peripheral_inventory
@@ -127,7 +126,6 @@ local function master_setup(logger)
 		logger.trace("starting worker")
 		peripheral.call("bottom", "turnOn")
 		-- Yield execution to allow the worker to start
-		---@diagnostic disable-next-line: undefined-global
 		sleep(1)
 	end
 

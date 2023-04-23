@@ -71,7 +71,6 @@ local function work_queue()
 				message.reply(task.id, "err", err)
 			end
 		else
-			---@diagnostic disable-next-line: undefined-global
 			sleep(0.5)
 		end
 	end

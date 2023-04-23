@@ -50,7 +50,6 @@ local function master_setup(send_msg, worker, logger)
 	---@param id number
 	local function await(id)
 		while not is_completed(id) do
-			---@diagnostic disable-next-line: undefined-global
 			sleep(1)
 		end
 	end

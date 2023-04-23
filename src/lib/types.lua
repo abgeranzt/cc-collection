@@ -18,6 +18,11 @@ if not peripheral then peripheral = {} end
 if not turtle then turtle = {} end
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
+if not sleep then
+	---@diagnostic disable-next-line lowercase-global
+	sleep = function(_)
+	end
+end
 
 ---@alias argparse_arg_type "string" | "number" | "boolean" | "array"
 ---@alias argparse_arg_default string | number | boolean | nil | string[]

@@ -4,12 +4,10 @@
 ---@cast turtle turtle
 
 require("lib.ui").print_license()
----@diagnostic disable-next-line: undefined-global
 sleep(1)
 print(
 	"This script will perform the setup for this worker. Enter the required information, follow the steps and you are good to go.\n"
 )
----@diagnostic disable-next-line: undefined-global
 sleep(1)
 
 local function prompt_info()

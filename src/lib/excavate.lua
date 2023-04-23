@@ -40,7 +40,6 @@ function dig.up_safe()
 			if string.find(b.name, "computercraft:turtle")
 				or string.find(b.name, "computercraft:computer")
 			then
-				---@diagnostic disable-next-line: undefined-global
 				sleep(1)
 			else
 				turtle.digUp()

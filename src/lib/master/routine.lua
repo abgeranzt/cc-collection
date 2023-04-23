@@ -86,7 +86,6 @@ local function setup(task, worker, logger)
 			end
 			rem_h = rem_h - seg_hs[i]
 			-- Yield to allow the worker to move in order to prevent collision
-			---@diagnostic disable-next-line: undefined-global
 			sleep(3)
 		end
 		--
