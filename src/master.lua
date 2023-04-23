@@ -40,7 +40,7 @@ local function setup(args)
 	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
 	local master_gps = require("lib.gps").master_setup(worker, logger)
 	local task = require("lib.task").master_setup(message.send_task, worker, logger)
-	local routine = require("lib.routine").master_setup(task, worker, gps, logger)
+	local routine = require("lib.master.routine").setup(task, worker, logger)
 
 	return logger, master_gps, message, routine, task, worker
 end
@@ -52,13 +52,13 @@ local logger, master_gps, message, routine, task, worker = setup({ ... })
 local function test_master()
 	worker.create("dev-worker-1", "miner", 8001)
 	worker.create("dev-worker-2", "miner", 8002)
-	worker.create("dev-worker-3", "miner", 8003)
+	-- worker.create("dev-worker-3", "miner", 8003)
 	local dim = {
 		l = 3,
 		w = 3,
-		h = 100,
+		h = 6,
 	}
-	routine.mine_cuboid(dim)
+	routine.auto_mine(dim, "right", 2)
 end
 
 ---@diagnostic disable-next-line: undefined-global

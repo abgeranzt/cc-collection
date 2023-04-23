@@ -1,8 +1,7 @@
 ---@param task task_lib
 ---@param worker worker_lib
 ---@param logger logger
----@param gps gps
-local function master_setup(task, worker, gps, logger)
+local function setup(task, worker, logger)
 	---@param y number
 	---@param h number
 	local function touches_bedrock(y, h)
@@ -56,10 +55,6 @@ local function master_setup(task, worker, gps, logger)
 		end
 		logger.trace("spreading height on workers")
 		local seg_hs = spread_seg_heigth(#workers, dim.h)
-		-- DEBUG
-		for _, h in ipairs(seg_hs) do
-			logger.debug("SEG: " .. tostring(h))
-		end
 		-- Track the relative y-position of workers
 		local rem_h = dim.h - seg_hs[1]
 
@@ -107,11 +102,40 @@ local function master_setup(task, worker, gps, logger)
 		return true
 	end
 
+	-- TODO chunk loaders
+	-- TODO allign with chunk borders, test for it
+	---@param dim dimensions
+	---@param dir hoz_direction
+	---@param limit integer | nil
+	local function auto_mine(dim, dir, limit)
+		local exc = require("lib.excavate")
+		local util = require("lib.util")
+
+		logger.info("starting automining")
+		limit = limit or -1
+		for i = 1, limit do
+			logger.info("starting mining operation " .. i .. "/" .. (limit > -1 and limit or "inf"))
+			mine_cuboid(dim)
+			while turtle.getFuelLevel() < dim.w or turtle.getFuelLevel() < 1000 do
+				util.refuel()
+			end
+			logger.info("mining operation " .. i .. " complete")
+			if i < limit then
+				if dir == "forward" or dir == "back" then
+					exc.tunnel[dir](dim.l)
+				else
+					exc.tunnel[dir](dim.w)
+				end
+			end
+		end
+	end
+
 	return {
-		mine_cuboid = mine_cuboid
+		mine_cuboid = mine_cuboid,
+		auto_mine = auto_mine
 	}
 end
 
 return {
-	master_setup = master_setup
+	setup = setup
 }

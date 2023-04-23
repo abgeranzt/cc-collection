@@ -35,6 +35,8 @@ if not turtle then turtle = {} end
 ---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "navigate" | "dump" | "get_fuel" | "refuel"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
+---@alias hoz_direction "forward" | "back" | "left" | "right"
+
 ---@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gps_position | nil}
 ---@alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 ---@alias worker_type "miner" | "loader"

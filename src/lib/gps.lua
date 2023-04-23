@@ -28,7 +28,7 @@ local function worker_setup(send_gps, logger)
 	-- broadcast my position on the configured gps channel
 	local function monitor()
 		while true do
-			local _ = os.pullEvent("gps_update")
+			local _ = os.pullEvent("pos_update")
 			---@diagnostic disable-next-line: undefined-global
 			local x, z, y = gps.locate()
 			local payload = {

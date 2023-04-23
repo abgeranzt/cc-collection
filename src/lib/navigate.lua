@@ -21,7 +21,7 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 
 			ok, err = turtle[dir]()
 			if ok then
-				os.queueEvent("gps_update")
+				os.queueEvent("pos_update")
 				n = n - 1
 				try = 1
 			else
