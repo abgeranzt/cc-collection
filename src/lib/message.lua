@@ -53,7 +53,6 @@ local function log_server_setup(log_ch, modem, log_level)
 		modem.open(log_ch)
 		while true do
 			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
-			print(msg)
 			local event = _parse(msg)
 			if log_levels[event.lvl] >= log_level_num then
 				os.queueEvent("log_message", _parse(msg))

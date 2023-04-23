@@ -5,39 +5,59 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast peripheral peripheral
 
-local modem = peripheral.find("modem")
-if not modem then
-	print("No modem found, exiting!")
-	---@diagnostic disable-next-line: undefined-global
-	exit()
-end
----@cast modem modem
+---@param args table The arguments provided to the program
+local function setup(args)
+	local modem = peripheral.find("modem")
+	if not modem then
+		print("No modem found, exiting!")
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	---@cast modem modem
+	local monitor = peripheral.find("monitor")
+	if not monitor then
+		print("No monitor found, exiting!")
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	---@cast monitor monitor
 
-local monitor = peripheral.find("monitor")
-if not monitor then
-	print("No monitor found, exiting!")
 	---@diagnostic disable-next-line: undefined-global
-	exit()
+	local log_file = fs.open("/server.log", "w")
+	---@cast log_file file_handle
+
+	local argparse = require("lib.argparse")
+	argparse.add_arg("channel", "-c", "number", false, 9000)
+	argparse.add_arg("level", "-l", "string", false, "info")
+	argparse.add_arg("filter", "-f", "array", false)
+	local parsed_args, e = argparse.parse(args)
+	if not parsed_args then
+		print(e)
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	---@cast parsed_args table
+
+	local channel = parsed_args.channel
+	---@cast channel integer
+	local level = parsed_args.level
+	---@cast level log_level
+	local filter = parsed_args.filter
+	---@cast filter string[]
+
+	local message = require("lib.message").log_server_setup(channel, modem, level)
+
+	return filter, log_file, message, monitor
 end
----@cast monitor monitor
+
+local filter, log_file, message, monitor = setup({ ... })
+
+
 monitor.setTextScale(0.5)
 local x_size, y_size = monitor.getSize()
 ---@cast x_size number
 ---@cast y_size number
 
----@diagnostic disable-next-line: undefined-global
-local log_file = fs.open("/server.log", "w")
----@cast log_file file_handle
-
--- TODO unused, get rid of it?
-local level_colors = {
-	fatal = colors.red,
-	error = colors.red,
-	warn = colors.orange,
-	info = colors.white,
-	debug = colors.lime,
-	trace = colors.blue
-}
 
 local level_colors_blit = {
 	fatal = "e",
@@ -81,17 +101,40 @@ local function print_msg(event)
 	end
 end
 
--- TOOD own logger
+-- TODO escape special characters in filter string
+-- https://www.lua.org/pil/20.2.html
+---@param event log_event
+local function filter_msg(event)
+	for _, f in ipairs(filter) do
+		local m, _ = string.find(event.raw, f)
+		if m then
+			return true
+		end
+	end
+	return false
+end
+
+-- TODO own logger
 local function log_server()
-	while true do
-		local _, event = os.pullEvent("log_message")
-		---@cast event log_event
-		log_file.writeLine(event.raw)
-		print_msg(event)
+	if filter then
+		while true do
+			local _, event = os.pullEvent("log_message")
+			---@cast event log_event
+			if filter_msg(event) then
+				log_file.writeLine(event.raw)
+				print_msg(event)
+			end
+		end
+	else
+		while true do
+			local _, event = os.pullEvent("log_message")
+			---@cast event log_event
+			log_file.writeLine(event.raw)
+			print_msg(event)
+		end
 	end
 end
 
-local message = require("lib.message").log_server_setup(9000, modem, "trace")
 
 ---@diagnostic disable-next-line: undefined-global
 parallel.waitForAll(message.listen, log_server)
