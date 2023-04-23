@@ -55,6 +55,14 @@ local function parse(prov_args)
 			else
 				args[name] = tonumber(prov_args[v_pos])
 			end
+		elseif arg.type == "array" then
+			if not v_pos then
+				args[name] = arg.default
+			end
+			args[name] = {}
+			for e in string.gmatch(prov_args[v_pos], "[^,]+") do
+				table.insert(args[name], e)
+			end
 		else
 			args[name] = v_pos and prov_args[v_pos] or arg.default
 		end
