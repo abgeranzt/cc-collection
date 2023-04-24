@@ -9,6 +9,8 @@ local conf_args = {}
 local function add_arg(name, short, arg_type, required, default)
 	if arg_type == "boolean" and required then
 		return false, "boolean argument '" .. name "' cannot be required"
+	elseif not required and not default then
+		return false, "missing default value for optional argument " .. name
 	elseif required and default then
 		return false, "required argument '" .. name "' cannot have a default"
 	end
