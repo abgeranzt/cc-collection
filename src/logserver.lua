@@ -106,8 +106,7 @@ end
 ---@param event log_event
 local function filter_msg(event)
 	for _, f in ipairs(filter) do
-		local m, _ = string.find(event.raw, f)
-		if m then
+		if string.find(event.raw, f) then
 			return true
 		end
 	end

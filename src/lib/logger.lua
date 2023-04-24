@@ -7,7 +7,7 @@ local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 ---@param log_level log_level
 ---@param log_file string | nil
 ---@param modem {transmit: fun(c: number, rc: number, s: string)} | nil
-local function logger_setup(log_ch, log_level, log_file, modem)
+local function setup(log_ch, log_level, log_file, modem)
 	local logger = {}
 
 	---@diagnostic disable-next-line: undefined-field
@@ -58,4 +58,4 @@ local function logger_setup(log_ch, log_level, log_file, modem)
 	return logger
 end
 
-return { setup = logger_setup }
+return { setup = setup }
