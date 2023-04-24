@@ -116,8 +116,10 @@ end
 ---@param w number
 ---@param tunnel_fw fun(n: number)
 local function dig_rectangle(l, w, tunnel_fw)
-	while turtle.getFuelLevel() < l * 2 or turtle.getFuelLevel() < 1000 do
-		util.refuel()
+	local fuel_target = l * 2 * w * 2
+	if turtle.getFuelLevel() < fuel_target then
+		-- TODO determine fuel source somewhere
+		util.refuel(fuel_target)
 	end
 
 	local rpos = 1
@@ -153,6 +155,11 @@ end
 ---@param w number
 ---@param h number
 local function dig_cuboid(l, w, h)
+	local fuel_target = h * 3
+	if turtle.getFuelLevel() < fuel_target then
+		-- TODO determine fuel source somewhere
+		util.refuel(fuel_target)
+	end
 	local i = h
 	while (i > 0) do
 		if math.floor(i / 3) > 0 then
@@ -182,11 +189,9 @@ end
 ---@param l number
 ---@param w number
 local function dig_cuboid_bedrock(l, w)
-	do
-		local fuel = turtle.getFuelLevel()
-		while fuel < l * 6 + w * 2 or fuel < 1000 do
-			util.refuel()
-		end
+	local target_fuel = l * 2 * w * 2 + 10
+	if turtle.getFuelLevel() < target_fuel then
+		util.refuel(target_fuel)
 	end
 
 	local function scrape()
@@ -232,7 +237,6 @@ local function dig_cuboid_bedrock(l, w)
 end
 
 return {
-	dig = dig,
 	dig_rectangle = dig_rectangle,
 	dig_cuboid = dig_cuboid,
 	dig_cuboid_bedrock = dig_cuboid_bedrock,

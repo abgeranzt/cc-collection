@@ -50,15 +50,16 @@ local logger, master_gps, message, routine, task, worker = setup({ ... })
 
 -- TODO get rid of this
 local function test_master()
-	worker.create("dev-worker-1", "miner", 8001)
-	worker.create("dev-worker-2", "miner", 8002)
-	-- worker.create("dev-worker-3", "miner", 8003)
+	-- worker.create("dev-worker-1", "miner", 8001)
+	-- worker.create("dev-worker-2", "miner", 8002)
+	worker.create("dev-worker-3", "miner", 8003)
+	worker.create("dev-worker-4", "miner", 8004)
 	local dim = {
 		l = 3,
 		w = 3,
 		h = 6,
 	}
-	routine.auto_mine(dim, "right", 2)
+	routine.auto_mine(dim, "left", 2)
 end
 
 ---@diagnostic disable-next-line: undefined-global

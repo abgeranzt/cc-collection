@@ -115,8 +115,10 @@ local function setup(task, worker, logger)
 		for i = 1, limit do
 			logger.info("starting mining operation " .. i .. "/" .. (limit > -1 and limit or "inf"))
 			mine_cuboid(dim)
-			while turtle.getFuelLevel() < dim.w or turtle.getFuelLevel() < 1000 do
-				util.refuel()
+			-- TODO determine fuel type somewhere
+			if turtle.getFuelLevel() < dim.w then
+				logger.trace("refuelling")
+				util.refuel(dim.w)
 			end
 			logger.info("mining operation " .. i .. " complete")
 			if i < limit then

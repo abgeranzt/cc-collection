@@ -70,3 +70,5 @@ end
 
 ---@alias dimensions {w: number, l: number, h: number}
 
+---@alias util_inv_dir "forward" | "up"
+---@alias util_fuel_type "consumable" | "container"

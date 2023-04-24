@@ -126,11 +126,15 @@ local function miner_setup(logger)
 			return false, e
 		end
 		-- TODO have the master control the refuelling?
-		while turtle.getFuelLevel() < params.distance do
-			util.refuel()
+		local ok, err
+		if turtle.getFuelLevel() < params.distance then
+			ok, err = util.refuel(params.distance)
+			if not ok then
+				return false, err
+			end
 		end
 
-		local ok, err = go[params.direction](params.distance)
+		ok, err = go[params.direction](params.distance)
 		if ok then
 			return true
 		else
@@ -146,11 +150,11 @@ local function miner_setup(logger)
 		return true, nil, turtle.getFuelLevel()
 	end
 
+	-- TODO use worker config to determine fuel type (or send fuel type from master?)
 	---@param params { target: number }
 	local function refuel(params)
-		local ok, err
-		while turtle.getFuelLevel() < params.target do
-			ok, err = util.refuel()
+		if turtle.getFuelLevel() < params.target then
+			local ok, err = util.refuel(params.target)
 			if not ok then
 				---@cast err string
 				logger.error(err)
