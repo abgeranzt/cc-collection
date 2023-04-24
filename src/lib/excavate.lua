@@ -1,62 +1,12 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
+local dig = require("lib.dig").dig
 local util = require("lib.util")
 -- This is used because it broadcasts our position when moving
 local go = require("lib.navigate").go
 
 -- TODO handle unbreakable blocks
-
-local dig = {}
-
-function dig.forward()
-	local ok = true
-	local err
-	while turtle.detect() do
-		ok, err = turtle.dig()
-		if not ok then break end
-	end
-	return ok, err
-end
-
-function dig.up()
-	local ok = true
-	local err
-	while turtle.detectUp() do
-		ok, err = turtle.digUp()
-		if not ok then break end
-	end
-	return ok, err
-end
-
--- Prevent the mining of computers or turtles
--- TODO is this still required?
-function dig.up_safe()
-	local MAX_TRIES = 5
-	while turtle.detectUp() do
-		for _ = 1, MAX_TRIES - 1 do
-			local b = turtle.inspectUp()
-			---@cast b {name: string}
-			if string.find(b.name, "computercraft:turtle")
-				or string.find(b.name, "computercraft:computer")
-			then
-				sleep(1)
-			else
-				turtle.digUp()
-			end
-		end
-	end
-end
-
-function dig.down()
-	local ok = true
-	local err
-	while turtle.detectDown() do
-		ok, err = turtle.digDown()
-		if not ok then break end
-	end
-	return ok, err
-end
 
 local tunnel = {}
 -- Dig a single block and move forward.
