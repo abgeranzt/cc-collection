@@ -41,7 +41,7 @@ local function setup(args)
 	---@cast logger logger
 	local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
 	local worker_gps = require("lib.gps").worker_setup(message.send_gps, logger)
-	local command = require("lib.command").miner_setup(logger)
+	local command = require("lib.command.miner").setup(logger)
 
 	return command, worker_gps, message, logger, queue
 end

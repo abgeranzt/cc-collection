@@ -40,7 +40,7 @@ local function setup(args)
 	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
 	local master_gps = require("lib.gps").master_setup(worker, logger)
 	local task = require("lib.task").master_setup(message.send_task, worker, logger)
-	local routine = require("lib.master.routine").setup(task, worker, logger)
+	local routine = require("lib.routine").setup(task, worker, logger)
 
 	return logger, master_gps, message, routine, task, worker
 end

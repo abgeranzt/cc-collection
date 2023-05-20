@@ -2,13 +2,17 @@
 ---@cast turtle turtle
 
 local exc = require("lib.excavate")
-local go = require("lib.navigate").go
 local util = require("lib.util")
+local common = require("lib.command.common")
+
+local directions = common.directions
 
 ---@param logger logger
-local function miner_setup(logger)
+local function setup(logger)
+	local lib = common.setup(logger)
+
 	---@param params {l: number, w: number, h: number}
-	local function excavate(params)
+	function lib.excavate(params)
 		-- validate params
 		for _, c in ipairs({ "l", "w", "h" }) do
 			if not params[c] then
@@ -32,7 +36,7 @@ local function miner_setup(logger)
 	end
 
 	---@param params {l: number, w: number}
-	local function excavate_bedrock(params)
+	function lib.excavate_bedrock(params)
 		-- validate params
 		for _, c in ipairs({ "l", "w" }) do
 			if not params[c] then
@@ -55,17 +59,8 @@ local function miner_setup(logger)
 		end
 	end
 
-	local directions = {
-		forward = true,
-		back = true,
-		up = true,
-		down = true,
-		left = true,
-		right = true
-	}
-
 	---@param params {direction: cmd_direction, distance: number}
-	local function tunnel(params)
+	function lib.tunnel(params)
 		-- validate params
 		if not params.direction then
 			local e = "missing parameter direction"
@@ -100,59 +95,20 @@ local function miner_setup(logger)
 		end
 	end
 
-	---@param params {direction: cmd_direction, distance: number}
-	local function navigate(params)
-		-- validate params
-		if not params.direction then
-			local e = "missing parameter direction"
-			---@cast e string
-			return false, e
-		end
-		if not directions[params.direction]
-			or type(params.direction) ~= "string"
-		then
-			local e = "invalid parameter direction '" .. params.direction .. "'"
-			---@cast e string
-			return false, e
-		end
-		if not params.distance then
-			local e = "missing parameter distance"
-			---@cast e string
-			return false, e
-		end
-		if type(params.distance) ~= "number" then
-			local e = "invalid parameter distance '" .. params.distance .. "'"
-			---@cast e string
-			return false, e
-		end
-		-- TODO have the master control the refuelling?
-		local ok, err
-		if turtle.getFuelLevel() < params.distance then
-			ok, err = util.refuel(params.distance)
-			if not ok then
-				return false, err
-			end
-		end
-
-		ok, err = go[params.direction](params.distance)
+	function lib.dump()
+		local ok, err = util.dump()
 		if ok then
 			return true
 		else
 			---@cast err string
 			logger.error(err)
-			return false, "navigate command failed"
+			return false, "dump command failed"
 		end
-	end
-
-	---@return true, nil, number
-	local function get_fuel()
-		---@diagnostic disable-next-line: missing-return-value
-		return true, nil, turtle.getFuelLevel()
 	end
 
 	-- TODO use worker config to determine fuel type (or send fuel type from master?)
 	---@param params { target: number }
-	local function refuel(params)
+	function lib.refuel(params)
 		if turtle.getFuelLevel() < params.target then
 			local ok, err = util.refuel(params.target)
 			if not ok then
@@ -164,28 +120,9 @@ local function miner_setup(logger)
 		return true
 	end
 
-	local function dump()
-		local ok, err = util.dump()
-		if ok then
-			return true
-		else
-			---@cast err string
-			logger.error(err)
-			return false, "dump command failed"
-		end
-	end
-
-	return {
-		excavate = excavate,
-		excavate_bedrock = excavate_bedrock,
-		tunnel = tunnel,
-		navigate = navigate,
-		get_fuel = get_fuel,
-		refuel = refuel,
-		dump = dump
-	}
+	return lib
 end
 
 return {
-	miner_setup = miner_setup
+	setup = setup
 }
