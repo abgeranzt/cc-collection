@@ -8,12 +8,6 @@ local function setup(task, worker, logger)
 		return (y - h) <= -60
 	end
 
-	-- TODO unneeded, remove?
-	---@param y number
-	local function dist_bedrock(y)
-		return y + 60
-	end
-
 	---@param y number
 	local function trim_to_bedrock(y)
 		return y + 59
