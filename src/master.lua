@@ -38,14 +38,14 @@ local function setup(args)
 
 	local worker = require("lib.worker").master_setup(logger)
 	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
-	local master_gps = require("lib.gps").master_setup(worker, logger)
+	local gpslib = require("lib.gpslib.master").setup(worker, logger)
 	local task = require("lib.task").master_setup(message.send_task, worker, logger)
 	local routine = require("lib.routine").setup(task, worker, logger)
 
-	return logger, master_gps, message, routine, task, worker
+	return logger, gpslib, message, routine, task, worker
 end
 
-local logger, master_gps, message, routine, task, worker = setup({ ... })
+local logger, gpslib, message, routine, task, worker = setup({ ... })
 
 
 -- TODO get rid of this
@@ -63,4 +63,4 @@ local function test_master()
 end
 
 ---@diagnostic disable-next-line: undefined-global
-parallel.waitForAll(message.listen, master_gps.monitor, task.monitor, test_master)
+parallel.waitForAll(message.listen, gpslib.monitor, task.monitor, test_master)

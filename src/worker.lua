@@ -40,13 +40,13 @@ local function setup(args)
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 	local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
-	local worker_gps = require("lib.gps").worker_setup(message.send_gps, logger)
+	local gpslib = require("lib.gpslib.common").setup(message.send_gps, logger)
 	local command = require("lib.command.miner").setup(logger)
 
-	return command, worker_gps, message, logger, queue
+	return command, gpslib, message, logger, queue
 end
 
-local command, worker_gps, message, logger, queue = setup({ ... })
+local command, gpslib, message, logger, queue = setup({ ... })
 
 local function work_queue()
 	while true do
@@ -79,7 +79,7 @@ end
 local function main()
 	logger.info("starting worker")
 	---@diagnostic disable-next-line: undefined-global
-	parallel.waitForAll(message.listen, work_queue, worker_gps.monitor)
+	parallel.waitForAll(message.listen, work_queue, gpslib.work_updates)
 end
 
 main()
