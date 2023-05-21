@@ -1,7 +1,7 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
-local dig = require("lib.dig").dig
+local dig = require("lib.dig")
 local util = require("lib.util")
 -- This is used because it broadcasts our position when moving
 local go = require("lib.navigate").go

@@ -80,6 +80,4 @@ function dig.down()
 	return ok, err
 end
 
-return {
-	dig = dig
-}
+return dig

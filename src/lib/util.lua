@@ -1,8 +1,7 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast os os
 
-local dig = require("lib.dig").dig
-
+local dig = require("lib.dig")
 
 local function place_inv(slot)
 	local p_slot = turtle.getSelectedSlot()
