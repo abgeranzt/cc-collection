@@ -36,7 +36,7 @@ local function setup(args)
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 
-	local worker = require("lib.worker").master_setup(logger)
+	local worker = require("lib.worker.master").setup(logger)
 	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
 	local gpslib = require("lib.gpslib.master").setup(worker, logger)
 	local task = require("lib.task").master_setup(message.send_task, worker, logger)

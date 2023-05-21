@@ -20,6 +20,16 @@ function dig.up()
 	return ok, err
 end
 
+function dig.down()
+	local ok = true
+	local err
+	while turtle.detectDown() do
+		ok, err = turtle.digDown()
+		if not ok then break end
+	end
+	return ok, err
+end
+
 -- TODO configrable blacklist of blocks?
 -- Prevent the mining of computers or turtles
 ---@param retries integer | nil
@@ -70,14 +80,28 @@ function dig.up_safe(retries)
 	return true
 end
 
-function dig.down()
-	local ok = true
-	local err
+---@param retries integer | nil
+function dig.down_safe(retries)
+	retries = retries or 5
 	while turtle.detectDown() do
-		ok, err = turtle.digDown()
-		if not ok then break end
+		local ok, err
+		for _ = 1, retries - 1 do
+			local _, b = turtle.inspectDown()
+			---@cast b {name: string}
+			if string.find(b.name, "computercraft:turtle")
+				or string.find(b.name, "computercraft:computer")
+			then
+				sleep(1)
+			else
+				ok, err = turtle.digDown()
+				break
+			end
+		end
+		if not ok then
+			return false, (err and err or "failed to safely break block")
+		end
 	end
-	return ok, err
+	return true
 end
 
 return dig

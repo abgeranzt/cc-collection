@@ -18,7 +18,7 @@ if not gps then gps = {} end
 ---@alias peripheral { call: fun(d: string, c: string), find: fun(n: string), wrap: fun(d: string) }
 ---@diagnostic disable-next-line: lowercase-global
 if not peripheral then peripheral = {} end
----@alias turtle { detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(n: number | nil), dropUp: fun(n: number | nil), dropDown: fun(n: number | nil), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil), getItemDetail: fun(s: number, d: boolean | nil), inspect: fun(), inspectUp: fun(), inspectDown: fun(), equipLeft: fun(), equipRight: fun() }
+---@alias turtle { detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(n: number | nil), dropUp: fun(n: number | nil), dropDown: fun(n: number | nil), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil), getItemDetail: fun(s: number, d: boolean | nil), inspect: fun(), inspectUp: fun(), inspectDown: fun(), equipLeft: fun(), equipRight: fun(), transferTo: fun(slot: integer, count: integer | nil)}
 ---@diagnostic disable-next-line: lowercase-global
 if not turtle then turtle = {} end
 ---@diagnostic disable-next-line: unknown-cast-variable
@@ -58,7 +58,6 @@ end
 ---@alias gps_position {x: number, y: number, z: number}
 ---@alias gps_event_data {label: string, position: gps_position}
 
----@alias file_handle {close: fun(), flush: fun(), write: fun(s: string), writeLine: fun(s: string), readLine: fun() }
 
 ---@alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
 ---@alias log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
