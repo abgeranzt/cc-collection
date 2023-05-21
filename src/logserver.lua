@@ -24,7 +24,7 @@ local function setup(args)
 
 	---@diagnostic disable-next-line: undefined-global
 	local log_file = fs.open("/server.log", "w")
-	---@cast log_file file_handle
+	---@cast log_file fs_filehandle
 
 	local argparse = require("lib.argparse")
 	argparse.add_arg("channel", "-c", "number", false, 9000)

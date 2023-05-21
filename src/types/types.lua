@@ -4,6 +4,11 @@
 ---@alias colors { white: integer, orange: integer, magenta: integer, lightBlue: integer, yellow: integer, lime: integer, pink: integer, gray: integer, lightGray: integer, cyan: integer, purple: integer, blue: integer, brown: integer, green: integer, red: integer, black: integer }
 ---@diagnostic disable-next-line: lowercase-global
 if not colors then colors = {} end
+---@alias fs_open_mode 'r' | 'w' | 'a' | 'rb' | 'wb' | 'ab'
+---@alias fs_filehandle {close: fun(), flush: fun(), write: fun(s: string), writeLine: fun(s: string), readLine: fun() }
+---@alias fs { open: fun(path: string, mode: fs_open_mode) }
+---@diagnostic disable-next-line: lowercase-global
+if not fs then fs = {} end
 ---@alias gps { locate: fun() }
 ---@diagnostic disable-next-line: lowercase-global
 if not gps then gps = {} end

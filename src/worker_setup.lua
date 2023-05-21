@@ -53,7 +53,7 @@ os.setComputerLabel(label)
 
 ---@diagnostic disable-next-line: undefined-global
 local f = fs.open("/startup.lua", "w")
----@cast f file_handle
+---@cast f fs_filehandle
 
 f.writeLine("shell.run('/ccc/worker.lua',")
 f.writeLine("\t'-mc', " .. master_ch .. ",")
