@@ -52,6 +52,7 @@ end
 
 local filter, log_file, message, monitor = setup({ ... })
 
+monitor.clear()
 
 monitor.setTextScale(0.5)
 local x_size, y_size = monitor.getSize()
