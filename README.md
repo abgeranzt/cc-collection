@@ -17,8 +17,8 @@ task execution,
 positionional tracking using the built-in [gps API](https://tweaked.cc/module/gps.html)
 and configuration.
 
-<!-- TODO update this when implemented -->
-Also planned is a mining mode capable of fully autonomously and potentionally indefinitely quarrying large regions
+<!-- TODO document this -->
+Included is a mining mode capable of fully autonomously and potentionally indefinitely quarrying large regions
 (assuming the structures for handling the mined material and providing fuel are still in place).
 
 The code consists of a collection of programs runnable with the in-game computers,
