@@ -37,16 +37,22 @@ local function setup(args)
 	local worker_ch = parsed_args.worker_ch
 	---@cast worker_ch number
 
+	log_lvl = "trace"
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
-	local message = require("lib.message").worker_setup(worker_ch, master_name, master_ch, queue, modem, logger)
+	local senders = {}
+	senders[master_name] = true
+	local masters = {}
+	masters[master_name] = true
+	local message = require("lib.message.controllable").setup(modem, worker_ch, senders, logger, masters, master_ch,
+		queue)
 	local gpslib = require("lib.gpslib.common").setup(message.send_gps, logger)
 	local command = require("lib.command.miner").setup(logger)
 
-	return command, gpslib, message, logger, queue
+	return command, gpslib, message, logger, queue, master_name, master_ch
 end
 
-local command, gpslib, message, logger, queue = setup({ ... })
+local command, gpslib, message, logger, queue, master_name, master_ch = setup({ ... })
 
 local function work_queue()
 	while true do
@@ -59,16 +65,16 @@ local function work_queue()
 				if status then
 					logger.info("command '" .. task.body.cmd .. "' successful")
 					logger.info("task " .. task.id .. " complete")
-					message.reply(task.id, "ok", out)
+					message.reply(master_ch, master_name, task.id, "ok", out)
 				else
 					---@cast err string
 					logger.error(err)
-					message.reply(task.id, "err", err)
+					message.reply(master_ch, master_name, task.id, "err", err)
 				end
 			else
 				local err = "invalid command '" .. task.body.cmd .. "'"
 				logger.error(err)
-				message.reply(task.id, "err", err)
+				message.reply(master_ch, master_name, task.id, "err", err)
 			end
 		else
 			sleep(0.5)

@@ -15,4 +15,5 @@ function queue.pop()
 	return task
 end
 
+---@cast queue queue
 return { queue = queue }

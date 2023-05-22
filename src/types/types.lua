@@ -39,6 +39,7 @@ end
 ---@alias msg_status "err" | "ok"
 ---@alias msg_payload {id: number, body: msg_body | nil, status: msg_status | nil}
 ---@alias msg_type "cmd" | "res" | "gps"
+---@alias msg_senders { [string]: true }
 ---@alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
 
 ---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "navigate" | "dump" | "get_fuel" | "refuel"
@@ -75,3 +76,5 @@ end
 
 ---@alias util_inv_dir "forward" | "up"
 ---@alias util_fuel_type "consumable" | "container"
+
+---@alias queue { fpos: integer, lpos: integer, len: integer, push: fun(task: table), pop: fun(): table}
