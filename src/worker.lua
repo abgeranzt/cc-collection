@@ -39,12 +39,9 @@ local function setup(args)
 
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
-	local senders = {}
-	senders[master_name] = true
 	local masters = {}
 	masters[master_name] = true
-	local message = require("lib.message.controllable").setup(modem, worker_ch, senders, logger, masters, master_ch,
-		queue)
+	local message = require("lib.message.controllable").setup(modem, worker_ch, logger, masters, master_ch, queue)
 	local gpslib = require("lib.gpslib.common").setup(message.send_gps, logger)
 	local command = require("lib.command.miner").setup(logger)
 

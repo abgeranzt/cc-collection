@@ -16,7 +16,8 @@ local function setup(args)
 	local argparse = require("lib.argparse")
 	argparse.add_arg("log_ch", "-lc", "number", false, 9000)
 	argparse.add_arg("log_lvl", "-ll", "string", false, "info")
-	argparse.add_arg("master_ch", "-mc", "number", true)
+	argparse.add_arg("master_ch", "-mc", "number", false, 10000)
+	argparse.add_arg("listen_ch", "-c", "number", true)
 
 	local parsed_args, e = argparse.parse(args)
 	if not parsed_args then
@@ -27,19 +28,22 @@ local function setup(args)
 	---@cast parsed_args table
 
 	local log_ch = parsed_args.log_ch
-	---@cast log_ch number
+	---@cast log_ch integer
 	local log_lvl = parsed_args.log_lvl
 	---@cast log_lvl log_level
+	local listen_ch = parsed_args.listen_ch
+	---@cast listen_ch integer
 	local master_ch = parsed_args.master_ch
-	---@cast master_ch number
+	---@cast master_ch integer
 
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 
+	local queue = require("lib.queue").queue
 	local worker = require("lib.worker.master").setup(logger)
-	local message = require("lib.message").master_setup(master_ch, modem, worker, logger)
+	local message = require("lib.message.master").setup(modem, listen_ch, logger, {}, master_ch, queue)
 	local gpslib = require("lib.gpslib.master").setup(worker, logger)
-	local task = require("lib.task").master_setup(message.send_task, worker, logger)
+	local task = require("lib.task").master_setup(message.send_cmd, worker, logger)
 	local routine = require("lib.routine").setup(task, worker, logger)
 
 	return logger, gpslib, message, routine, task, worker
@@ -52,14 +56,14 @@ local logger, gpslib, message, routine, task, worker = setup({ ... })
 local function test_master()
 	-- worker.create("dev-worker-1", "miner", 8001)
 	-- worker.create("dev-worker-2", "miner", 8002)
-	worker.create("dev-worker-3", "miner", 8003)
+	-- worker.create("dev-worker-3", "miner", 8003)
 	worker.create("dev-worker-4", "miner", 8004)
 	local dim = {
 		l = 3,
 		w = 3,
 		h = 6,
 	}
-	routine.auto_mine(dim, "left", 2)
+	routine.auto_mine(dim, "left", 1)
 end
 
 ---@diagnostic disable-next-line: undefined-global

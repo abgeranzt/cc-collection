@@ -2,12 +2,11 @@ local common = require("lib.message.common")
 
 ---@param modem modem
 ---@param listen_ch integer
----@param senders msg_senders
 ---@param logger logger
 ---@param masters {[string]: true}
 ---@param queue queue
-local function setup(modem, listen_ch, senders, logger, masters, master_ch, queue)
-	local lib = common.setup(modem, listen_ch, senders, logger)
+local function setup(modem, listen_ch, logger, masters, master_ch, queue)
+	local lib = common.setup(modem, listen_ch, logger)
 
 	lib.msg_types.cmd = true
 	lib.msg_types.gps = true

@@ -5,16 +5,13 @@ local const = require("lib.const")
 
 ---@param modem modem
 ---@param listen_ch integer
----@param senders msg_senders
 ---@param logger logger
-local function setup(modem, listen_ch, senders, logger)
+local function setup(modem, listen_ch, logger)
 	local lib = {}
 	lib.label = os.getComputerLabel()
 
 	-- NOTE: expand this
-	lib.msg_types = {
-		res = true,
-	}
+	lib.msg_types = {}
 
 	-- NOTE: expand this
 	lib.validators = {}
@@ -31,8 +28,6 @@ local function setup(modem, listen_ch, senders, logger)
 			or type(msg.payload) ~= "table"
 		then
 			logger.trace("dropped: malformed")
-		elseif not senders[msg.snd] then
-			logger.trace("dropped: invalid sender")
 		elseif not lib.validators[msg.type] then
 			logger.trace("dropped: no validator")
 		else
@@ -46,20 +41,19 @@ local function setup(modem, listen_ch, senders, logger)
 	lib.handlers = {}
 
 	-- Handle modem messages. This includes the following:
-	-- - decide whether to keep or drop messages
-	-- - append it to the task queue if the message is a command
-	-- - reply ("acknowledge") to messages
+	-- - validate the message
+	-- - call the configured handler for the message type
 	function lib.listen()
 		logger.info("listening on channel " .. listen_ch)
 		modem.open(listen_ch)
 		while true do
 			local _e, _s, _c, reply_ch, msg, _d = os.pullEvent("modem_message")
-			-- Ignore gps replies, they are handled by the built-in gps library
+			-- Ignore gps replies, they are handled by the built-in gps library.
 			if reply_ch == const.CH_GPS then
 				logger.trace("ignoring gps message")
 			elseif lib.validate(msg) then
 				---@cast msg msg
-				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
+				logger.trace("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if not lib.handlers[msg.type] then
 					logger.warn("no handler for message type '" .. msg.type .. "'")
 				else

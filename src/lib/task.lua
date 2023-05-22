@@ -1,10 +1,10 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast os os
 
----@param send_msg fun(target_ch: number, msg_target: string, payload: msg_payload)
+---@param send_cmd fun(ch: number, rec_name: string, payload: msg_payload)
 ---@param logger logger
 ---@param worker {get: fun(label: string): worker}
-local function master_setup(send_msg, worker, logger)
+local function master_setup(send_cmd, worker, logger)
 	local _id = 1
 	local _tasks = {}
 	---@cast _tasks task[]
@@ -22,7 +22,7 @@ local function master_setup(send_msg, worker, logger)
 			}
 		}
 		logger.trace("sending task to worker")
-		send_msg(worker.get(label).channel, label, payload)
+		send_cmd(worker.get(label).channel, label, payload)
 		local t = {
 			completed = false,
 			worker = label
