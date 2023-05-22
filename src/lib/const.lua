@@ -7,4 +7,6 @@ const.SLOT_MINERS = 4
 const.SLOT_LOADERS = 5
 const.SLOT_DEPLOY = 16
 
+const.CH_GPS = 65534
+
 return const

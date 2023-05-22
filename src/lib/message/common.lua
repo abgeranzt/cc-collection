@@ -1,6 +1,8 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast os os
 
+local const = require("lib.const")
+
 ---@param modem modem
 ---@param listen_ch integer
 ---@param senders msg_senders
@@ -51,8 +53,11 @@ local function setup(modem, listen_ch, senders, logger)
 		logger.info("listening on channel " .. listen_ch)
 		modem.open(listen_ch)
 		while true do
-			local _e, _s, _c, _rc, msg, _d = os.pullEvent("modem_message")
-			if lib.validate(msg) then
+			local _e, _s, _c, reply_ch, msg, _d = os.pullEvent("modem_message")
+			-- Ignore gps replies, they are handled by the built-in gps library
+			if reply_ch == const.CH_GPS then
+				logger.trace("ignoring gps message")
+			elseif lib.validate(msg) then
 				---@cast msg msg
 				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if not lib.handlers[msg.type] then
@@ -71,7 +76,6 @@ local function setup(modem, listen_ch, senders, logger)
 	---@param msg_type msg_type
 	---@param payload msg_payload
 	function lib.send_msg(ch, rec_name, msg_type, payload)
-		logger.debug("ch: " .. ch .. " rec_name: " .. rec_name)
 		local msg = {
 			rec = rec_name,
 			snd = lib.label,

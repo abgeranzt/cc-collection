@@ -37,7 +37,6 @@ local function setup(args)
 	local worker_ch = parsed_args.worker_ch
 	---@cast worker_ch number
 
-	log_lvl = "trace"
 	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 	local senders = {}
