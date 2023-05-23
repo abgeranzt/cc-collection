@@ -8,8 +8,9 @@ local common = require("lib.command.common")
 local directions = common.directions
 
 ---@param logger logger
-local function setup(logger)
-	local lib = common.setup(logger)
+---@param pos gpslib_position
+local function setup(logger, pos)
+	local lib = common.setup(logger, pos)
 
 	---@param params {l: number, w: number, h: number}
 	function lib.excavate(params)

@@ -58,12 +58,21 @@ local function test_master()
 	-- worker.create("dev-worker-2", "miner", 8002)
 	-- worker.create("dev-worker-3", "miner", 8003)
 	worker.create("dev-worker-4", "miner", 8004)
-	local dim = {
-		l = 3,
-		w = 3,
-		h = 6,
-	}
-	routine.auto_mine(dim, "left", 1)
+	worker.deploy("dev-worker-4")
+	local x, y, z = gps.locate()
+	local tid = task.create("dev-worker-4", "set_position", { pos = { x = x, y = y - 1, z = z, dir = "west" } })
+	tid = task.create("dev-worker-4", "navigate_pos", { pos = { x = -50, y = y - 1, z = -4, dir = "south" } })
+	tid = task.create("dev-worker-4", "navigate_pos", { pos = { x = -48, y = -22, z = -7, dir = "north" } })
+	tid = task.create("dev-worker-4", "navigate_pos", { pos = { x = -46, y = y - 1, z = -3, dir = "east" } })
+	task.await(tid)
+	worker.collect("dev-worker-4")
+
+	-- local dim = {
+	-- l = 3,
+	-- w = 3,
+	-- h = 6,
+	-- }
+	-- routine.auto_mine(dim, "left", 1)
 end
 
 ---@diagnostic disable-next-line: undefined-global

@@ -32,7 +32,7 @@ local function setup(task, worker, logger)
 
 	---@param dim dimensions
 	local function mine_cuboid(dim)
-		-- FIXME some malformed messsages are received at this time
+		-- FIXME some malformed messsages are received at this time - still valid?
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
 

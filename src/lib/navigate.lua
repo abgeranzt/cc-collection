@@ -65,5 +65,101 @@ local function turn()
 	return true
 end
 
+---@param current_dir gpslib_direction
+---@param target_dir gpslib_direction
+local function turn_dir(current_dir, target_dir)
+	local function nothing()
+	end
+	local select_action = {
+		north = {
+			north = nothing,
+			east = turtle.turnLeft,
+			south = turn,
+			west = turtle.turnRight,
+		},
+		east = {
+			north = turtle.turnRight,
+			east = nothing,
+			south = turtle.turnLeft,
+			west = turn,
+		},
+		south = {
+			north = turn,
+			east = turtle.turnRight,
+			south = nothing,
+			west = turtle.turnLeft,
+		},
+		west = {
+			north = turtle.turnLeft,
+			east = turn,
+			south = turtle.turnRight,
+			west = nothing
+		}
+	}
+	select_action[current_dir][target_dir]()
+	return target_dir
+end
+
+---@param current_pos gpslib_position
+---@param target_pos gpslib_position
+---@param go_lib { up: fun(n), down: fun(n), forward: fun(n), back: fun(n) } | nil Interface implementing navigation functions
+function go.coords(current_pos, target_pos, go_lib)
+	if not go_lib then
+		go_lib = go
+	end
+	local ok, err
+	-- TODO current_pos.dir is updated manually, remove this behaviour once a wrapper for turtle.turnX has been written
+	if current_pos.x ~= target_pos.x then
+		if current_pos.dir == "north" then
+			turtle.turnRight()
+		elseif current_pos.dir == "south" then
+			turtle.turnLeft()
+		elseif current_pos.dir == "west" then
+			turn()
+		end
+		current_pos.dir = "east"
+		local dist = math.abs(current_pos.x - target_pos.x)
+		if current_pos.x < target_pos.x then
+			ok, err = go_lib.forward(dist)
+		else
+			ok, err = go_lib.back(dist)
+		end
+		if not ok then
+			return false, err
+		end
+	end
+	if current_pos.z ~= target_pos.z then
+		if current_pos.dir == "north" then
+			turn()
+		elseif current_pos.dir == "east" then
+			turtle.turnRight()
+		elseif current_pos.dir == "west" then
+			turtle.turnLeft()
+		end
+		current_pos.dir = "south"
+		local dist = math.abs(current_pos.z - target_pos.z)
+		if current_pos.z < target_pos.z then
+			ok, err = go_lib.forward(dist)
+		else
+			ok, err = go_lib.back(dist)
+		end
+		if not ok then
+			return false, err
+		end
+	end
+	local dist = math.abs(current_pos.y - target_pos.y)
+	if current_pos.y < target_pos.y then
+		ok, err = go_lib.up(dist)
+	else
+		ok, err = go_lib.down(dist)
+	end
+	current_pos.dir = turn_dir(current_pos.dir, target_pos.dir)
+	return ok and ok, nil or false, err
+end
+
 ---@cast go go
-return { go = go, turn = turn }
+return {
+	go = go,
+	turn = turn,
+	turn_dir = turn_dir
+}

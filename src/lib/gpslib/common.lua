@@ -4,20 +4,30 @@
 ---@param send_gps fun(payload: { id: number, body:  msg_body_gps})
 ---@param logger logger
 local function setup(send_gps, logger)
+	-- TODO wrapper for turtle.turnX to track direction
 	local lib = {}
+
+	local pos = {}
+	---@cast pos gpslib_position
+	lib.position = pos
 
 	local id = 1
 	-- broadcast my position on the configured gps channel
 	function lib.work_updates()
 		while true do
 			local _ = os.pullEvent("pos_update")
-			local x, z, y = gps.locate()
+			logger.trace("getting own coordinates")
+			local x, y, z = gps.locate()
+			lib.position.x = x
+			lib.position.y = y
+			lib.position.z = z
 			local payload = {
 				id = id,
 				body = {
 					x = x,
 					y = y,
-					z = z
+					z = z,
+					dir = lib.position.dir
 				}
 			}
 			logger.trace("sending gps update")

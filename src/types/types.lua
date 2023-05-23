@@ -33,7 +33,7 @@ end
 ---@alias argparse_arg {short: string, type: argparse_arg_type, required: boolean, default: argparse_arg_default}
 
 ---@alias msg_body_cmd {cmd: string, params: table}
----@alias msg_body_gps {x: number, y: number, z: number}
+---@alias msg_body_gps gpslib_position
 ---@alias msg_body_res string | nil
 ---@alias msg_body msg_body_cmd | msg_body_gps | msg_body_res
 ---@alias msg_status "err" | "ok"
@@ -42,12 +42,12 @@ end
 ---@alias msg_senders { [string]: true }
 ---@alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
 
----@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "navigate" | "dump" | "get_fuel" | "refuel"
+---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "navigate" | "navigate_pos" | "dump" | "get_fuel" | "refuel" | "set_position"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
 ---@alias hoz_direction "forward" | "back" | "left" | "right"
 
----@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gps_position | nil}
+---@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gpslib_position}
 ---@alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 ---@alias worker_type "miner" | "loader"
 --
@@ -55,8 +55,9 @@ end
 ---@alias worker_lib_get_labels fun(worker_type: worker_type | nil): string[]
 ---@alias worker_lib { create: fun(l: string, wt: worker_type, wch: number), load_from_file: fun(), get: worker_lib_get, get_labels: worker_lib_get_labels, deploy: fun(l: string), collect: fun(l: string) }
 
----@alias gps_position {x: number, y: number, z: number}
----@alias gps_event_data {label: string, position: gps_position}
+---@alias gps_event_data {label: string, position: gpslib_position}
+---@alias gpslib_direction "north" | "east" | "south" | "west"
+---@alias gpslib_position {x: integer, y: integer, z: integer, dir: gpslib_direction}
 
 
 ---@alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
@@ -69,8 +70,6 @@ end
 ---@alias task_lib { await: fun(id: number), create: task_lib_create, get_data: fun(id: number), get_status: fun(id: number), is_completed: fun(id: number), monitor: fun() }
 
 ---@alias peripheral_inventory { size: fun(), list: fun(), getItemDetail: fun(s: number), getItemLimit: fun(s:number) }
-
----@alias go {forward: fun(n: number | nil), back: fun(n: number | nil), up: fun(n: number | nil), down: fun(n: number | nil), left: fun(n: number | nil), right: fun(n: number | nil)}
 
 ---@alias dimensions {w: number, l: number, h: number}
 

@@ -3,7 +3,6 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
-
 local const = require("lib.const")
 local dig = require("lib.dig")
 local util = require("lib.util")

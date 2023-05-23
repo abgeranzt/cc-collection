@@ -2,6 +2,7 @@
 ---@cast os os
 
 local controllable = require("lib.message.controllable")
+local const = require("lib.const")
 
 local function setup(modem, listen_ch, logger, masters, master_ch, queue)
 	local lib = controllable.setup(modem, listen_ch, logger, masters, master_ch, queue)
@@ -38,6 +39,11 @@ local function setup(modem, listen_ch, logger, masters, master_ch, queue)
 				or type(msg.payload.body[c]) ~= "number"
 			then
 				logger.trace("dropped: malformed gps (coordinates)")
+				return false
+			elseif not msg.payload.body.dir
+				or not const.DIRECTIONS[msg.payload.body.dir]
+			then
+				logger.trace("dropped: malformed gps (direction)")
 				return false
 			end
 		end

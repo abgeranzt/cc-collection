@@ -15,9 +15,8 @@ local function setup(worker, logger)
 			local _, msg = os.pullEvent("gps_update")
 			---@cast msg msg
 			local pos = msg.payload.body
-			---@cast pos gps_position
-			-- TODO re-enable it when development is finished
-			-- logger.trace("updating position for worker '" .. msg.snd .. "'")
+			---@cast pos gpslib_position
+			logger.trace("updating position for worker '" .. msg.snd .. "'")
 			worker.get(msg.snd).position = pos
 		end
 	end

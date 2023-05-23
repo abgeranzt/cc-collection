@@ -9,4 +9,11 @@ const.SLOT_DEPLOY = 16
 
 const.CH_GPS = 65534
 
+const.DIRECTIONS = {
+	north = true,
+	east = true,
+	south = true,
+	west = true,
+}
+
 return const

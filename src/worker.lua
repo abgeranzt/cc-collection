@@ -43,7 +43,9 @@ local function setup(args)
 	masters[master_name] = true
 	local message = require("lib.message.controllable").setup(modem, worker_ch, logger, masters, master_ch, queue)
 	local gpslib = require("lib.gpslib.common").setup(message.send_gps, logger)
-	local command = require("lib.command.miner").setup(logger)
+	-- NOTE: The position needs to be set initially by the master using the 'set_position' command
+	-- TODO have this happen in worker.deploy?
+	local command = require("lib.command.miner").setup(logger, gpslib.position)
 
 	return command, gpslib, message, logger, queue, master_name, master_ch
 end
