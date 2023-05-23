@@ -4,7 +4,9 @@
 local dig = require("lib.dig")
 local util = require("lib.util")
 -- This is used because it broadcasts our position when moving
-local go = require("lib.navigate").go
+local nav = require("lib.navigate")
+local go = nav.go
+local turn = nav.turn
 
 -- TODO handle unbreakable blocks
 
@@ -60,9 +62,9 @@ end
 
 ---@param n number
 function tunnel.back(n)
-	util.turn()
+	turn()
 	local ok, err = tunnel.forward(n)
-	util.turn()
+	turn()
 	return ok, err
 end
 
