@@ -6,19 +6,23 @@ local conf_args = {}
 ---@param arg_type argparse_arg_type
 ---@param required boolean | nil
 ---@param default argparse_arg_default
-local function add_arg(name, short, arg_type, required, default)
+---@param allowed {[string]: true} | nil
+local function add_arg(name, short, arg_type, required, default, allowed)
 	if arg_type == "boolean" and required then
 		return false, "boolean argument '" .. name "' cannot be required"
 	elseif not required and not default then
 		return false, "missing default value for optional argument " .. name
 	elseif required and default then
 		return false, "required argument '" .. name "' cannot have a default"
+	elseif arg_type == "enum" and not allowed then
+		return false, "enum argument requires definition"
 	end
 	conf_args[name] = {
 		short = short,
 		type = arg_type,
 		required = required or false,
-		default = default
+		default = default,
+		allowed = allowed,
 	}
 	return true, nil
 end
@@ -47,6 +51,8 @@ local function parse(prov_args)
 			return false, "argument '" .. name .. "' is missing"
 		elseif arg.required and not v_pos then
 			return false, "missing value for argument '" .. name .. "'"
+		elseif arg.allowed and not arg.allowed[prov_args[v_pos]] then
+			return false, "invalid value '" .. prov_args[v_pos] .. "' for argument '" .. name .. "'"
 		elseif arg.type == "boolean" then
 			args[name] = a_pos and true or false
 		elseif arg.type == "number" then

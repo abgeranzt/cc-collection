@@ -28,9 +28,9 @@ if not sleep then
 	end
 end
 
----@alias argparse_arg_type "string" | "number" | "boolean" | "array"
+---@alias argparse_arg_type "string" | "number" | "boolean" | "array" | "enum"
 ---@alias argparse_arg_default string | number | boolean | nil | string[]
----@alias argparse_arg {short: string, type: argparse_arg_type, required: boolean, default: argparse_arg_default}
+---@alias argparse_arg {short: string, type: argparse_arg_type, required: boolean, default: argparse_arg_default, allowed: {[string]: true} | nil}
 
 ---@alias msg_body_cmd {cmd: string, params: table}
 ---@alias msg_body_gps gpslib_position
