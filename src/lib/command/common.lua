@@ -15,6 +15,7 @@ local directions = {
 ---@param current_pos gpslib_position
 local function setup(logger, current_pos)
 	local lib = {}
+	lib.current_pos = current_pos
 
 	lib.validators = {}
 	---@param pos gpslib_position
@@ -89,7 +90,7 @@ local function setup(logger, current_pos)
 			logger.error(err)
 			return false, "navigate_pos command failed"
 		end
-		ok, err = go.coords(current_pos, params.pos)
+		ok, err = go.coords(lib.current_pos, params.pos)
 		if not ok then
 			---@cast err string
 			logger.error(err)
@@ -113,7 +114,7 @@ local function setup(logger, current_pos)
 			return false, "set_position command failed"
 		end
 		for k, v in pairs(params.pos) do
-			current_pos[k] = v
+			lib.current_pos[k] = v
 		end
 		return true, nil
 	end

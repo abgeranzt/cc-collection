@@ -1,9 +1,10 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
-local exc = require("lib.excavate")
-local util = require("lib.util")
 local common = require("lib.command.common")
+local exc = require("lib.excavate")
+local go = require("lib.navigate").go
+local util = require("lib.util")
 
 local directions = common.directions
 
@@ -94,6 +95,23 @@ local function setup(logger, pos)
 			logger.error(err)
 			return false, "tunnel command failed"
 		end
+	end
+
+	---@param params {pos: gpslib_position}
+	function lib.tunnel_pos(params)
+		local ok, err = lib.validators.gpslib_position(params.pos)
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "tunnel_pos command failed"
+		end
+		ok, err = go.coords(lib.current_pos, params.pos, exc.tunnel)
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "tunnel_pos command failed"
+		end
+		return true, nil
 	end
 
 	function lib.dump()
