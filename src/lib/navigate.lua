@@ -73,26 +73,26 @@ local function turn_dir(current_dir, target_dir)
 	local select_action = {
 		north = {
 			north = nothing,
-			east = turtle.turnLeft,
+			east = turtle.turnRight,
 			south = turn,
-			west = turtle.turnRight,
+			west = turtle.turnLeft,
 		},
 		east = {
-			north = turtle.turnRight,
+			north = turtle.turnLeft,
 			east = nothing,
-			south = turtle.turnLeft,
+			south = turtle.turnRight,
 			west = turn,
 		},
 		south = {
 			north = turn,
-			east = turtle.turnRight,
+			east = turtle.turnLeft,
 			south = nothing,
-			west = turtle.turnLeft,
+			west = turtle.turnRight,
 		},
 		west = {
-			north = turtle.turnLeft,
+			north = turtle.turnRight,
 			east = turn,
-			south = turtle.turnRight,
+			south = turtle.turnLeft,
 			west = nothing
 		}
 	}
