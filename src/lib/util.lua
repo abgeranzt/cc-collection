@@ -109,9 +109,19 @@ local function refuel(target, f_type, s_slot, d_slot, f_slot, l_slot)
 		end
 	end
 
-	local inv_dir, err = place_inv(s_slot)
-	if not inv_dir then
-		return false, err
+	local inv_dir, err
+	-- Trigger a dump if a block had to be mined before placing the inv
+	while true do
+		inv_dir, err = place_inv(s_slot)
+		if not inv_dir then
+			return false, err
+		end
+		if turtle.getItemCount(f_slot) > 0 then
+			break_inv(s_slot, inv_dir)
+			dump(d_slot, f_slot, l_slot)
+		else
+			break
+		end
 	end
 
 	local suck_fn
