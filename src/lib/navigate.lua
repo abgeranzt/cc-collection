@@ -110,38 +110,48 @@ function go.coords(current_pos, target_pos, go_lib)
 	local ok, err
 	-- TODO current_pos.dir is updated manually, remove this behaviour once a wrapper for turtle.turnX has been written
 	if current_pos.x ~= target_pos.x then
-		if current_pos.dir == "north" then
-			turtle.turnRight()
-		elseif current_pos.dir == "south" then
-			turtle.turnLeft()
-		elseif current_pos.dir == "west" then
-			turn()
+		local go_func_fw = go_lib.forward
+		local go_func_bk = go_lib.back
+		if current_pos.dir == "west" then
+			go_func_fw = go_lib.back
+			go_func_bk = go_lib.forward
+		else
+			if current_pos.dir == "north" then
+				turtle.turnRight()
+			elseif current_pos.dir == "south" then
+				turtle.turnLeft()
+			end
+			current_pos.dir = "east"
 		end
-		current_pos.dir = "east"
 		local dist = math.abs(current_pos.x - target_pos.x)
 		if current_pos.x < target_pos.x then
-			ok, err = go_lib.forward(dist)
+			ok, err = go_func_fw(dist)
 		else
-			ok, err = go_lib.back(dist)
+			ok, err = go_func_bk(dist)
 		end
 		if not ok then
 			return false, err
 		end
 	end
 	if current_pos.z ~= target_pos.z then
+		local go_func_fw = go_lib.forward
+		local go_func_bk = go_lib.back
 		if current_pos.dir == "north" then
-			turn()
-		elseif current_pos.dir == "east" then
-			turtle.turnRight()
-		elseif current_pos.dir == "west" then
-			turtle.turnLeft()
+			go_func_fw = go_lib.back
+			go_func_bk = go_lib.forward
+		else
+			if current_pos.dir == "east" then
+				turtle.turnRight()
+			elseif current_pos.dir == "west" then
+				turtle.turnLeft()
+			end
+			current_pos.dir = "south"
 		end
-		current_pos.dir = "south"
 		local dist = math.abs(current_pos.z - target_pos.z)
 		if current_pos.z < target_pos.z then
-			ok, err = go_lib.forward(dist)
+			ok, err = go_func_fw(dist)
 		else
-			ok, err = go_lib.back(dist)
+			ok, err = go_func_bk(dist)
 		end
 		if not ok then
 			return false, err
