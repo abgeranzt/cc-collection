@@ -14,6 +14,7 @@ local function setup(args)
 		exit()
 	end
 	---@cast modem modem
+	modem.closeAll()
 	local monitor = peripheral.find("monitor")
 	if not monitor then
 		print("No monitor found, exiting!")

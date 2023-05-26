@@ -11,6 +11,7 @@ local function setup(args)
 		exit()
 	end
 	---@cast modem modem
+	modem.closeAll()
 
 	local argparse = require("lib.argparse")
 	argparse.add_arg("log_ch", "-lc", "number", false, 9000)
