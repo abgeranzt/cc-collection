@@ -12,7 +12,6 @@ if not fs then fs = {} end
 ---@alias gps { locate: fun() }
 ---@diagnostic disable-next-line: lowercase-global
 if not gps then gps = {} end
----@alias modem {open: fun(c: number), close: fun(c: number), transmit: fun(c: number, rc: number, msg: string | table)}
 ---@alias monitor { setTextScale: fun(n: number), getCursorPos: fun(), setCursorPos: fun(x: integer, y: integer), blit: fun(t: string, tc: string, bc: string), write: fun(t: string), setTextColor: fun(c: integer), setBackgroundColor: fun(c: integer), getSize: fun(), scroll: fun(y: integer), clear: fun() }
 ---@alias peripheral { call: fun(d: string, c: string), find: fun(n: string), wrap: fun(d: string) }
 ---@diagnostic disable-next-line: lowercase-global
