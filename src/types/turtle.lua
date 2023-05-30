@@ -1,2 +1,33 @@
--- TODO advanced typing?
----@alias builtin_turtle { detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(n: number | nil), dropUp: fun(n: number | nil), dropDown: fun(n: number | nil), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil), getItemDetail: fun(s: number, d: boolean | nil), inspect: fun(), inspectUp: fun(), inspectDown: fun(), equipLeft: fun(), equipRight: fun() }
+---@alias turtle_detect fun(): boolean
+---@alias turtle_detect_up fun(): boolean
+---@alias turtle_detect_down fun(): boolean
+---@alias turtle_inspect fun(): boolean, table | string
+---@alias turtle_inspect_up fun(): boolean, table | string
+---@alias turtle_inspect_down fun(): boolean, table | string
+---@alias turtle_dig fun(side: "left" | "right" | nil): boolean, string | nil
+---@alias turtle_dig_up fun(): boolean, string | nil
+---@alias turtle_dig_down fun(): boolean, string | nil
+---@alias turtle_place fun(text: string | nil): boolean, string | nil
+---@alias turtle_place_up fun(text: string | nil): boolean, string | nil
+---@alias turtle_place_down fun(text: string | nil): boolean, string | nil
+---@alias turtle_turn_left fun(): boolean, string | nil
+---@alias turtle_turn_right fun(): boolean, string | nil
+---@alias turtle_refuel fun(count: integer | nil): boolean, string | nil
+---@alias turtle_get_fuel_level fun(): integer | "unlimited"
+---@alias turtle_select fun(slot: integer): boolean
+---@alias turtle_get_selected_slot fun(): integer
+---@alias turtle_get_item_count fun(slot: integer | nil): integer
+---@alias turtle_get_item_detail fun(slot: integer | nil, detailed: boolean | nil): table | nil
+---@alias turtle_equip_left fun(): boolean, string | nil
+---@alias turtle_equip_right fun(): boolean, string | nil
+---@alias turtle_drop fun(count: integer | nil): boolean, string | nil
+---@alias turtle_drop_up fun(count: integer | nil): boolean, string | nil
+---@alias turtle_drop_down fun(count: integer | nil): boolean, string | nil
+---@alias turtle_suck fun(count: integer | nil): boolean, string | nil
+---@alias turtle_suck_up fun(count: integer | nil): boolean, string | nil
+---@alias turtle_suck_down fun(count: integer | nil): boolean, string | nil
+
+---@alias turtle { detect: turtle_detect, detectUp: turtle_detect_up, detectDown: turtle_detect_down, inspect: turtle_inspect, inspectUp: turtle_inspect_up, inspectDown: turtle_inspect_down, dig: turtle_dig, dig_up: turtle_dig_up, dig_down: turtle_dig_down, place: turtle_place, placeUp: turtle_place_up, placeDown: turtle_place_down, turnLeft: turtle_turn_left, turnRight: turtle_turn_right, refuel: turtle_refuel, getFuelLevel: turtle_get_fuel_level, select: turtle_select, getSelectedSlot: turtle_get_selected_slot, getItemCount: turtle_get_item_count, getItemDetail: turtle_get_item_detail, equipLeft: turtle_equip_left, equipRight: turtle_equip_right, drop: turtle_drop, dropUp: turtle_drop_up, dropDown: turtle_drop_down, suck: turtle_suck, suckUp: turtle_suck_up, suckDown: turtle_suck_down }
+
+---@diagnostic disable-next-line: lowercase-global
+if not turtle then turtle = {} end

@@ -16,9 +16,6 @@ if not gps then gps = {} end
 ---@alias peripheral { call: fun(d: string, c: string), find: fun(n: string), wrap: fun(d: string) }
 ---@diagnostic disable-next-line: lowercase-global
 if not peripheral then peripheral = {} end
----@alias turtle { detect: fun(), detectUp: fun(), detectDown: fun(), dig: fun(), digUp: fun(), digDown: fun(), turnLeft: fun(), turnRight: fun(), getFuelLevel: fun(), select: fun(s: number), getSelectedSlot: fun(), drop: fun(n: number | nil), dropUp: fun(n: number | nil), dropDown: fun(n: number | nil), place: fun(), placeUp: fun(), placeDown: fun(), suck: fun(), suckUp: fun(), suckDown: fun(), refuel: fun(), getItemCount: fun(s: number | nil), getItemDetail: fun(s: number, d: boolean | nil), inspect: fun(), inspectUp: fun(), inspectDown: fun(), equipLeft: fun(), equipRight: fun(), transferTo: fun(slot: integer, count: integer | nil)}
----@diagnostic disable-next-line: lowercase-global
-if not turtle then turtle = {} end
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 if not sleep then
