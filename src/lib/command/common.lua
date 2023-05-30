@@ -13,7 +13,7 @@ local directions = {
 
 ---@param logger logger
 ---@param current_pos gpslib_position
-local function setup(logger, current_pos)
+local function init(logger, current_pos)
 	local lib = {}
 	lib.current_pos = current_pos
 
@@ -124,5 +124,5 @@ end
 
 return {
 	directions = directions,
-	setup = setup
+	init = init
 }

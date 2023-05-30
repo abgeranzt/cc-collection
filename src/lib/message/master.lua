@@ -4,8 +4,8 @@
 local controllable = require("lib.message.controllable")
 local const = require("lib.const")
 
-local function setup(modem, listen_ch, logger, masters, master_ch, queue)
-	local lib = controllable.setup(modem, listen_ch, logger, masters, master_ch, queue)
+local function init(modem, listen_ch, logger, masters, master_ch, queue)
+	local lib = controllable.init(modem, listen_ch, logger, masters, master_ch, queue)
 
 	lib.msg_types["res"] = true
 	lib.msg_types["gps"] = true
@@ -69,5 +69,5 @@ local function setup(modem, listen_ch, logger, masters, master_ch, queue)
 end
 
 return {
-	setup = setup
+	init = init
 }

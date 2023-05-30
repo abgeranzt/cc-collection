@@ -5,8 +5,8 @@ local common = require("lib.message.common")
 ---@param logger logger
 ---@param masters {[string]: true}
 ---@param queue queue
-local function setup(modem, listen_ch, logger, masters, master_ch, queue)
-	local lib = common.setup(modem, listen_ch, logger)
+local function init(modem, listen_ch, logger, masters, master_ch, queue)
+	local lib = common.init(modem, listen_ch, logger)
 
 	lib.msg_types.cmd = true
 	lib.msg_types.gps = true
@@ -47,5 +47,5 @@ local function setup(modem, listen_ch, logger, masters, master_ch, queue)
 end
 
 return {
-	setup = setup
+	init = init
 }

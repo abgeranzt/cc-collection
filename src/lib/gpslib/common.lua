@@ -3,7 +3,7 @@
 
 ---@param send_gps fun(payload: { id: number, body:  msg_body_gps})
 ---@param logger logger
-local function setup(send_gps, logger)
+local function init(send_gps, logger)
 	-- TODO wrapper for turtle.turnX to track direction
 	local lib = {}
 
@@ -40,5 +40,5 @@ local function setup(send_gps, logger)
 end
 
 return {
-	setup = setup
+	init = init
 }

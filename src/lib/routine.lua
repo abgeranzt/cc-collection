@@ -1,7 +1,7 @@
 ---@param task task_lib
 ---@param worker worker_lib
 ---@param logger logger
-local function setup(task, worker, logger)
+local function init(task, worker, logger)
 	---@param y number
 	---@param h number
 	local function touches_bedrock(y, h)
@@ -132,5 +132,5 @@ local function setup(task, worker, logger)
 end
 
 return {
-	setup = setup
+	init = init
 }

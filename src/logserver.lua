@@ -6,7 +6,7 @@
 ---@cast peripheral peripheral
 
 ---@param args table The arguments provided to the program
-local function setup(args)
+local function init(args)
 	local modem = peripheral.find("modem")
 	if not modem then
 		print("No modem found, exiting!")
@@ -51,7 +51,7 @@ local function setup(args)
 	return filter, log_file, message, monitor
 end
 
-local filter, log_file, message, monitor = setup({ ... })
+local filter, log_file, message, monitor = init({ ... })
 
 monitor.clear()
 monitor.setCursorPos(1, 1)

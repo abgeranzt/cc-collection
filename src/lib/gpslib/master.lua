@@ -5,9 +5,9 @@ local common = require("lib.gpslib.common")
 
 ---@param worker {get: fun(label: string)}
 ---@param logger logger
-local function setup(worker, logger)
+local function init(worker, logger)
 	-- TODO implement gps tracking for the master
-	local lib = common.setup(function(_)
+	local lib = common.init(function(_)
 	end, logger)
 
 	function lib.monitor()
@@ -25,5 +25,5 @@ local function setup(worker, logger)
 end
 
 return {
-	setup = setup
+	init = init
 }

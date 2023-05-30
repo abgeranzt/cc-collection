@@ -9,7 +9,7 @@ local util = require("lib.util")
 
 -- Functionality related to managing a master's workers
 ---@param logger logger
-local function setup(logger)
+local function init(logger)
 	local lib = {}
 
 	lib.workers = {}
@@ -159,5 +159,5 @@ local function setup(logger)
 end
 
 return {
-	setup = setup
+	init = init
 }

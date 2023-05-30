@@ -2,7 +2,7 @@
 ---@cast peripheral peripheral
 
 ---@param args table The arguments provided to the program
-local function setup(args)
+local function init(args)
 	local queue = require("lib.queue").queue
 	local modem = peripheral.find("modem")
 	if not modem then
@@ -38,20 +38,20 @@ local function setup(args)
 	local worker_ch = parsed_args.worker_ch
 	---@cast worker_ch number
 
-	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
+	local logger = require("lib.logger").init(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 	local masters = {}
 	masters[master_name] = true
-	local message = require("lib.message.controllable").setup(modem, worker_ch, logger, masters, master_ch, queue)
-	local gpslib = require("lib.gpslib.common").setup(message.send_gps, logger)
+	local message = require("lib.message.controllable").init(modem, worker_ch, logger, masters, master_ch, queue)
+	local gpslib = require("lib.gpslib.common").init(message.send_gps, logger)
 	-- NOTE: The position needs to be set initially by the master using the 'set_position' command
 	-- TODO have this happen in worker.deploy?
-	local command = require("lib.command.miner").setup(logger, gpslib.position)
+	local command = require("lib.command.miner").init(logger, gpslib.position)
 
 	return command, gpslib, message, logger, queue, master_name, master_ch
 end
 
-local command, gpslib, message, logger, queue, master_name, master_ch = setup({ ... })
+local command, gpslib, message, logger, queue, master_name, master_ch = init({ ... })
 
 local function work_queue()
 	while true do

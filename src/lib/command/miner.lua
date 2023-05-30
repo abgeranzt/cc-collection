@@ -10,8 +10,8 @@ local directions = common.directions
 
 ---@param logger logger
 ---@param pos gpslib_position
-local function setup(logger, pos)
-	local lib = common.setup(logger, pos)
+local function init(logger, pos)
+	local lib = common.init(logger, pos)
 
 	---@param params {l: number, w: number, h: number}
 	function lib.excavate(params)
@@ -143,5 +143,5 @@ local function setup(logger, pos)
 end
 
 return {
-	setup = setup
+	init = init
 }

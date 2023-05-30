@@ -6,7 +6,7 @@ local const = require("lib.const")
 ---@param modem modem
 ---@param listen_ch integer
 ---@param logger logger
-local function setup(modem, listen_ch, logger)
+local function init(modem, listen_ch, logger)
 	local lib = {}
 	lib.label = os.getComputerLabel()
 
@@ -97,5 +97,5 @@ local function setup(modem, listen_ch, logger)
 end
 
 return {
-	setup = setup
+	init = init
 }

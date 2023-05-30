@@ -6,7 +6,7 @@
 local const = require("lib.const")
 
 ---@param args table The arguments provided to the program
-local function setup(args)
+local function init(args)
 	local modem = peripheral.find("modem")
 	if not modem then
 		print("No modem found, exiting!")
@@ -41,7 +41,7 @@ local function setup(args)
 	local master_ch = parsed_args.master_ch
 	---@cast master_ch integer
 
-	local logger = require("lib.logger").setup(log_ch, log_lvl, nil, modem)
+	local logger = require("lib.logger").init(log_ch, log_lvl, nil, modem)
 	---@cast logger logger
 
 	local dir = parsed_args.direction
@@ -55,16 +55,16 @@ local function setup(args)
 	}
 
 	local queue = require("lib.queue").queue
-	local worker = require("lib.worker.master").setup(logger)
-	local message = require("lib.message.master").setup(modem, listen_ch, logger, {}, master_ch, queue)
-	local gpslib = require("lib.gpslib.master").setup(worker, logger)
+	local worker = require("lib.worker.master").init(logger)
+	local message = require("lib.message.master").init(modem, listen_ch, logger, {}, master_ch, queue)
+	local gpslib = require("lib.gpslib.master").init(worker, logger)
 	local task = require("lib.task").master_setup(message.send_cmd, worker, logger)
-	local routine = require("lib.routine").setup(task, worker, logger)
+	local routine = require("lib.routine").init(task, worker, logger)
 
 	return logger, gpslib, message, pos, routine, task, worker
 end
 
-local logger, gpslib, message, pos, routine, task, worker = setup({ ... })
+local logger, gpslib, message, pos, routine, task, worker = init({ ... })
 
 
 -- TODO get rid of this
