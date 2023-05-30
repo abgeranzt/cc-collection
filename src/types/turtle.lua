@@ -18,6 +18,7 @@
 ---@alias turtle_get_selected_slot fun(): integer
 ---@alias turtle_get_item_count fun(slot: integer | nil): integer
 ---@alias turtle_get_item_detail fun(slot: integer | nil, detailed: boolean | nil): table | nil
+---@alias turtle_transfer_to fun(slot: integer, count: integer | nil): boolean
 ---@alias turtle_equip_left fun(): boolean, string | nil
 ---@alias turtle_equip_right fun(): boolean, string | nil
 ---@alias turtle_drop fun(count: integer | nil): boolean, string | nil
@@ -27,7 +28,7 @@
 ---@alias turtle_suck_up fun(count: integer | nil): boolean, string | nil
 ---@alias turtle_suck_down fun(count: integer | nil): boolean, string | nil
 
----@alias turtle { detect: turtle_detect, detectUp: turtle_detect_up, detectDown: turtle_detect_down, inspect: turtle_inspect, inspectUp: turtle_inspect_up, inspectDown: turtle_inspect_down, dig: turtle_dig, dig_up: turtle_dig_up, dig_down: turtle_dig_down, place: turtle_place, placeUp: turtle_place_up, placeDown: turtle_place_down, turnLeft: turtle_turn_left, turnRight: turtle_turn_right, refuel: turtle_refuel, getFuelLevel: turtle_get_fuel_level, select: turtle_select, getSelectedSlot: turtle_get_selected_slot, getItemCount: turtle_get_item_count, getItemDetail: turtle_get_item_detail, equipLeft: turtle_equip_left, equipRight: turtle_equip_right, drop: turtle_drop, dropUp: turtle_drop_up, dropDown: turtle_drop_down, suck: turtle_suck, suckUp: turtle_suck_up, suckDown: turtle_suck_down }
+---@alias turtle { detect: turtle_detect, detectUp: turtle_detect_up, detectDown: turtle_detect_down, inspect: turtle_inspect, inspectUp: turtle_inspect_up, inspectDown: turtle_inspect_down, dig: turtle_dig, digUp: turtle_dig_up, digDown: turtle_dig_down, place: turtle_place, placeUp: turtle_place_up, placeDown: turtle_place_down, turnLeft: turtle_turn_left, turnRight: turtle_turn_right, refuel: turtle_refuel, getFuelLevel: turtle_get_fuel_level, select: turtle_select, getSelectedSlot: turtle_get_selected_slot, getItemCount: turtle_get_item_count, getItemDetail: turtle_get_item_detail, transferTo: turtle_transfer_to, equipLeft: turtle_equip_left, equipRight: turtle_equip_right, drop: turtle_drop, dropUp: turtle_drop_up, dropDown: turtle_drop_down, suck: turtle_suck, suckUp: turtle_suck_up, suckDown: turtle_suck_down }
 
 ---@diagnostic disable-next-line: lowercase-global
 if not turtle then turtle = {} end
