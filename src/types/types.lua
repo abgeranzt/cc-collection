@@ -38,6 +38,8 @@ end
 
 ---@alias hoz_direction "forward" | "back" | "left" | "right"
 
+---@alias computer_type worker_type | "master" | "server" | "computer"
+
 ---@alias worker { label: string, type: worker_type, channel: number, deployed: boolean, position: gpslib_position}
 ---@alias worker_task {reply_ch: number, id: number, body: {cmd: string, params: table}}
 ---@alias worker_type "miner" | "loader"

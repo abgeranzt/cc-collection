@@ -1,5 +1,7 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast os os
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast turtle turtle
 
 local dig = require("lib.dig")
 
@@ -188,8 +190,34 @@ local function get_label()
 	return os.getComputerLabel()
 end
 
+
+---@param name string The minecraft:item:identifier
+---@param slot integer
+local function is_item(name, slot)
+	return turtle.getItemCount(slot) > 0 and
+		turtle.getItemDetail(slot, true).name == name
+end
+
+---@param name string The minecraft:item:identifier
+---@param side "left" | "right"
+---@param s_slot integer | nil The slot used for swapping
+local function has_item_equipped(name, side, s_slot)
+	s_slot = s_slot or 16
+	local equip = side == "left" and turtle.equipLeft or turtle.equipRight
+	local slot = turtle.getSelectedSlot()
+	local hi = false
+	turtle.select(s_slot)
+	equip()
+	hi = is_item(name, s_slot)
+	equip()
+	turtle.select(slot)
+	return hi
+end
+
 return {
 	dump = dump,
 	refuel = refuel,
-	get_label = get_label
+	get_label = get_label,
+	is_item = is_item,
+	has_item_equipped = has_item_equipped,
 }

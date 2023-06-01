@@ -16,4 +16,12 @@ const.DIRECTIONS = {
 	west = true,
 }
 
+-- TODO change this
+const.PATH_MINER = "/ccc/worker.lua"
+
+const.ITEM_MODEM = "computercraft:wireless_modem_advanced"
+const.LABEL_MODEM = "ender modem"
+const.ITEM_PICKAXE = "minecraft:diamond_pickaxe"
+const.LABEL_PICKAXE = "diamond pickaxe"
+
 return const
