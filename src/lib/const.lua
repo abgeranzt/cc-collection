@@ -17,7 +17,10 @@ const.DIRECTIONS = {
 }
 
 const.PATH_MINER = "/ccc/miner.lua"
+const.PATH_LOADER = "/ccc/loader.lua"
 
+const.ITEM_CHUNK_CONTROLLER = "advancedperipherals:chunk_controller"
+const.LABEL_CHUNK_CONTROLLER = "chunk controller"
 const.ITEM_MODEM = "computercraft:wireless_modem_advanced"
 const.LABEL_MODEM = "ender modem"
 const.ITEM_PICKAXE = "minecraft:diamond_pickaxe"

@@ -60,7 +60,6 @@ local function init(modem, listen_ch, logger, masters, master_ch, queue)
 		os.queueEvent("gps_update", msg)
 	end
 
-	-- TODO ensure task has been received using ack response
 	function lib.send_cmd(ch, rec_name, payload)
 		lib.send_msg(ch, rec_name, "cmd", payload)
 	end
