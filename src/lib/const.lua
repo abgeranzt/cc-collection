@@ -16,8 +16,7 @@ const.DIRECTIONS = {
 	west = true,
 }
 
--- TODO change this
-const.PATH_MINER = "/ccc/worker.lua"
+const.PATH_MINER = "/ccc/miner.lua"
 
 const.ITEM_MODEM = "computercraft:wireless_modem_advanced"
 const.LABEL_MODEM = "ender modem"
