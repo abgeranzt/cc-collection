@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast gps gps
+
 ---@param task task_lib
 ---@param worker worker_lib
 ---@param logger logger
@@ -30,8 +33,9 @@ local function init(task, worker, logger)
 		return segments
 	end
 
+	---@param pos gpslib_position Master position
 	---@param dim dimensions
-	local function mine_cuboid(dim)
+	local function mine_cuboid(pos, dim)
 		-- FIXME some malformed messsages are received at this time - still valid?
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
@@ -55,6 +59,8 @@ local function init(task, worker, logger)
 		for i, w in ipairs(workers) do
 			logger.info("deploying worker '" .. workers[i] .. "' for segment " .. i)
 			worker.deploy(workers[i])
+			task.create(workers[i], "set_position", { pos = pos })
+			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 			task.await(task.create(workers[i], "refuel", { target = 1000 }))
 
 			-- TODO scrape the bedrock using multiple workers?
@@ -97,10 +103,11 @@ local function init(task, worker, logger)
 
 	-- TODO chunk loaders
 	-- TODO allign with chunk borders, test for it
+	---@param pos gpslib_position Initial master position
 	---@param dim dimensions
 	---@param dir direction_hoz
-	---@param limit integer | nil
-	local function auto_mine(dim, dir, limit)
+	---@param limit integer | nil Operation limit (-1 for infinite)
+	local function auto_mine(pos, dim, dir, limit)
 		local exc = require("lib.excavate")
 		local util = require("lib.util")
 
@@ -108,7 +115,7 @@ local function init(task, worker, logger)
 		limit = limit or -1
 		for i = 1, limit do
 			logger.info("starting mining operation " .. i .. "/" .. (limit > -1 and limit or "inf"))
-			mine_cuboid(dim)
+			mine_cuboid(pos, dim)
 			-- TODO determine fuel type somewhere
 			if turtle.getFuelLevel() < dim.w then
 				logger.trace("refuelling")
@@ -121,6 +128,7 @@ local function init(task, worker, logger)
 				else
 					exc.tunnel[dir](dim.w)
 				end
+				pos.x, pos.y, pos.z = gps.locate()
 			end
 		end
 	end

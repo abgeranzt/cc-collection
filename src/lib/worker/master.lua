@@ -73,24 +73,37 @@ local function init(logger)
 		return workers
 	end
 
-	---@param label string
-	function lib.deploy(label)
-		local ok, err
-		logger.info("deploying worker '" .. label .. "'")
+	local op = {
+		place = { up = turtle.placeUp, down = turtle.placeDown },
+		drop = { up = turtle.dropUp, down = turtle.dropDown },
+		suck = { up = turtle.suckUp, down = turtle.suckDown }
+	}
 
+	---@param label string
+	---@param worker_type worker_type | nil
+	---@param dir direction_ver | nil
+	function lib.deploy(label, worker_type, dir)
+		worker_type = worker_type or "miner"
+		dir = dir or "down"
+
+		logger.info("deploying worker '" .. label .. "'")
 		logger.trace("placing helper chests")
-		turtle.select(6)
-		ok, err = dig.forward()
+		turtle.select(const.SLOT_FIRST_FREE)
+		local ok, err = dig.forward()
 		-- TODO this is getting tedious, there has to be a more elgant way to propagate errors
 		if not ok then
 			return false, err
 		end
-		ok, err = dig.down_safe()
+		if dir == "up" then
+			ok, err = dig.up_safe()
+		else
+			ok, err = dig.down_safe()
+		end
 		if not ok then
 			return false, err
 		end
-		if turtle.getItemCount(6) > 0 then
-			ok, err = util.dump(1, 6, 16)
+		if turtle.getItemCount(const.SLOT_FIRST_FREE) > 0 then
+			ok, err = util.dump(1, const.SLOT_FIRST_FREE, 16)
 			if not ok then
 				return false, err
 			end
@@ -101,12 +114,12 @@ local function init(logger)
 		logger.trace("placing worker chest")
 		local slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
 		turtle.select(slot)
-		turtle.placeDown()
+		op.place[dir]()
 
 		logger.trace("selecting worker")
 		-- Search inventory for worker
 		while true do
-			turtle.suckDown()
+			op.suck[dir]()
 			if turtle.getItemDetail(slot, true).displayName == label then
 				logger.trace("worker found")
 				turtle.transferTo(const.SLOT_DEPLOY)
@@ -116,17 +129,21 @@ local function init(logger)
 		end
 		-- Return other workers
 		while turtle.suck() do
-			turtle.dropDown()
+			op.drop[dir]()
 		end
+		dig[dir]()
 
 		logger.trace("deploying worker")
-		dig.down()
 		turtle.select(const.SLOT_DEPLOY)
-		turtle.placeDown()
-		turtle.select(const.SLOT_DUMP)
-		turtle.dropDown(1)
+		op.place[dir]()
+		if worker_type == "loader" then
+			turtle.select(const.SLOT_MODEMS)
+		else
+			turtle.select(const.SLOT_DUMP)
+		end
+		op.drop[dir](1)
 		turtle.select(const.SLOT_FUEL)
-		turtle.dropDown(1)
+		op.drop[dir](1)
 		lib.workers[label].deployed = true
 
 		logger.trace("removing helper chests")
@@ -134,21 +151,27 @@ local function init(logger)
 		dig.forward()
 
 		logger.trace("starting worker")
-		peripheral.call("bottom", "turnOn")
+		if dir == "up" then
+			peripheral.call("top", "turnOn")
+		else
+			peripheral.call("bottom", "turnOn")
+		end
 		-- Yield execution to allow the worker to start
 		sleep(1)
 	end
 
 	-- Note: this assumes that the collected worker only contains the items we gave it on deployment
 	---@param label string
-	function lib.collect(label)
+	---@param dir direction_ver | nil
+	function lib.collect(label, dir)
+		dir = dir or "down"
 		local slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
 		turtle.select(slot)
 		turtle.place()
 		-- Force the chests go into the right slots by inserting them into the first possible slot
 		-- TODO ensure that enough fuel and dump chests are available
 		turtle.select(1)
-		turtle.digDown()
+		dig[dir]()
 		lib.workers[label].deployed = false
 		turtle.select(slot)
 		turtle.drop()

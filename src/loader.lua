@@ -10,12 +10,12 @@ local util = require("lib.util")
 local function init(args)
 	local queue = require("lib.queue").queue
 
-	if not util.is_item(const.ITEM_MODEM, 3) then
+	if not util.is_item(const.ITEM_MODEM, 1) then
 		print("No modem found, exiting!")
 		---@diagnostic disable-next-line: undefined-global
 		exit()
 	end
-	turtle.select(3)
+	turtle.select(1)
 	turtle.equipRight()
 	local modem = peripheral.find("modem")
 	---@cast modem modem
@@ -52,7 +52,7 @@ local function init(args)
 	masters[master_name] = true
 	local message = require("lib.message.controllable").init(modem, listen_ch, logger, masters, master_ch, queue)
 	local gpslib = require("lib.gpslib.common").init(message.send_gps, logger)
-	local command = require("lib.command.loader").init(logger, gpslib.position, 3)
+	local command = require("lib.command.loader").init(logger, gpslib.position, modem, listen_ch)
 	return command, gpslib, message, logger, queue, master_name, master_ch
 end
 

@@ -46,13 +46,9 @@ local function init(args)
 
 	local dir = parsed_args.direction
 	---@cast dir gpslib_direction
-	local x, y, z = gps.locate()
-	local pos = {
-		x = x,
-		y = y,
-		z = z,
-		dir = dir
-	}
+	local pos = { dir = dir }
+	pos.x, pos.y, pos.z = gps.locate()
+	---@cast pos gpslib_position
 
 	local queue = require("lib.queue").queue
 	local worker = require("lib.worker.master").init(logger)
@@ -69,43 +65,28 @@ local logger, gpslib, message, pos, routine, task, worker = init({ ... })
 
 -- TODO get rid of this
 local function test_master()
-	-- worker.create("dev-worker-1", "miner", 8001)
-	-- worker.create("dev-worker-2", "miner", 8002)
+	worker.create("dev-worker-1", "miner", 8001)
+	worker.create("dev-worker-2", "miner", 8002)
 	-- worker.create("dev-worker-3", "miner", 8003)
-	worker.create("dev-worker-4", "miner", 8004)
-	worker.deploy("dev-worker-4")
+	-- worker.create("dev-worker-4", "miner", 8004)
 
-	local w_pos = {}
-	---@param p gpslib_position
-	local function reset(p)
-		p.x = pos.x
-		p.y = pos.y - 1
-		p.z = pos.z
-	end
-	reset(w_pos)
-	w_pos.dir = pos.dir
+	worker.create("dev-loader-1", "loader", 7001)
 
-	local tid = task.create("dev-worker-4", "set_position", { pos = w_pos })
-	task.create("dev-worker-4", "refuel", { target = 1000 })
+	worker.deploy("dev-loader-1", "loader", "up")
+	task.create("dev-loader-1", "set_position", { pos = pos })
+	task.create("dev-loader-1", "refuel", { target = 1000 })
+	local dim = {
+		l = 3,
+		w = 3,
+		h = 12,
+	}
+	routine.mine_cuboid(pos, dim)
+	-- note: swap will not return anything when modem has been unequipped
+	-- TODO unequip_modem command? this would make this behavior more self-explanatory
+	task.create("dev-loader-1", "swap")
+	sleep(1)
 
-	w_pos.x = w_pos.x - 25
-	w_pos.y = w_pos.y - 5
-	w_pos.z = w_pos.z - 10
-	tid = task.create("dev-worker-4", "tunnel_pos", { pos = w_pos })
-	-- tid = task.create("dev-worker-4", "navigate_pos", { pos = w_pos })
-	task.await(tid)
-	reset(w_pos)
-	tid = task.create("dev-worker-4", "tunnel_pos", { pos = w_pos })
-	-- tid = task.create("dev-worker-4", "navigate_pos", { pos = w_pos })
-	task.await(tid)
-	worker.collect("dev-worker-4")
-
-	-- local dim = {
-	-- l = 3,
-	-- w = 3,
-	-- h = 6,
-	-- }
-	-- routine.auto_mine(dim, "left", 1)
+	worker.collect("dev-loader-1", "up")
 end
 
 ---@diagnostic disable-next-line: undefined-global
