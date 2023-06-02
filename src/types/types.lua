@@ -36,7 +36,7 @@ end
 ---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "tunnel_pos" | "navigate" | "navigate_pos" | "dump" | "get_fuel" | "refuel" | "set_position"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
----@alias hoz_direction "forward" | "back" | "left" | "right"
+---@alias direction_hoz "forward" | "back" | "left" | "right"
 
 ---@alias computer_type worker_type | "master" | "server" | "computer"
 

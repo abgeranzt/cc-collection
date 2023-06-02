@@ -98,7 +98,7 @@ local function init(task, worker, logger)
 	-- TODO chunk loaders
 	-- TODO allign with chunk borders, test for it
 	---@param dim dimensions
-	---@param dir hoz_direction
+	---@param dir direction_hoz
 	---@param limit integer | nil
 	local function auto_mine(dim, dir, limit)
 		local exc = require("lib.excavate")
