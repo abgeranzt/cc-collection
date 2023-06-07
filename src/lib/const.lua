@@ -28,4 +28,6 @@ const.LABEL_MODEM = "ender modem"
 const.ITEM_PICKAXE = "minecraft:diamond_pickaxe"
 const.LABEL_PICKAXE = "diamond pickaxe"
 
+const.HEIGHT_BEDROCK = -60
+
 return const

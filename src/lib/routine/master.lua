@@ -1,19 +1,23 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast gps gps
 
+local const = require("lib.const")
+
 ---@param task task_lib
 ---@param worker worker_lib
 ---@param logger logger
 local function init(task, worker, logger)
+	local lib = {}
+
 	---@param y number
 	---@param h number
 	local function touches_bedrock(y, h)
-		return (y - h) <= -60
+		return (y - h) <= const.HEIGHT_BEDROCK
 	end
 
 	---@param y number
 	local function trim_to_bedrock(y)
-		return y + 59
+		return y + const.HEIGHT_BEDROCK - 1
 	end
 
 	-- TODO smarter speading: up to 3 per segment; avoid spreading on the first worker
@@ -35,7 +39,7 @@ local function init(task, worker, logger)
 
 	---@param pos gpslib_position Master position
 	---@param dim dimensions
-	local function mine_cuboid(pos, dim)
+	function lib.mine_cuboid(pos, dim)
 		-- FIXME some malformed messsages are received at this time - still valid?
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
@@ -107,7 +111,7 @@ local function init(task, worker, logger)
 	---@param dim dimensions
 	---@param dir direction_hoz
 	---@param limit integer | nil Operation limit (-1 for infinite)
-	local function auto_mine(pos, dim, dir, limit)
+	function lib.auto_mine(pos, dim, dir, limit)
 		local exc = require("lib.excavate")
 		local util = require("lib.util")
 
@@ -115,7 +119,7 @@ local function init(task, worker, logger)
 		limit = limit or -1
 		for i = 1, limit do
 			logger.info("starting mining operation " .. i .. "/" .. (limit > -1 and limit or "inf"))
-			mine_cuboid(pos, dim)
+			lib.mine_cuboid(pos, dim)
 			-- TODO determine fuel type somewhere
 			if turtle.getFuelLevel() < dim.w then
 				logger.trace("refuelling")
@@ -133,10 +137,7 @@ local function init(task, worker, logger)
 		end
 	end
 
-	return {
-		mine_cuboid = mine_cuboid,
-		auto_mine = auto_mine
-	}
+	return lib
 end
 
 return {

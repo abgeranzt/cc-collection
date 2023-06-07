@@ -55,7 +55,7 @@ local function init(args)
 	local message = require("lib.message.master").init(modem, listen_ch, logger, {}, master_ch, queue)
 	local gpslib = require("lib.gpslib.master").init(worker, logger)
 	local task = require("lib.task").master_setup(message.send_cmd, worker, logger)
-	local routine = require("lib.routine").init(task, worker, logger)
+	local routine = require("lib.routine.master").init(task, worker, logger)
 
 	return logger, gpslib, message, pos, routine, task, worker
 end
