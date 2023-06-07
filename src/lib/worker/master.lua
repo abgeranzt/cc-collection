@@ -10,6 +10,7 @@ local util = require("lib.util")
 -- Functionality related to managing a master's workers
 ---@param logger logger
 local function init(logger)
+	---@class lib_worker_master Worker management
 	local lib = {}
 
 	lib.workers = {}

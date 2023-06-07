@@ -14,6 +14,7 @@ local directions = {
 ---@param logger logger
 ---@param current_pos gpslib_position
 local function init(logger, current_pos)
+	---@class lib_command_common Common turtle commands
 	local lib = {}
 	lib.current_pos = current_pos
 

@@ -7,6 +7,7 @@ local util = require("lib.util")
 local common = require("lib.setup.common")
 
 local function init()
+	---@class lib_setup_miner: lib_setup_common Miner setup
 	local lib = common.init()
 
 	function lib.setup()

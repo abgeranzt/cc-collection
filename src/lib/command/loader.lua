@@ -13,6 +13,7 @@ local util = require("lib.util")
 local function init(logger, pos, modem, listen_ch, s_slot)
 	-- XXX test this
 	-- TODO test this
+	---@class lib_command_loader: lib_command_miner Commands for chunk loading mining turtles
 	local lib = miner.init(logger, pos)
 
 	s_slot = s_slot or 1

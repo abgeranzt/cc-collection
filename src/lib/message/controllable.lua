@@ -6,6 +6,7 @@ local common = require("lib.message.common")
 ---@param masters {[string]: true}
 ---@param queue queue
 local function init(modem, listen_ch, logger, masters, master_ch, queue)
+	---@class lib_message_controllable: lib_message_common Communication functionality for controllable computers
 	local lib = common.init(modem, listen_ch, logger)
 
 	lib.msg_types.cmd = true

@@ -6,6 +6,7 @@ local util = require("lib.util")
 ---@cast turtle turtle
 
 local function init()
+	---@class lib_setup_common Common computer setup functionality
 	local lib = {}
 
 	function lib.print_motd()

@@ -7,6 +7,7 @@ local const = require("lib.const")
 ---@param worker worker_lib
 ---@param logger logger
 local function init(task, worker, logger)
+	---@class lib_routine_master Master routines for controlling workers
 	local lib = {}
 
 	---@param y number

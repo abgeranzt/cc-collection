@@ -7,6 +7,7 @@ local common = require("lib.gpslib.common")
 ---@param logger logger
 local function init(worker, logger)
 	-- TODO implement gps tracking for the master
+	---@class lib_gpslib_master: lib_gpslib_common GPS operations for master computers
 	local lib = common.init(function(_)
 	end, logger)
 

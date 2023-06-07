@@ -5,6 +5,7 @@ local controllable = require("lib.message.controllable")
 local const = require("lib.const")
 
 local function init(modem, listen_ch, logger, masters, master_ch, queue)
+	---@class lib_message_master: lib_message_controllable Communication functionality for master computers
 	local lib = controllable.init(modem, listen_ch, logger, masters, master_ch, queue)
 
 	lib.msg_types["res"] = true

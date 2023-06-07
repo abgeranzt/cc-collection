@@ -5,10 +5,10 @@
 ---@param logger logger
 local function init(send_gps, logger)
 	-- TODO wrapper for turtle.turnX to track direction
+	---@class lib_gpslib_common Common GPS functionality
 	local lib = {}
 
 	local pos = {}
-	---@cast pos gpslib_position
 	lib.position = pos
 
 	local id = 1

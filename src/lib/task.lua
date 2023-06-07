@@ -5,6 +5,7 @@
 ---@param logger logger
 ---@param worker {get: fun(label: string): worker}
 local function master_setup(send_cmd, worker, logger)
+	-- TODO refactor to lib structure
 	local _id = 1
 	local _tasks = {}
 	---@cast _tasks task[]

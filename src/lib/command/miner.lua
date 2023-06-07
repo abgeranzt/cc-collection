@@ -11,6 +11,7 @@ local directions = common.directions
 ---@param logger logger
 ---@param pos gpslib_position
 local function init(logger, pos)
+	---@class lib_command_miner: lib_command_common Commands for mining turtles
 	local lib = common.init(logger, pos)
 
 	---@param params {l: number, w: number, h: number}

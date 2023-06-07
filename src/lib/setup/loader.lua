@@ -7,6 +7,7 @@ local util = require("lib.util")
 local common = require("lib.setup.common")
 
 local function init()
+	---@class lib_setup_loader: lib_setup_common Loader setup
 	local lib = common.init()
 
 	function lib.setup()

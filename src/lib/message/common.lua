@@ -7,6 +7,7 @@ local const = require("lib.const")
 ---@param listen_ch integer
 ---@param logger logger
 local function init(modem, listen_ch, logger)
+	---@class lib_message_common Common communication functionality
 	local lib = {}
 	lib.label = os.getComputerLabel()
 

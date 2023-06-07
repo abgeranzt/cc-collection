@@ -8,6 +8,13 @@ local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 ---@param log_file string | nil
 ---@param modem {transmit: fun(c: number, rc: number, s: string)} | nil
 local function init(log_ch, log_level, log_file, modem)
+	---@class lib_logger Logging library
+	---@field trace fun(msg: string)
+	---@field debug fun(msg: string)
+	---@field info fun(msg: string)
+	---@field warn fun(msg: string)
+	---@field error fun(msg: string)
+	---@field fatal fun(msg: string)
 	local logger = {}
 
 	---@diagnostic disable-next-line: undefined-field
