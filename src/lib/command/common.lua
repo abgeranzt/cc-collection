@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
 local const = require("lib.const")
 local go = require("lib.navigate").go
 local util = require("lib.util")
@@ -117,6 +120,12 @@ local function init(logger, current_pos)
 		for k, v in pairs(params.pos) do
 			lib.current_pos[k] = v
 		end
+		return true, nil
+	end
+
+	-- Trigger a gps position update
+	function lib.update_position()
+		os.queueEvent("pos_update")
 		return true, nil
 	end
 
