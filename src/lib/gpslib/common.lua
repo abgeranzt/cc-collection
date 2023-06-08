@@ -9,6 +9,7 @@ local function init(send_gps, logger)
 	local lib = {}
 
 	local pos = {}
+	---@cast pos gpslib_position
 	lib.position = pos
 
 	local id = 1
@@ -18,21 +19,25 @@ local function init(send_gps, logger)
 			local _ = os.pullEvent("pos_update")
 			logger.trace("getting own coordinates")
 			local x, y, z = gps.locate()
-			lib.position.x = x
-			lib.position.y = y
-			lib.position.z = z
-			local payload = {
-				id = id,
-				body = {
-					x = x,
-					y = y,
-					z = z,
-					dir = lib.position.dir
+			if x then
+				lib.position.x = x
+				lib.position.y = y
+				lib.position.z = z
+				local payload = {
+					id = id,
+					body = {
+						x = x,
+						y = y,
+						z = z,
+						dir = lib.position.dir
+					}
 				}
-			}
-			logger.trace("sending gps update")
-			send_gps(payload)
-			id = id + 1
+				logger.trace("sending gps update")
+				send_gps(payload)
+				id = id + 1
+			else
+				logger.trace("no gps data received")
+			end
 		end
 	end
 
