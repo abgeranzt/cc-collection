@@ -33,7 +33,7 @@ end
 ---@alias msg_senders { [string]: true }
 ---@alias msg {rec: string, snd: string, type: msg_type, payload: msg_payload | nil }
 
----@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "tunnel_pos" | "navigate" | "navigate_pos" | "dump" | "get_fuel" | "refuel" | "set_position" | "swap"
+---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "tunnel_pos" | "navigate" | "navigate_pos" | "dump" | "get_fuel" | "refuel" | "set_position" | "swap" | "update_position"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
 ---@alias direction_hoz "forward" | "back" | "left" | "right"
@@ -71,3 +71,5 @@ end
 ---@alias util_fuel_type "consumable" | "container"
 
 ---@alias queue { fpos: integer, lpos: integer, len: integer, push: fun(task: table), pop: fun(): table}
+
+---@alias routine_chunk_grid {[integer]: {[integer]: {label: string, tid: integer}}}

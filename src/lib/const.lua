@@ -30,4 +30,12 @@ const.LABEL_PICKAXE = "diamond pickaxe"
 
 const.HEIGHT_BEDROCK = -60
 
+const.TURTLE_MIN_FUEL = 1000
+
+const.SAFE_BREAK_BLACKLIST = {}
+const.SAFE_BREAK_BLACKLIST["computercraft:turtle"] = true
+const.SAFE_BREAK_BLACKLIST["computercraft:turtle_advanced"] = true
+const.SAFE_BREAK_BLACKLIST["computercraft:computer"] = true
+const.SAFE_BREAK_BLACKLIST["computercraft:computer_advanced"] = true
+
 return const

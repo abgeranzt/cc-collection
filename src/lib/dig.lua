@@ -63,6 +63,7 @@ function dig.up_safe(retries)
 		local ok, err
 		for _ = 1, retries - 1 do
 			local _, b = turtle.inspectUp()
+			-- FIXME this does not appear to work correctly when a moving turtle is on top
 			---@cast b {name: string}
 			if string.find(b.name, "computercraft:turtle")
 				or string.find(b.name, "computercraft:computer")

@@ -71,22 +71,32 @@ local function test_master()
 	-- worker.create("dev-worker-4", "miner", 8004)
 
 	worker.create("dev-loader-1", "loader", 7001)
+	worker.create("dev-loader-2", "loader", 7002)
+	worker.create("dev-loader-3", "loader", 7003)
+	worker.create("dev-loader-4", "loader", 7004)
 
-	worker.deploy("dev-loader-1", "loader", "up")
-	task.create("dev-loader-1", "set_position", { pos = pos })
-	task.create("dev-loader-1", "refuel", { target = 1000 })
-	local dim = {
-		l = 3,
-		w = 3,
-		h = 12,
-	}
-	routine.mine_cuboid(pos, dim)
+	local chunks = routine.deploy_loaders(pos, 2)
+	-- local dev_loader = "dev-loader-1"
+	-- worker.deploy(dev_loader, "loader", "up")
+	-- sleep(2)
+	-- task.create(dev_loader, "set_position", { pos = pos })
+	-- task.await(task.create(dev_loader, "refuel", { target = 100 }))
+	-- task.await(task.create(dev_loader, "tunnel_pos", { pos = { x = pos.x, z = pos.z + 1, y = pos.y, dir = pos.dir } }))
+	-- task.await(task.create(dev_loader, "navigate", { direction = "back", distance = 1 }))
+	-- task.create(dev_loader, "swap", {})
+	-- sleep(10)
+	-- worker.collect(dev_loader, "up")
+	-- local dim = {
+	-- 	l = 3,
+	-- 	w = 3,
+	-- 	h = 12,
+	-- }
+	-- -- routine.mine_cuboid(pos, dim)
+	sleep(10)
 	-- note: swap will not return anything when modem has been unequipped
 	-- TODO unequip_modem command? this would make this behavior more self-explanatory
-	task.create("dev-loader-1", "swap")
+	routine.collect_loaders(pos, chunks)
 	sleep(1)
-
-	worker.collect("dev-loader-1", "up")
 end
 
 ---@diagnostic disable-next-line: undefined-global

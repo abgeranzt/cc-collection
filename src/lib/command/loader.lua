@@ -11,8 +11,7 @@ local util = require("lib.util")
 ---@param listen_ch integer
 ---@param s_slot integer | nil The slot to use for tool swapping
 local function init(logger, pos, modem, listen_ch, s_slot)
-	-- XXX test this
-	-- TODO test this
+	-- FIXME lib.navigate tries to refuel by itself, but this won't work with a loader.
 	---@class lib_command_loader: lib_command_miner Commands for chunk loading mining turtles
 	local lib = miner.init(logger, pos)
 

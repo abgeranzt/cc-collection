@@ -84,6 +84,7 @@ local function init(logger)
 	---@param worker_type worker_type | nil
 	---@param dir direction_ver | nil
 	function lib.deploy(label, worker_type, dir)
+		-- TODO we can assert the worker_type using the label, get rid of the parameter
 		worker_type = worker_type or "miner"
 		dir = dir or "down"
 
