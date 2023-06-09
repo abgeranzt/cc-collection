@@ -11,11 +11,8 @@ local util = require("lib.util")
 ---@param logger logger
 local function init(logger)
 	---@class lib_worker_master Worker management
-	local lib = {}
-
-	lib.workers = {}
-	---@diagnostic disable-next-line: unknown-cast-variable
-	---@cast lib.workers worker[]
+	---@field workers worker[]
+	local lib = { workers = {} }
 
 	---@param label string
 	---@param worker_type worker_type
@@ -69,6 +66,27 @@ local function init(logger)
 		else
 			for _, w in pairs(lib.workers) do
 				table.insert(workers, w.label)
+			end
+		end
+		return workers
+	end
+
+	-- Return a list of all available workers (of a type)
+	---@param worker_type worker_type | nil
+	---@return string[]
+	function lib.get_labels_avail(worker_type)
+		local workers = {}
+		if worker_type then
+			for _, w in pairs(lib.workers) do
+				if w.type == worker_type and not w.deployed then
+					table.insert(workers, w.label)
+				end
+			end
+		else
+			for _, w in pairs(lib.workers) do
+				if not w.deployed then
+					table.insert(workers, w.label)
+				end
 			end
 		end
 		return workers
