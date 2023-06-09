@@ -214,10 +214,37 @@ local function has_item_equipped(name, side, s_slot)
 	return hi
 end
 
+---@param t1 table
+---@param t2 table
+local function table_compare(t1, t2)
+	for k, _ in pairs(t1) do
+		if t1[k] ~= t2[k] then
+			return false
+		end
+	end
+	for k, _ in pairs(t2) do
+		if not t1[k] then
+			return false
+		end
+	end
+	return true
+end
+
+---@param t table
+local function table_copy(t)
+	local new_t = {}
+	for k, v in pairs(t) do
+		new_t[k] = v
+	end
+	return new_t
+end
+
 return {
 	dump = dump,
 	refuel = refuel,
 	get_label = get_label,
 	is_item = is_item,
 	has_item_equipped = has_item_equipped,
+	table_compare = table_compare,
+	table_copy = table_copy,
 }
