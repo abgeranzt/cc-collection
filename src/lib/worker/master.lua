@@ -67,7 +67,7 @@ local function init(logger)
 				end
 			end
 		else
-			for _, w in pairs(workers) do
+			for _, w in pairs(lib.workers) do
 				table.insert(workers, w.label)
 			end
 		end
