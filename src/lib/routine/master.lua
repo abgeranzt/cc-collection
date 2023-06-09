@@ -21,13 +21,29 @@ local function init(task, worker, logger)
 
 	---@param y number
 	local function trim_to_bedrock(y)
-		return y + const.HEIGHT_BEDROCK - 1
+		return y + math.abs(const.HEIGHT_BEDROCK) - 1
 	end
 
-	-- Round up to chunk border
-	---@param p integer
-	local function get_chunk_border(p)
-		return (p / 16 + 1) * 16 - 1
+	-- Determine the chunk corner required to mine in the specified direction
+	---@param x integer
+	---@param z integer
+	---@param dir gpslib_direction
+	local function get_chunk_corner(x, z, dir)
+		local cx, cz
+		if dir == "north" then
+			cx = math.floor(x / 16) * 16
+			cz = math.floor(z / 16 + 1) * 16 - 1
+		elseif dir == "east" then
+			cx = math.floor(x / 16) * 16
+			cz = math.floor(z / 16) * 16
+		elseif dir == "south" then
+			cx = math.floor(x / 16 + 1) * 16 - 1
+			cz = math.floor(z / 16) * 16
+		else
+			cx = math.floor(x / 16 + 1) * 16 - 1
+			cz = math.floor(z / 16 + 1) * 16 - 1
+		end
+		return cx, cz
 	end
 
 	-- TODO smarter speading: up to 3 per segment; avoid spreading on the first worker
@@ -54,9 +70,8 @@ local function init(task, worker, logger)
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
 
-		local _, y, _ = gps.locate()
 		-- Adjust actual operation y-level
-		y = y - 1
+		local y = pos.y - 1
 		local segs = {}
 		local scrape_br = false
 		---@cast segs { worker: string, r_ypos: number }[] | number[][]
@@ -166,7 +181,7 @@ local function init(task, worker, logger)
 	function lib.deploy_loaders(pos, size)
 		-- TODO error handling
 		logger.info("deploying loaders for " .. size * size .. " chunks")
-		local loaders = worker.get_labels("loader")
+		local loaders = worker.get_labels_avail("loader")
 		local i = 1
 		local chunks = {}
 		for j = 1, size do
@@ -204,7 +219,6 @@ local function init(task, worker, logger)
 					z = z,
 					dir = pos.dir
 				}
-				require("lib.debug").print_table(target_pos)
 				task.create(loader, "tunnel_pos", { pos = target_pos })
 				local tid = task.create(loader, "update_position", {})
 				-- Yield to allow the worker to move
@@ -249,28 +263,63 @@ local function init(task, worker, logger)
 		end
 	end
 
-	-- TODO chunk loaders
 	---@param pos gpslib_position Initial master position
-	---@param size integer Square chunks to mine
+	---@param size integer Square root of number of chunks (area is always a square)
 	---@param dir gpslib_direction
-	---@param limit integer | nil Operation limit (-1 for infinite)
 	---@param use_loaders boolean
-	function lib.auto_mine_chunk(pos, size, dir, limit, use_loaders)
+	---@param limit integer | nil Operation limit (-1 for infinite)
+	function lib.auto_mine_chunk(pos, size, dir, use_loaders, limit)
+		limit = limit or -1
+		local n_miners = #worker.get_labels("miner")
+		if n_miners < 1 then
+			local err = "not enough miners configured (has: " .. n_miners .. ", needs at least 1)"
+			logger.error(err)
+			return false, err
+		end
+		local n_loaders = #worker.get_labels("loader")
+		local n_chunks = size ^ 2
+		if n_loaders < n_chunks then
+			local err = "not enough loaders configured (has: " ..
+				n_loaders .. ", needs at least " .. n_chunks + 1 .. ")"
+			logger.error(err)
+			return false, err
+		end
+
 		logger.info("starting chunk automining")
-		local target_x = get_chunk_border(pos.x)
-		local target_z = get_chunk_border(pos.z)
-		if pos.x ~= target_x or pos.z ~= target_z then
+		local x, z = get_chunk_corner(pos.x, pos.z, dir)
+		local target_pos = util.table_copy(pos)
+		---@cast target_pos gpslib_position
+		target_pos.x = x
+		target_pos.z = z
+		target_pos.dir = dir
+
+		if not util.table_compare(pos, target_pos) then
+			local target_fuel = math.abs(target_pos.x - pos.x) + math.abs(target_pos.z - pos.z)
+			if turtle.getFuelLevel() < target_fuel then
+				logger.info("refuelling")
+				util.refuel(target_fuel + 1000)
+			end
 			logger.info("navigating to chunk edge")
-			local target_pos = {
-				x = target_x,
-				y = pos.y,
-				z = target_z,
-				dir = "west"
-			}
 			go.coords(pos, target_pos, exc.tunnel)
 		end
-		if use_loaders then
-			logger.info("deploying loaders")
+		for op = 1, limit, 1 do
+			-- TODO move after operation
+			if limit == -1 then
+				logger.info("operation " .. op .. " (no limit set)")
+			else
+				logger.info("operation " .. op .. "/" .. limit)
+			end
+			local chunks
+			if use_loaders then
+				logger.trace("deploying loaders")
+				chunks = lib.deploy_loaders(pos, size)
+			end
+			logger.info("starting mining operation")
+			lib.mine_cuboid(pos, { w = size * 16, l = size * 16, h = 1000 })
+			if use_loaders then
+				logger.info("collecting loaders")
+				lib.collect_loaders(pos, chunks)
+			end
 		end
 	end
 
