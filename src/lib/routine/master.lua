@@ -46,7 +46,8 @@ local function init(task, worker, logger)
 		return cx, cz
 	end
 
-	-- TODO smarter speading: up to 3 per segment; avoid spreading on the first worker
+	-- TODO smarter speading: up to 3 per segment
+	-- TODO seperate worker for bedrock layer; spread remaining height on other workers
 	-- Distribute the layers to mine evenly
 	---@param n_workers number
 	---@param h number
@@ -67,6 +68,7 @@ local function init(task, worker, logger)
 	---@param dim dimensions
 	function lib.mine_cuboid(pos, dim)
 		-- FIXME some malformed messsages are received at this time - still valid?
+		-- FIXME sometimes a layer is not mined - the spreading seems buggy
 		logger.trace("determining available workers")
 		local workers = worker.get_labels("miner")
 
@@ -248,6 +250,7 @@ local function init(task, worker, logger)
 				local loader = chunks[j][k].label
 				logger.info("collecting loader '" .. loader .. "' in chunk " .. i)
 				i = i + 1
+				-- TODO make the worker come down a block with a seperate command to avoid collisions after master has moved
 				task.await(task.create(loader, "tunnel_pos", {
 					pos = {
 						x = pos.x,
@@ -270,6 +273,7 @@ local function init(task, worker, logger)
 	---@param limit integer | nil Operation limit (-1 for infinite)
 	function lib.auto_mine_chunk(pos, size, dir, use_loaders, limit)
 		limit = limit or -1
+		local size_blocks = size * 16
 		local n_miners = #worker.get_labels("miner")
 		if n_miners < 1 then
 			local err = "not enough miners configured (has: " .. n_miners .. ", needs at least 1)"
@@ -302,8 +306,8 @@ local function init(task, worker, logger)
 			logger.info("navigating to chunk edge")
 			go.coords(pos, target_pos, exc.tunnel)
 		end
+		local ok, err = true, nil
 		for op = 1, limit, 1 do
-			-- TODO move after operation
 			if limit == -1 then
 				logger.info("operation " .. op .. " (no limit set)")
 			else
@@ -315,12 +319,34 @@ local function init(task, worker, logger)
 				chunks = lib.deploy_loaders(pos, size)
 			end
 			logger.info("starting mining operation")
-			lib.mine_cuboid(pos, { w = size * 16, l = size * 16, h = 1000 })
+			lib.mine_cuboid(pos, { w = size_blocks, l = size_blocks, h = 1000 })
+			if op ~= limit then
+				logger.info("navigating to next position")
+				local old_pos = util.table_copy(pos)
+				ok, err = exc.tunnel.forward(size_blocks)
+				if not ok then
+					logger.error(err)
+					logger.warn("navigation to next position failed")
+					logger.warn("returning" ..
+						(use_loaders and ", collecting loaders" or "") ..
+						" and exiting")
+					-- Yield execution to allow pos to be updated
+					sleep(1)
+					go.coords(pos, old_pos)
+				end
+			end
 			if use_loaders then
+				-- Yield execution to allow pos to be updated
+				sleep(1)
 				logger.info("collecting loaders")
 				lib.collect_loaders(pos, chunks)
 			end
+			if not ok then
+				return false, err
+			end
 		end
+		logger.info("auto chunk mining complete")
+		return true, nil
 	end
 
 	return lib

@@ -128,6 +128,7 @@ local function dig_rectangle(l, w, tunnel_fw)
 	for i = 1, w, 1 do
 		tunnel_fw(l - 1)
 		rpos = rpos * -1
+		-- FIXME what happens when the chest is placed into an unloaded chunk?
 		util.dump()
 		-- Prepare for next column
 		if i < w then
@@ -196,6 +197,7 @@ local function dig_cuboid_bedrock(l, w)
 		util.refuel(target_fuel)
 	end
 
+	-- FIXME this does not dump items into a chest which will make the turtle stuck
 	local function scrape()
 		local hpos = 0
 		while true do
