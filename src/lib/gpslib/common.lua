@@ -3,14 +3,26 @@
 
 ---@param send_gps fun(payload: { id: number, body:  msg_body_gps})
 ---@param logger logger
-local function init(send_gps, logger)
+---@param dir gpslib_direction | nil
+local function init(send_gps, logger, dir)
 	-- TODO wrapper for turtle.turnX to track direction
 	---@class lib_gpslib_common Common GPS functionality
-	local lib = {}
+	---@field position gpslib_position
+	local lib = {
+		position = {
+		}
+	}
 
-	local pos = {}
-	---@cast pos gpslib_position
-	lib.position = pos
+	if dir then
+		lib.position.dir = dir
+	end
+
+	local pos = table.pack(gps.locate())
+	lib.position.x = pos[1]
+	lib.position.y = pos[2]
+	lib.position.z = pos[3]
+	---@diagnostic disable-next-line: cast-local-type
+	pos = nil
 
 	local id = 1
 	-- broadcast my position on the configured gps channel
