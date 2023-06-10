@@ -9,12 +9,12 @@ local log_levels = { "fatal", "error", "warn", "info", "debug", "trace" }
 ---@param modem {transmit: fun(c: number, rc: number, s: string)} | nil
 local function init(log_ch, log_level, log_file, modem)
 	---@class lib_logger Logging library
-	---@field trace fun(msg: string)
-	---@field debug fun(msg: string)
-	---@field info fun(msg: string)
-	---@field warn fun(msg: string)
-	---@field error fun(msg: string)
-	---@field fatal fun(msg: string)
+	---@field trace fun(msg: any)
+	---@field debug fun(msg: any)
+	---@field info fun(msg: any)
+	---@field warn fun(msg: any)
+	---@field error fun(msg: any)
+	---@field fatal fun(msg: any)
 	local logger = {}
 
 	---@diagnostic disable-next-line: undefined-field
@@ -47,7 +47,6 @@ local function init(log_ch, log_level, log_file, modem)
 			logger[l] = function(_)
 			end
 		else
-			---@param msg string
 			---@diagnostic disable-next-line: assign-type-mismatch
 			logger[l] = function(msg)
 				local log_msg = string.upper(l) .. ": " .. (msg or "")
