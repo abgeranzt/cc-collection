@@ -6,7 +6,7 @@ local exc = require("lib.excavate")
 local go = require("lib.navigate").go
 local util = require("lib.util")
 
----@param task task_lib
+---@param task lib_task
 ---@param worker lib_worker_master
 ---@param logger lib_logger
 local function init(task, worker, logger)
@@ -19,6 +19,7 @@ local function init(task, worker, logger)
 		return (y - h) <= const.HEIGHT_BEDROCK
 	end
 
+	-- Return the distance from the specified y-level to the first layer of bedrock
 	---@param y number
 	local function trim_to_bedrock(y)
 		return y + math.abs(const.HEIGHT_BEDROCK) - 1
@@ -46,20 +47,30 @@ local function init(task, worker, logger)
 		return cx, cz
 	end
 
-	-- TODO smarter speading: up to 3 per segment
-	-- TODO seperate worker for bedrock layer; spread remaining height on other workers
 	-- Distribute the layers to mine evenly
 	---@param n_workers number
 	---@param h number
 	---@return number[]
-	local function spread_seg_heigth(n_workers, h)
+	local function spread_segment_height(n_workers, h)
+		-- Optimize worker amount for operation
+		local used_workers = math.ceil(h / 3)
+		used_workers = used_workers > n_workers and n_workers or used_workers
+
 		local segments = {}
-		local base = math.floor(h / n_workers)
-		for i = 1, n_workers do
-			segments[i] = base
+		for i = 1, used_workers do
+			segments[i] = 0
 		end
-		for rem = h % n_workers, 1, -1 do
-			segments[rem] = segments[rem] + 1
+
+		while h > 0 do
+			for i = 1, used_workers do
+				if h >= 3 then
+					segments[i] = segments[i] + 3
+					h = h - 3
+				else
+					segments[i] = segments[i] + h
+					h = 0
+				end
+			end
 		end
 		return segments
 	end
@@ -67,69 +78,140 @@ local function init(task, worker, logger)
 	---@param pos gpslib_position Master position
 	---@param dim dimensions
 	function lib.mine_cuboid(pos, dim)
-		-- FIXME some malformed messsages are received at this time - still valid?
-		-- FIXME sometimes a layer is not mined - the spreading seems buggy
 		logger.trace("determining available workers")
-		local workers = worker.get_labels("miner")
+		local workers = worker.get_labels_avail("miner")
+		local workers_n = #workers
+		if workers_n < 1 then
+			local err = "at least one configured miner is required"
+			logger.error(err)
+			return false, err
+		end
 
 		-- Adjust actual operation y-level
 		local y = pos.y - 1
-		local segs = {}
-		local scrape_br = false
-		---@cast segs { worker: string, r_ypos: number }[] | number[][]
+		local scrape_bedrock = false
 		if touches_bedrock(y, dim.h) then
 			logger.trace("operation will touch bedrock, trimming")
-			dim.h = trim_to_bedrock(y)
-			scrape_br = true
+			-- We want to be two levels above bedrocks to allow the scraper below to dump its items properly
+			dim.h = trim_to_bedrock(y) - 1
+			scrape_bedrock = true
 		end
-		logger.trace("spreading height on workers")
-		local seg_hs = spread_seg_heigth(#workers, dim.h)
-		-- Track the relative y-position of workers
-		local rem_h = dim.h - seg_hs[1]
 
-		for i, w in ipairs(workers) do
-			logger.info("deploying worker '" .. workers[i] .. "' for segment " .. i)
-			worker.deploy(workers[i])
-			task.create(workers[i], "set_position", { pos = pos })
+		if workers_n == 1 then
+			local w = worker.get_labels_avail("miner")[1]
+			logger.info("deploying worker '" .. w .. "' for excavation")
+			worker.deploy(w, "miner", "down")
+			local w_pos = util.coord_add(pos, 0, -1, 0)
+			task.create(w, "set_position", { pos = w_pos })
 			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
-			task.await(task.create(workers[i], "refuel", { target = 1000 }))
-
-			-- TODO scrape the bedrock using multiple workers?
-			if i == 1 and scrape_br then
-				logger.trace("splitting first segment to allow bedrock scraping")
-				local seg_part_1 = trim_to_bedrock(y - rem_h)
-				table.insert(segs, i, {
-					worker = w,
-					r_ypos = rem_h,
-					task.create(w, "tunnel", { direction = "down", distance = rem_h }),
-					task.create(w, "excavate", { l = dim.l, w = dim.w, h = seg_part_1 }),
-					task.create(w, "tunnel", { direction = "down", distance = seg_part_1 }),
-					task.create(w, "excavate_bedrock", { l = dim.l, w = dim.w }),
-					task.create(w, "tunnel", { direction = "up", distance = seg_part_1 })
-				})
-			else
-				table.insert(segs, i, {
-					worker = w,
-					r_ypos = rem_h,
-					task.create(w, "tunnel", { direction = "down", distance = rem_h }),
-					task.create(w, "excavate", { l = dim.l, w = dim.w, h = seg_hs[i] })
-				})
+			task.await(task.create(w, "refuel", { target = const.TURTLE_MIN_FUEL }))
+			logger.trace("excavating segment 1")
+			local tid = task.create(w, "excavate", { l = dim.l, w = dim.w, h = dim.h })
+			task.await(tid)
+			if not task.is_successful(tid) then
+				logger.error("excavate task for main segment failed!")
 			end
-			rem_h = rem_h - seg_hs[i]
-			-- Yield to allow the worker to move in order to prevent collision
-			sleep(3)
+			if scrape_bedrock then
+				tid = task.create(w, "tunnel_pos",
+					{ pos = { x = w_pos.x, y = const.HEIGHT_BEDROCK + 2, z = w_pos.z, dir = w_pos.dir } })
+				task.await(tid)
+				if task.is_successful(tid) then
+					logger.trace("excavating bedrock segment")
+					tid = task.create(w, "excavate_bedrock", { l = dim.l, w = dim.w })
+					task.await(tid)
+					if not task.is_successful(tid) then
+						logger.error("excavate task for bedrock segment failed!")
+					end
+				else
+					logger.error("tunnel command before bedrock scraping failed!")
+				end
+			end
+			tid = task.create(w, "tunnel_pos", { pos = w_pos })
+			task.await(tid)
+			if not task.is_successful(tid) then
+				local err = "worker '" .. w .. "' failed to return"
+				return false, err
+			end
+			worker.collect(w, "down")
+			return true, nil
 		end
-		--
-		-- Collect workers
-		for i = #segs, 1, -1 do
-			local last_task = #(segs[i])
-			task.await(segs[i][last_task])
-			logger.info("recalling worker '" .. segs[i].worker .. "' of segment " .. i)
-			task.await(task.create(segs[i].worker, "navigate", { direction = "up", distance = segs[i].r_ypos }))
-			worker.collect(segs[i].worker)
+
+		local segments = spread_segment_height(scrape_bedrock and workers_n - 1 or workers_n, dim.h)
+		local segments_n = #segments
+		if scrape_bedrock then
+			logger.info("spreading area into " .. segments_n .. "+1 segments")
+		else
+			logger.info("spreading area into " .. segments_n .. " segments")
 		end
-		-- TODO error handling
-		return true
+		local first_w = worker.get_any_avail("miner")
+
+		if scrape_bedrock then
+			logger.info("deploying worker '" .. first_w .. "' for bedrock segment")
+		else
+			logger.info("deploying worker '" .. first_w .. "' for segment " .. #segments .. "/" .. segments_n)
+		end
+		worker.deploy(first_w, "miner", "down")
+		local deploy_pos = util.coord_add(pos, 0, -1, 0)
+		task.create(first_w, "set_position", { pos = deploy_pos })
+		-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
+		task.await(task.create(first_w, "refuel", { target = const.TURTLE_MIN_FUEL }))
+		local target_y = scrape_bedrock
+			and const.HEIGHT_BEDROCK + 2
+			or deploy_pos.y - dim.h + segments[#segments]
+		local tid = task.create(first_w, "tunnel_pos",
+			{ pos = { x = deploy_pos.x, y = target_y, z = deploy_pos.z, dir = deploy_pos.dir } })
+		task.await(tid)
+		if not task.is_successful(tid) then
+			local err = "failed to create vertical tunnel"
+			logger.error(err)
+			task.await(task.create(first_w, "tunnel_pos", { pos = deploy_pos }))
+			worker.collect(first_w, "down")
+			return false, err
+		end
+
+		if scrape_bedrock then
+			tid = task.create(first_w, "excavate_bedrock", { l = dim.l, w = dim.w })
+			target_y = deploy_pos.y - dim.h
+		else
+			tid = task.create(first_w, "excavate", { l = dim.l, w = dim.w, h = segments[#segments] })
+			dim.h = dim.h - segments[#segments]
+			segments[#segments] = nil
+		end
+
+		local tasks = { { worker = first_w, tid = tid, segment = scrape_bedrock and "bedrock" or #segments + 1 } }
+		---@cast tasks { worker: string, tid: integer, segment: integer | "bedrock"}[]
+
+		while #segments > 0 do
+			target_y = target_y + segments[#segments]
+			local w = worker.get_any_avail("miner")
+			logger.info("deploying worker '" .. w .. "' for segment " .. #segments .. "/" .. segments_n)
+			worker.deploy(w, "miner", "down")
+			task.create(w, "set_position", { pos = deploy_pos })
+			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
+			task.await(task.create(w, "refuel", { target = const.TURTLE_MIN_FUEL }))
+			task.await(
+				task.create(w, "navigate_pos",
+					{ pos = { x = deploy_pos.x, y = target_y, z = deploy_pos.z, dir = deploy_pos.dir } })
+			)
+			tid = task.create(w, "excavate", { l = dim.l, w = dim.w, h = segments[#segments] })
+			dim.h = dim.h - segments[#segments]
+			table.insert(tasks, { worker = w, tid = tid, segment = #segments })
+			segments[#segments] = nil
+		end
+
+		while #tasks > 0 do
+			tid = tasks[#tasks].tid
+			local w = tasks[#tasks].worker
+			task.await(tid)
+			if not task.is_successful(tid) then
+				logger.error("excavate tasks for segment " .. tasks[#tasks].segment .. " failed!")
+			end
+			task.await(task.create(w, "navigate_pos", { pos = deploy_pos }))
+			logger.info("collecting worker '" .. w .. "'")
+			worker.collect(w, "down")
+			tasks[#tasks] = nil
+		end
+		return true, nil
 	end
 
 	---@param pos gpslib_position Initial master position
@@ -251,14 +333,13 @@ local function init(task, worker, logger)
 				logger.info("collecting loader '" .. loader .. "' in chunk " .. i)
 				i = i + 1
 				-- TODO make the worker come down a block with a seperate command to avoid collisions after master has moved
-				task.await(task.create(loader, "tunnel_pos", {
-					pos = {
-						x = pos.x,
-						z = pos.z,
-						y = pos.y + 1,
-						dir = pos.dir
-					}
-				}))
+				-- FIXME the worker goes down 1 block too far, destroying the master
+				local target_pos = util.table_copy(worker.workers[loader].position)
+				target_pos.y = pos.y + 1
+				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
+				target_pos.x = pos.x
+				target_pos.z = pos.z
+				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
 				task.create(loader, "swap", {})
 				sleep(1)
 				worker.collect(loader, "up")
@@ -319,6 +400,7 @@ local function init(task, worker, logger)
 				chunks = lib.deploy_loaders(pos, size)
 			end
 			logger.info("starting mining operation")
+			-- TODO error handling
 			lib.mine_cuboid(pos, { w = size_blocks, l = size_blocks, h = 1000 })
 			if op ~= limit then
 				logger.info("navigating to next position")

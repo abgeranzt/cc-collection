@@ -52,6 +52,11 @@ local function init(logger)
 		return lib.workers[label]
 	end
 
+	---@param worker_type worker_type
+	function lib.get_any_avail(worker_type)
+		return lib.get_labels_avail(worker_type)[1]
+	end
+
 	-- Return a list of all workers (of a type)
 	---@param worker_type worker_type | nil
 	---@return string[]
@@ -98,6 +103,7 @@ local function init(logger)
 		suck = { up = turtle.suckUp, down = turtle.suckDown }
 	}
 
+	-- TODO function to check whether all registered workers of a type are actually present and available
 	---@param label string
 	---@param worker_type worker_type | nil
 	---@param dir direction_ver | nil

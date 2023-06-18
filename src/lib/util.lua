@@ -24,20 +24,20 @@ local function place_inv(slot, dir)
 	}
 
 	if not dir then
-	if not turtle.detect() then
+		if not turtle.detect() then
 			dir = "forward"
-	elseif not turtle.detectUp() then
+		elseif not turtle.detectUp() then
 			dir = "up"
-	else
+		else
 			-- We do not want to default to down because that might mess with miners below
 			dir = "forward"
 		end
 	end
 
 	local ok, err = dig_fn[dir]()
-		if not ok then
-			return false, err
-		end
+	if not ok then
+		return false, err
+	end
 	place_fn[dir]()
 
 	turtle.select(p_slot)
@@ -256,6 +256,20 @@ local function table_copy(t)
 	return new_t
 end
 
+---@param pos gpslib_position
+---@param x integer
+---@param y integer
+---@param z integer
+---@return gpslib_position
+local function coord_add(pos, x, y, z)
+	return {
+		x = pos.x + x,
+		y = pos.y + y,
+		z = pos.z + z,
+		dir = pos.dir
+	}
+end
+
 return {
 	dump = dump,
 	refuel = refuel,
@@ -264,4 +278,5 @@ return {
 	has_item_equipped = has_item_equipped,
 	table_compare = table_compare,
 	table_copy = table_copy,
+	coord_add = coord_add
 }

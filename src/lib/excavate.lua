@@ -158,6 +158,7 @@ end
 ---@param w number
 ---@param h number
 local function dig_cuboid(l, w, h)
+	-- TODO return to starting position after failure
 	local fuel_target = h * 3
 	if turtle.getFuelLevel() < fuel_target then
 		-- TODO determine fuel source somewhere
@@ -192,6 +193,7 @@ end
 ---@param l number
 ---@param w number
 local function dig_cuboid_bedrock(l, w)
+	-- TODO return to starting position after failure
 	local target_fuel = l * 2 * w * 2 + 10
 	if turtle.getFuelLevel() < target_fuel then
 		util.refuel(target_fuel)
