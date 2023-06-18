@@ -49,6 +49,11 @@ local function master_setup(send_cmd, worker, logger)
 	end
 
 	---@param id number
+	local function is_successful(id)
+		return _tasks[id].status == "ok" and true or false
+	end
+
+	---@param id number
 	local function await(id)
 		while not is_completed(id) do
 			sleep(1)
@@ -73,6 +78,7 @@ local function master_setup(send_cmd, worker, logger)
 		get_data = get_data,
 		get_status = get_status,
 		is_completed = is_completed,
+		is_successful = is_successful,
 		monitor = monitor
 	}
 end
