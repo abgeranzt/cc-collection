@@ -3,9 +3,11 @@
 
 ---@param send_cmd fun(ch: number, rec_name: string, payload: msg_payload)
 ---@param logger logger
----@param worker {get: fun(label: string): worker}
-local function master_setup(send_cmd, worker, logger)
-	-- TODO refactor to lib structure
+---@param worker lib_worker_master
+local function init(send_cmd, worker, logger)
+	---@class lib_task
+	local lib = {}
+
 	local _id = 1
 	local _tasks = {}
 	---@cast _tasks task[]
@@ -13,7 +15,7 @@ local function master_setup(send_cmd, worker, logger)
 	---@param label string
 	---@param command cmd_type
 	---@param params table | nil
-	local function create(label, command, params)
+	function lib.create(label, command, params)
 		logger.info("creating '" .. command .. "' task for '" .. label .. "'")
 		local payload = {
 			id = _id,
@@ -34,33 +36,33 @@ local function master_setup(send_cmd, worker, logger)
 	end
 
 	---@param id number
-	local function get_status(id)
+	function lib.get_status(id)
 		return _tasks[id].status
 	end
 
 	---@param id number
-	local function get_data(id)
+	function lib.get_data(id)
 		return _tasks[id].data
 	end
 
 	---@param id number
-	local function is_completed(id)
+	function lib.is_completed(id)
 		return _tasks[id].completed
 	end
 
 	---@param id number
-	local function is_successful(id)
+	function lib.is_successful(id)
 		return _tasks[id].status == "ok" and true or false
 	end
 
 	---@param id number
-	local function await(id)
-		while not is_completed(id) do
+	function lib.await(id)
+		while not lib.is_completed(id) do
 			sleep(1)
 		end
 	end
 
-	local function monitor()
+	function lib.monitor()
 		while true do
 			local _, id, status, data = os.pullEvent("task_update")
 			---@cast id number
@@ -72,17 +74,9 @@ local function master_setup(send_cmd, worker, logger)
 		end
 	end
 
-	return {
-		await = await,
-		create = create,
-		get_data = get_data,
-		get_status = get_status,
-		is_completed = is_completed,
-		is_successful = is_successful,
-		monitor = monitor
-	}
+	return lib
 end
 
 return {
-	master_setup = master_setup
+	init = init
 }
