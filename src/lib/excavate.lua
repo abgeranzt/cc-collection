@@ -197,7 +197,6 @@ local function dig_cuboid_bedrock(l, w)
 		util.refuel(target_fuel)
 	end
 
-	-- FIXME this does not dump items into a chest which will make the turtle stuck
 	local function scrape()
 		local hpos = 0
 		while true do
@@ -211,11 +210,12 @@ local function dig_cuboid_bedrock(l, w)
 
 	local rpos = 1
 	for i = 1, w do
-		for j = 1, l - 1 do
+		for _ = 1, l - 1 do
 			scrape()
 			tunnel.forward_push()
 		end
 		scrape()
+		util.dump(nil, nil, nil, "down")
 		if i < w then
 			if (rpos == 1) then
 				turtle.turnRight()

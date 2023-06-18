@@ -67,7 +67,7 @@ end
 
 ---@alias dimensions {w: number, l: number, h: number}
 
----@alias util_inv_dir "forward" | "up"
+---@alias util_inv_dir "forward" | "up" | "down"
 ---@alias util_fuel_type "consumable" | "container"
 
 ---@alias queue { fpos: integer, lpos: integer, len: integer, push: fun(task: table), pop: fun(): table}

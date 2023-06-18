@@ -5,30 +5,43 @@
 
 local dig = require("lib.dig")
 
-local function place_inv(slot)
+---@param slot integer
+---@param dir util_inv_dir | nil
+local function place_inv(slot, dir)
 	local p_slot = turtle.getSelectedSlot()
 	---@cast p_slot integer
 	turtle.select(slot)
-	local inv_dir
 
+	local dig_fn = {
+		up = dig.up_safe,
+		down = dig.down_safe,
+		forward = dig.forward_safe
+	}
+	local place_fn = {
+		up = turtle.placeUp,
+		down = turtle.placeDown,
+		forward = turtle.place
+	}
+
+	if not dir then
 	if not turtle.detect() then
-		turtle.place()
-		inv_dir = "forward"
+			dir = "forward"
 	elseif not turtle.detectUp() then
-		turtle.placeUp()
-		inv_dir = "up"
+			dir = "up"
 	else
-		local ok, err = dig.forward_safe()
+			-- We do not want to default to down because that might mess with miners below
+			dir = "forward"
+		end
+	end
+
+	local ok, err = dig_fn[dir]()
 		if not ok then
 			return false, err
 		end
-		turtle.place()
-		inv_dir = "forward"
-	end
-	---@cast inv_dir util_inv_dir
+	place_fn[dir]()
 
 	turtle.select(p_slot)
-	return inv_dir
+	return dir
 end
 
 ---@param slot integer
@@ -38,12 +51,13 @@ local function break_inv(slot, dir)
 	---@cast p_slot integer
 	turtle.select(slot)
 
-	local ok, err
-	if dir == "forward" then
-		ok, err = turtle.dig()
-	else
-		ok, err = turtle.digUp()
-	end
+	local dig_fn = {
+		up = dig.up,
+		down = dig.down,
+		forward = dig.forward
+	}
+
+	local ok, err = dig_fn[dir]()
 
 	turtle.select(p_slot)
 	return ok, err
@@ -52,30 +66,33 @@ end
 ---@param d_slot integer | nil The slot with the dumping inv
 ---@param f_slot integer | nil The first slot to dump
 ---@param l_slot integer | nil The last slot to dump
-local function dump(d_slot, f_slot, l_slot)
+---@param dir util_inv_dir | nil
+local function dump(d_slot, f_slot, l_slot, dir)
 	d_slot = d_slot or 1
 	f_slot = f_slot or 3
 	l_slot = l_slot or 16
 	local p_slot = turtle.getSelectedSlot()
 	---@cast p_slot integer
 	turtle.select(d_slot)
-	local inv_dir, err = place_inv(d_slot)
-	if not inv_dir then
+	local err
+	---@diagnostic disable-next-line: cast-local-type
+	dir, err = place_inv(d_slot, dir)
+	if not dir then
 		return false, err
 	end
+	---@cast dir util_inv_dir
 
-	local drop_fn
-	if inv_dir == "forward" then
-		drop_fn = turtle.drop
-	else
-		drop_fn = turtle.dropUp
-	end
+	local drop_fn = {
+		forward = turtle.drop,
+		up = turtle.dropUp,
+		down = turtle.dropDown
+	}
 
 	local ok
 	local s = f_slot
 	while s <= l_slot do
 		turtle.select(s)
-		ok, err = drop_fn()
+		ok, err = drop_fn[dir]()
 		if ok or err == "No items to drop" then
 			s = s + 1
 		else
@@ -83,7 +100,7 @@ local function dump(d_slot, f_slot, l_slot)
 		end
 	end
 
-	ok, err = break_inv(d_slot, inv_dir)
+	ok, err = break_inv(d_slot, dir)
 	turtle.select(p_slot)
 
 	return ok, err
