@@ -209,9 +209,11 @@ end
 
 
 ---@param name string The minecraft:item:identifier
----@param slot integer
-local function is_item(name, slot)
-	return turtle.getItemCount(slot) > 0 and
+---@param slot integer The turtle slot
+---@param min integer | nil Optional mininum amount
+local function has_item(name, slot, min)
+	if not min then min = 1 end
+	return turtle.getItemCount(slot) >= min and
 		turtle.getItemDetail(slot, true).name == name
 end
 
@@ -225,7 +227,7 @@ local function has_item_equipped(name, side, s_slot)
 	local hi = false
 	turtle.select(s_slot)
 	equip()
-	hi = is_item(name, s_slot)
+	hi = has_item(name, s_slot)
 	equip()
 	turtle.select(slot)
 	return hi
@@ -274,7 +276,7 @@ return {
 	dump = dump,
 	refuel = refuel,
 	get_label = get_label,
-	is_item = is_item,
+	has_item = has_item,
 	has_item_equipped = has_item_equipped,
 	table_compare = table_compare,
 	table_copy = table_copy,

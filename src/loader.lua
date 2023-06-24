@@ -10,7 +10,7 @@ local util = require("lib.util")
 local function init(args)
 	local queue = require("lib.queue").queue
 
-	if not util.is_item(const.ITEM_MODEM, 1) then
+	if not util.has_item(const.ITEM_MODEM, 1) then
 		print("No modem found, exiting!")
 		---@diagnostic disable-next-line: undefined-global
 		exit()

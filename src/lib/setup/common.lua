@@ -113,7 +113,7 @@ local function init()
 		local equip = side == "left" and turtle.equipLeft or turtle.equipRight
 		while true do
 			lib.prompt.value("Insert a " .. label .. " into slot " .. slot .. " and press enter.")
-			if util.is_item(name, slot) then
+			if util.has_item(name, slot) then
 				equip()
 				break
 			end

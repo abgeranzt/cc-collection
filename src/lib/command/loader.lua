@@ -23,7 +23,7 @@ local function init(logger, pos, modem, listen_ch, s_slot)
 	---@return boolean swapped true when the tool had to be swapped
 	local function equip_pick()
 		local swapped = false
-		if util.is_item(const.ITEM_PICKAXE, s_slot) then
+		if util.has_item(const.ITEM_PICKAXE, s_slot) then
 			local slot = turtle.getSelectedSlot()
 			turtle.select(s_slot)
 			turtle.equipRight()
@@ -43,7 +43,7 @@ local function init(logger, pos, modem, listen_ch, s_slot)
 
 	function lib.swap(_)
 		_swap()
-		if util.is_item(const.ITEM_PICKAXE, s_slot) then
+		if util.has_item(const.ITEM_PICKAXE, s_slot) then
 			modem.open(listen_ch)
 		end
 		return true, nil
