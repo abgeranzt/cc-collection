@@ -269,7 +269,6 @@ local function init(task, worker, logger)
 	function lib.deploy_loaders(pos, size)
 		-- TODO error handling
 		logger.info("deploying loaders for " .. size * size .. " chunks")
-		local loaders = worker.get_labels_avail("loader")
 		local i = 1
 		local chunks = {}
 		for j = 1, size do
@@ -278,37 +277,35 @@ local function init(task, worker, logger)
 				chunks[j][k] = {}
 			end
 		end
+		---@cast chunks {[integer]: {[integer]: {label: string, tid: integer}}}
 		-- Reverse order because we want to deploy loaders that are further away first
 		for j = #chunks, 1, -1 do
 			for k = #chunks, 1, -1 do
-				local loader = loaders[i]
+				local loader = worker.get_any_avail("loader")
 				logger.info("deploying loader '" .. loader .. "' for chunk " .. i)
 				i = i + 1
 				worker.deploy(loader, "loader", "up")
+
 				chunks[j][k].label = loader
-				task.create(loader, "set_position", {
-					pos = {
-						x = pos.x,
-						y = pos.y + 1,
-						z = pos.z,
-						dir = pos.dir
-					}
-				})
+				local loader_pos = util.coord_add(pos, 0, 1, 0)
+				task.create(loader, "set_position", { pos = loader_pos })
+
 				local fuel_target = j * 16 * 2 + k * 16 * 2
 				if fuel_target < const.TURTLE_MIN_FUEL then
 					fuel_target = const.TURTLE_MIN_FUEL
 				end
 				task.await(task.create(loader, "refuel", { target = fuel_target }))
+
 				local x = pos.x + (j - 1) * chunk_shifts[pos.dir].x
 				local z = pos.z + (k - 1) * chunk_shifts[pos.dir].z
+
 				local target_pos = {
 					x = x,
 					y = pos.y + 2,
 					z = z,
 					dir = pos.dir
 				}
-				task.create(loader, "tunnel_pos", { pos = target_pos })
-				local tid = task.create(loader, "update_position", {})
+				local tid = task.create(loader, "tunnel_pos", { pos = target_pos })
 				-- Yield to allow the worker to move
 				sleep(3)
 				chunks[j][k].tid = tid
@@ -336,27 +333,31 @@ local function init(task, worker, logger)
 				local loader = chunks[j][k].label
 				logger.info("collecting loader '" .. loader .. "' in chunk " .. i)
 				i = i + 1
-				-- TODO make the worker come down a block with a seperate command to avoid collisions after master has moved
-				-- FIXME the worker goes down 1 block too far, destroying the master
-				local target_pos = util.table_copy(worker.workers[loader].position)
-				target_pos.y = pos.y + 1
+				local target_pos = util.coord_add(worker.workers[loader].position, 0, -1, 0)
 				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
-				target_pos.x = pos.x
-				target_pos.z = pos.z
+				target_pos = util.coord_add(pos, 0, 1, 0)
 				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
 				task.create(loader, "swap", {})
+				-- Yield to allow the worker to swap
 				sleep(1)
 				worker.collect(loader, "up")
 			end
 		end
 	end
 
+	-- Mine a square of chunks.
+	-- Navigate to the specified corner of the chunk and treat it as the bottom left corner of the square to mine.
 	---@param pos gpslib_position Initial master position
 	---@param size integer Square root of number of chunks (area is always a square)
-	---@param dir gpslib_direction
-	---@param use_loaders boolean
+	---@param dir gpslib_direction The direction to mine in (mine forward and right relative to this)
+	---@param use_loaders boolean Whether to use loaders
 	---@param limit integer | nil Operation limit (-1 for infinite)
 	function lib.auto_mine_chunk(pos, size, dir, use_loaders, limit)
+		if not use_loaders then
+			logger.warn(
+				"using auto chunk mining without chunk loaders may lead to unexpected behavior due to chunks being unloaded"
+			)
+		end
 		limit = limit or -1
 		local size_blocks = size * 16
 		local n_miners = #worker.get_labels("miner")
@@ -365,6 +366,7 @@ local function init(task, worker, logger)
 			logger.error(err)
 			return false, err
 		end
+		if use_loaders then
 		local n_loaders = #worker.get_labels("loader")
 		local n_chunks = size ^ 2
 		if n_loaders < n_chunks then
@@ -372,6 +374,7 @@ local function init(task, worker, logger)
 				n_loaders .. ", needs at least " .. n_chunks + 1 .. ")"
 			logger.error(err)
 			return false, err
+			end
 		end
 
 		logger.info("starting chunk automining")

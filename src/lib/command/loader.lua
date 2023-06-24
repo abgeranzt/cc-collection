@@ -3,6 +3,9 @@ local miner = require("lib.command.miner")
 local util = require("lib.util")
 
 ---@diagnostic disable-next-line: unknown-cast-variable
+---@cast os os
+
+---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
 ---@param logger logger
@@ -94,6 +97,9 @@ local function init(logger, pos, modem, listen_ch, s_slot)
 			_swap()
 			-- The peripheral wrapper survives swapping, open channels do not
 			modem.open(listen_ch)
+			os.queueEvent("pos_update")
+			-- Yield to allow the position update to be propagated
+			sleep(1)
 		end
 		if not ok then
 			---@cast err string
