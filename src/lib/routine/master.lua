@@ -21,7 +21,7 @@ local function init(task, worker, logger)
 
 	-- Return the distance from the specified y-level to the first layer of bedrock
 	---@param y number
-	local function trim_to_bedrock(y)
+	local function dist_to_bedrock(y)
 		return y + math.abs(const.HEIGHT_BEDROCK) - 1
 	end
 
@@ -48,19 +48,20 @@ local function init(task, worker, logger)
 	end
 
 	-- Distribute the layers to mine evenly
-	---@param n_workers number
+	---@param max_workers number
 	---@param h number
 	---@return number[]
-	local function spread_segment_height(n_workers, h)
+	local function spread_segment_height(max_workers, h)
 		-- Optimize worker amount for operation
 		local used_workers = math.ceil(h / 3)
-		used_workers = used_workers > n_workers and n_workers or used_workers
+		used_workers = used_workers > max_workers and max_workers or used_workers
 
 		local segments = {}
 		for i = 1, used_workers do
 			segments[i] = 0
 		end
 
+		-- Use increments of three to optimize fuel consumption and operation time
 		while h > 0 do
 			for i = 1, used_workers do
 				if h >= 3 then
@@ -77,7 +78,10 @@ local function init(task, worker, logger)
 
 	---@param pos gpslib_position Master position
 	---@param dim dimensions
-	function lib.mine_cuboid(pos, dim)
+	---@param scrape_bedrock boolean | nil
+	function lib.mine_cuboid(pos, dim, scrape_bedrock)
+		-- TODO scraping the bedrock accounts for ~50% of total time per chunk, optimize this by having splitting the bedrock layer between the first two workers, if possible
+		--FIXME bedrock scraping does not check for fuel
 		logger.trace("determining available workers")
 		local workers = worker.get_labels_avail("miner")
 		local workers_n = #workers
@@ -88,12 +92,13 @@ local function init(task, worker, logger)
 		end
 
 		-- Adjust actual operation y-level
-		local y = pos.y - 1
-		local scrape_bedrock = false
-		if touches_bedrock(y, dim.h) then
+		local deploy_pos = util.coord_add(pos, 0, -1, 0)
+
+		-- Trim operation area to bedrock
+		if touches_bedrock(deploy_pos.y, dim.h) then
 			logger.trace("operation will touch bedrock, trimming")
-			-- We want to be two levels above bedrocks to allow the scraper below to dump its items properly
-			dim.h = trim_to_bedrock(y) - 1
+			-- We want to be two levels above bedrock to allow the scraper below to dump its items properly
+			dim.h = dist_to_bedrock(deploy_pos.y) - 1
 			scrape_bedrock = true
 		end
 
@@ -151,7 +156,6 @@ local function init(task, worker, logger)
 			logger.info("deploying worker '" .. first_w .. "' for segment " .. #segments .. "/" .. segments_n)
 		end
 		worker.deploy(first_w, "miner", "down")
-		local deploy_pos = util.coord_add(pos, 0, -1, 0)
 		task.create(first_w, "set_position", { pos = deploy_pos })
 		-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 		task.await(task.create(first_w, "refuel", { target = const.TURTLE_MIN_FUEL }))
