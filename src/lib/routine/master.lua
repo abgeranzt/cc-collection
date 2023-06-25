@@ -272,9 +272,9 @@ local function init(task, worker, logger)
 
 		local err
 		local n_chunks = size ^ 2
-		local avail_loaders = worker.get_labels_avail("loader")
-		if avail_loaders < n_chunks then
-			err = "not enough loaders available (has: " .. #avail_loaders .. ", needs " .. n_chunks .. ")"
+		local n_avail_loaders = #worker.get_labels_avail("loader")
+		if n_avail_loaders < n_chunks then
+			err = "not enough loaders available (has: " .. n_avail_loaders .. ", needs " .. n_chunks .. ")"
 			return false, err
 		end
 		if not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS, n_chunks) then
