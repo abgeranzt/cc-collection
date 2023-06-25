@@ -1,0 +1,14 @@
+name: Release
+on: [push]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./pack.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: packed
+          path: .temp/packed
