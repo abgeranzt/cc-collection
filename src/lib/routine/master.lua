@@ -270,7 +270,7 @@ local function init(task, worker, logger)
 		-- TODO error handling
 		logger.info("deploying loaders for " .. size * size .. " chunks")
 
-		local err
+		local ok, err
 		local n_chunks = size ^ 2
 		local n_avail_loaders = #worker.get_labels_avail("loader")
 		if n_avail_loaders < n_chunks then
@@ -297,7 +297,12 @@ local function init(task, worker, logger)
 				local loader = worker.get_any_avail("loader")
 				logger.info("deploying loader '" .. loader .. "' for chunk " .. i)
 				i = i + 1
-				worker.deploy(loader, "loader", "up")
+				ok, err = worker.deploy(loader, "loader", "up")
+				if not ok then
+					err = "failed to deploy loader '" .. loader .. "'"
+					logger.error(err)
+					return false, err
+				end
 
 				chunks[j][k].label = loader
 				local loader_pos = util.coord_add(pos, 0, 1, 0)
@@ -336,7 +341,7 @@ local function init(task, worker, logger)
 	---@param pos gpslib_position
 	---@param chunks routine_chunk_grid
 	function lib.collect_loaders(pos, chunks)
-		-- TODO error handling
+		-- TODO error handling/propagation
 		-- TODO deploy intermediate loader below
 		logger.info("collecting loaders for " .. #chunks * #chunks .. " chunks")
 		local i = 1
@@ -352,7 +357,12 @@ local function init(task, worker, logger)
 				task.create(loader, "swap", {})
 				-- Yield to allow the worker to swap
 				sleep(1)
-				worker.collect(loader, "up")
+				local ok, err = worker.collect(loader, "up")
+				if not ok then
+					err = "failed to collect loader '" .. loader .. "'"
+					logger.error(err)
+					return false, err
+				end
 			end
 		end
 	end

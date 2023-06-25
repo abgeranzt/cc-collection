@@ -100,8 +100,39 @@ local function init(logger)
 	local op = {
 		place = { up = turtle.placeUp, down = turtle.placeDown },
 		drop = { up = turtle.dropUp, down = turtle.dropDown },
-		suck = { up = turtle.suckUp, down = turtle.suckDown }
+		suck = { up = turtle.suckUp, down = turtle.suckDown },
+		dig = { up = dig.up_safe, down = dig.down_safe }
 	}
+
+	---@param dir direction_ver | nil The direction in which to clear, nil for both
+	local function clear_deployment_area(dir)
+		logger.trace("clearing deployment area")
+		turtle.select(const.SLOT_FIRST_FREE)
+		local err_def = "failed to clear deployment area"
+		local ok, err
+		if not dir or dir == "up" then
+			ok, err = dig.up_safe()
+			if not ok then
+				logger.error(err)
+				return false, err_def
+			end
+		end
+		if not dir or dir == "down" then
+			ok, err = dig.down_safe()
+			if not ok then
+				logger.error(err)
+				return false, err_def
+			end
+		end
+		if turtle.getItemCount(const.SLOT_FIRST_FREE) > 0 then
+			ok, err = util.dump(const.SLOT_DUMP, const.SLOT_FIRST_FREE, 16, dir)
+		end
+		if not ok then
+			logger.error(err)
+			return false, err_def
+		end
+		return true
+	end
 
 	-- TODO function to check whether all registered workers of a type are actually present and available
 	---@param label string
@@ -109,62 +140,62 @@ local function init(logger)
 	---@param dir direction_ver | nil
 	function lib.deploy(label, worker_type, dir)
 		-- TODO we can assert the worker_type using the label, get rid of the parameter
-		-- FIXME place worker chest in dir
+		-- TODO ensure that enough fuel and dump chests are available
 		worker_type = worker_type or "miner"
 		dir = dir or "down"
+		local helper_dir = dir == "down" and "up" or "down"
 
 		local ok, err
 		if worker_type == "loader" and not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS) then
 			err = "need at least one available " .. const.LABEL_MODEM
+			logger.error(err)
 			return false, err
 		end
 
-		logger.info("deploying worker '" .. label .. "'")
-		logger.trace("placing helper chests")
+		-- Do this now because we do not want any mined items to clutter our inventory while deploying
+		logger.trace("clearing space for helper chests")
+		ok, err = clear_deployment_area()
+		if not ok then
+			logger.error(err)
+			return false, err
+		end
+
+		logger.info("deploying worker '" .. label .. "' " .. dir .. "wards")
 		turtle.select(const.SLOT_FIRST_FREE)
-		ok, err = dig.forward()
-		-- TODO this is getting tedious, there has to be a more elgant way to propagate errors
+		logger.trace("placing helper chests")
+		ok, err = util.place_inv(const.SLOT_HELPER, helper_dir)
 		if not ok then
+			err = "failed to place helper chest"
+			logger.error(err)
 			return false, err
 		end
-		if dir == "up" then
-			ok, err = dig.up_safe()
-		else
-			ok, err = dig.down_safe()
-		end
-		if not ok then
-			return false, err
-		end
-		if turtle.getItemCount(const.SLOT_FIRST_FREE) > 0 then
-			ok, err = util.dump(1, const.SLOT_FIRST_FREE, 16)
-			if not ok then
-				return false, err
-			end
-		end
-		turtle.select(const.SLOT_HELPER)
-		turtle.place()
-
 		logger.trace("placing worker chest")
-		local slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
-		turtle.select(slot)
-		op.place[dir]()
+		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
+		ok, err = util.place_inv(chest_slot, dir)
+		if not ok then
+			err = "failed to place worker chest"
+			logger.error(err)
+			return false, err
+		end
 
 		logger.trace("selecting worker")
 		-- Search inventory for worker
+		turtle.select(chest_slot)
 		while true do
 			op.suck[dir]()
-			if turtle.getItemDetail(slot, true).displayName == label then
+			-- TODO handle missing worker
+			if turtle.getItemDetail(chest_slot, true).displayName == label then
 				logger.trace("worker found")
 				turtle.transferTo(const.SLOT_DEPLOY)
 				break
 			end
-			turtle.drop()
+			op.drop[helper_dir]()
 		end
 		-- Return other workers
-		while turtle.suck() do
+		while op.suck[helper_dir]() do
 			op.drop[dir]()
 		end
-		dig[dir]()
+		util.break_inv(chest_slot, dir)
 
 		logger.trace("deploying worker")
 		turtle.select(const.SLOT_DEPLOY)
@@ -180,17 +211,14 @@ local function init(logger)
 		lib.workers[label].deployed = true
 
 		logger.trace("removing helper chests")
-		turtle.select(const.SLOT_HELPER)
-		dig.forward()
+		util.break_inv(const.SLOT_HELPER, helper_dir)
 
 		logger.trace("starting worker")
-		if dir == "up" then
-			peripheral.call("top", "turnOn")
-		else
-			peripheral.call("bottom", "turnOn")
-		end
+		local side = dir == "up" and "top" or "bottom"
+		peripheral.call(side, "turnOn")
 		-- Yield execution to allow the worker to start
 		sleep(1)
+		return true
 	end
 
 	-- Note: this assumes that the collected worker only contains the items we gave it on deployment
@@ -198,17 +226,52 @@ local function init(logger)
 	---@param dir direction_ver | nil
 	function lib.collect(label, dir)
 		dir = dir or "down"
-		local slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
-		turtle.select(slot)
-		turtle.place()
+		local chest_dir = dir == "down" and "up" or "down"
+		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
+
+		local ok, err = clear_deployment_area("down")
+		if not ok then
+			logger.error(err)
+			return false, err
+		end
+
+		logger.trace("placing worker chest")
+		---@diagnostic disable-next-line: cast-local-type
+		ok, err = util.place_inv(chest_slot, chest_dir)
+		if not ok then
+			err = "failed to place worker chest"
+			logger.error(err)
+			return false, err
+		end
 		-- Force the chests go into the right slots by inserting them into the first possible slot
-		-- TODO ensure that enough fuel and dump chests are available
 		turtle.select(1)
+
+		logger.trace("breaking worker")
 		dig[dir]()
 		lib.workers[label].deployed = false
-		turtle.select(slot)
-		turtle.drop()
-		turtle.dig()
+		-- Since the worker is not guaranteed to go into the selected slot, we need to explicitly find it
+		local worker_slot = util.find_item(const.ITEM_TURTLE)
+		if not worker_slot then
+			err = "worker not found in inventory after mining it"
+			logger.error(err)
+			return false, err
+		end
+		turtle.select(worker_slot)
+		op.drop[chest_dir]()
+
+		-- Handle extra items the worker was carrying
+		while turtle.getItemCount(chest_slot) > 0 do
+			ok, err = util.transfer_first_free(chest_slot, const.SLOT_FIRST_FREE)
+			logger.trace("dumping inventory")
+			util.dump(const.SLOT_DUMP, const.SLOT_FIRST_FREE, nil, dir)
+			if ok then
+				break
+			end
+		end
+		logger.trace("collecting worker chest")
+		turtle.select(chest_slot)
+		op.dig[chest_dir]()
+		return true
 	end
 
 	return lib

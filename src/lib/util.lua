@@ -198,6 +198,24 @@ local function refuel(target, f_type, s_slot, d_slot, f_slot, l_slot)
 	return true
 end
 
+---@param s_slot integer The slot to move from
+---@param f_slot integer nil The first slot to try to move to
+---@param l_slot integer | nil The last slot to try to move to
+local function transfer_first_free(s_slot, f_slot, l_slot)
+	l_slot = l_slot or 16
+	local p_slot = turtle.getSelectedSlot()
+	turtle.select(s_slot)
+	local moved = false
+	for slot = f_slot, l_slot do
+		if turtle.transferTo(slot) then
+			moved = true
+			break
+		end
+	end
+	turtle.select(p_slot)
+	return moved
+end
+
 ---@return string | nil
 local function get_label()
 	return os.getComputerLabel()
@@ -226,6 +244,20 @@ local function has_item_equipped(name, side, s_slot)
 	equip()
 	turtle.select(slot)
 	return hi
+end
+
+---@param name string The minecraft:item:identifier
+---@param f_slot integer | nil The first slot to look in
+---@param l_slot integer | nil The last slot to look in
+local function find_item(name, f_slot, l_slot)
+	f_slot = f_slot or 1
+	l_slot = l_slot or 16
+	for slot = f_slot, l_slot do
+		if turtle.getItemCount(slot) > 0 and turtle.getItemDetail(slot, true).name == name then
+			return slot
+		end
+	end
+	return false
 end
 
 ---@param t1 table
@@ -268,11 +300,15 @@ local function coord_add(pos, x, y, z)
 end
 
 return {
+	place_inv = place_inv,
+	break_inv = break_inv,
 	dump = dump,
 	refuel = refuel,
+	transfer_first_free = transfer_first_free,
 	get_label = get_label,
 	has_item = has_item,
 	has_item_equipped = has_item_equipped,
+	find_item = find_item,
 	table_compare = table_compare,
 	table_copy = table_copy,
 	coord_add = coord_add

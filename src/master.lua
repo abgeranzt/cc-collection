@@ -76,8 +76,12 @@ local function test_master()
 	worker.create("dev-loader-3", "loader", 7003)
 	worker.create("dev-loader-4", "loader", 7004)
 
-	routine.auto_mine_chunk(pos, 1, "south", false, 1)
-	print("exiting")
+	local ok, err = routine.auto_mine_chunk(pos, 1, "south", true, 1)
+	if ok then
+		print("success")
+	else
+		print(err)
+	end
 	exit()
 end
 
