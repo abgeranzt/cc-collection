@@ -81,7 +81,6 @@ local function init(task, worker, logger)
 	---@param scrape_bedrock boolean | nil
 	function lib.mine_cuboid(pos, dim, scrape_bedrock)
 		-- TODO scraping the bedrock accounts for ~50% of total time per chunk, optimize this by having splitting the bedrock layer between the first two workers, if possible
-		--FIXME bedrock scraping does not check for fuel
 		logger.trace("determining available workers")
 		local workers = worker.get_labels_avail("miner")
 		local workers_n = #workers

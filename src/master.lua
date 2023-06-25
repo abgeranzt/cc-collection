@@ -21,7 +21,7 @@ local function init(args)
 	argparse.add_arg("log_lvl", "-ll", "string", false, "info")
 	argparse.add_arg("master_ch", "-mc", "number", false, 10000)
 	argparse.add_arg("listen_ch", "-c", "number", true)
-	-- TODO determine direction by myself and make this optinal
+	-- TODO determine direction by myself using compass or moving the turtle and make this optinal
 	argparse.add_arg("direction", "-d", "string", true, nil, const.DIRECTIONS)
 
 	local parsed_args, e = argparse.parse(args)
@@ -76,7 +76,7 @@ local function test_master()
 	worker.create("dev-loader-3", "loader", 7003)
 	worker.create("dev-loader-4", "loader", 7004)
 
-	local ok, err = routine.auto_mine_chunk(pos, 1, "south", true, 1)
+	local ok, err = routine.auto_mine_chunk(pos, 1, "north", true, 2)
 	if ok then
 		print("success")
 	else

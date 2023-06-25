@@ -117,19 +117,21 @@ end
 ---@param l number
 ---@param w number
 ---@param tunnel_fw fun(n: number)
-local function dig_rectangle(l, w, tunnel_fw)
+---@param fuel_type util_fuel_type | nil
+local function dig_rectangle(l, w, tunnel_fw, fuel_type)
 	local fuel_target = l * 2 * w * 2
 	if turtle.getFuelLevel() < fuel_target then
-		-- TODO determine fuel source somewhere
-		util.refuel(fuel_target)
+		util.refuel(fuel_target, fuel_type)
 	end
 
 	local rpos = 1
 	for i = 1, w, 1 do
 		tunnel_fw(l - 1)
 		rpos = rpos * -1
-		-- FIXME what happens when the chest is placed into an unloaded chunk?
-		util.dump()
+		-- Dump to back to avoid placing the chest into an unloaded chunk
+		turn()
+		util.dump(nil, nil, nil, "forward")
+		turn()
 		-- Prepare for next column
 		if i < w then
 			if rpos == -1 then
@@ -157,12 +159,12 @@ end
 ---@param l number
 ---@param w number
 ---@param h number
-local function dig_cuboid(l, w, h)
+---@param fuel_type util_fuel_type | nil
+local function dig_cuboid(l, w, h, fuel_type)
 	-- TODO return to starting position after failure
 	local fuel_target = h * 3
 	if turtle.getFuelLevel() < fuel_target then
-		-- TODO determine fuel source somewhere
-		util.refuel(fuel_target)
+		util.refuel(fuel_target, fuel_type)
 	end
 	local i = h
 	while (i > 0) do
@@ -183,20 +185,19 @@ local function dig_cuboid(l, w, h)
 			tunnel.down(1)
 		end
 	end
-	for _ = 1, h - 1 do
-		go.up()
-	end
-	util.dump()
+	go.up(h - 1)
+	util.dump(nil, nil, nil, "forward")
 	return true
 end
 
 ---@param l number
 ---@param w number
-local function dig_cuboid_bedrock(l, w)
+---@param fuel_type util_fuel_type | nil
+local function dig_cuboid_bedrock(l, w, fuel_type)
 	-- TODO return to starting position after failure
-	local target_fuel = l * 2 * w * 2 + 10
+	local target_fuel = l * w * 2 + l * w * 15
 	if turtle.getFuelLevel() < target_fuel then
-		util.refuel(target_fuel)
+		util.refuel(target_fuel, fuel_type, nil, nil, nil, nil, "down")
 	end
 
 	local function scrape()

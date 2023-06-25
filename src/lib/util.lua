@@ -3,6 +3,7 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
+local const = require("lib.const")
 local dig = require("lib.dig")
 
 ---@param slot integer
@@ -61,130 +62,143 @@ local function break_inv(slot, dir)
 	return ok, err
 end
 
+local op = {
+	drop = {
+		forward = turtle.drop,
+		up = turtle.dropUp,
+		down = turtle.dropDown,
+	},
+	suck = {
+		forward = turtle.suck,
+		up = turtle.suckUp,
+		down = turtle.suckDown,
+	}
+}
+
 ---@param d_slot integer | nil The slot with the dumping inv
 ---@param f_slot integer | nil The first slot to dump
 ---@param l_slot integer | nil The last slot to dump
----@param dir util_inv_dir | nil The direction to place the dumping inv in
-local function dump(d_slot, f_slot, l_slot, dir)
-	d_slot = d_slot or 1
+---@param chest_dir util_inv_dir | nil The direction to place the dumping inv in
+local function dump(d_slot, f_slot, l_slot, chest_dir)
+	d_slot = d_slot or const.SLOT_DUMP
 	f_slot = f_slot or 3
 	l_slot = l_slot or 16
 	local p_slot = turtle.getSelectedSlot()
 	turtle.select(d_slot)
-	local err
+	local ok, err
 	---@diagnostic disable-next-line: cast-local-type
-	dir, err = place_inv(d_slot, dir)
-	if not dir then
+	chest_dir, err = place_inv(d_slot, chest_dir)
+	if not chest_dir then
 		return false, err
 	end
-	---@cast dir util_inv_dir
+	---@cast chest_dir util_inv_dir
 
-	local drop_fn = {
-		forward = turtle.drop,
-		up = turtle.dropUp,
-		down = turtle.dropDown
-	}
-
-	local ok
-	local s = f_slot
-	while s <= l_slot do
-		turtle.select(s)
-		ok, err = drop_fn[dir]()
+	local slot = f_slot
+	while slot <= l_slot do
+		turtle.select(slot)
+		ok, err = op.drop[chest_dir]()
 		if ok or err == "No items to drop" then
-			s = s + 1
+			slot = slot + 1
 		else
 			sleep(1)
 		end
 	end
 
-	ok, err = break_inv(d_slot, dir)
+	ok, err = break_inv(d_slot, chest_dir)
 	turtle.select(p_slot)
 
 	return ok, err
 end
 
 ---@param target integer The fuel target
----@param f_type util_fuel_type | nil The used fuel type
+---@param fuel_type util_fuel_type | nil The used fuel type
 ---@param s_slot integer | nil The fuel source slot
 ---@param d_slot integer | nil The slot with the dumping inv
 ---@param f_slot integer | nil The first slot for temp fuel storage
 ---@param l_slot integer | nil The last slot for temp fuel storage
-local function refuel(target, f_type, s_slot, d_slot, f_slot, l_slot)
-	f_type = f_type or "consumable"
+---@param chest_dir util_inv_dir | nil The direction to place the fuel chest in
+local function refuel(target, fuel_type, s_slot, d_slot, f_slot, l_slot, chest_dir)
+	fuel_type = fuel_type or "consumable"
 	s_slot = s_slot or 2
 	d_slot = d_slot or 1
 	f_slot = f_slot or 3
-	l_slot = s_slot or 16
+	l_slot = l_slot or 16
 
-	if f_type == "container" then
+	local ok, err
+	if fuel_type == "container" then
 		for i = f_slot, l_slot do
 			if turtle.getItemCount(i) then
-				dump(d_slot, f_slot, l_slot)
+				ok, err = dump(d_slot, f_slot, l_slot, chest_dir)
+				if not ok then
+					return false, err
+				end
 				break
 			end
 		end
 	end
 
-	local inv_dir, err
 	-- Trigger a dump if a block had to be mined before placing the inv
 	while true do
-		inv_dir, err = place_inv(s_slot)
-		if not inv_dir then
+		---@diagnostic disable-next-line: cast-local-type
+		chest_dir, err = place_inv(s_slot, chest_dir)
+		if not chest_dir then
 			return false, err
 		end
 		if turtle.getItemCount(f_slot) > 0 then
-			break_inv(s_slot, inv_dir)
-			dump(d_slot, f_slot, l_slot)
+			break_inv(s_slot, chest_dir)
+			ok, err = dump(d_slot, f_slot, l_slot, chest_dir)
+			if not ok then
+				return false, err
+			end
 		else
 			break
 		end
 	end
-
-	local suck_fn
-	if inv_dir == "forward" then
-		suck_fn = turtle.suck
-	else
-		suck_fn = turtle.suckUp
-	end
+	---@cast chest_dir util_inv_dir
 
 	local p_slot = turtle.getSelectedSlot()
 
-	local ok
-	if f_type == "container" then
-		local slot = s_slot
+	-- TODO thorough testing for container fuel sources
+	if fuel_type == "container" then
+		local fuel_slot = f_slot
 		while turtle.getFuelLevel() < target do
-			if slot > l_slot then
-				break_inv(s_slot, inv_dir)
-				dump(d_slot)
-				inv_dir, err = place_inv(s_slot)
-				if not inv_dir then
+			if fuel_slot > l_slot then
+				break_inv(s_slot, chest_dir)
+				ok, err = dump(d_slot, f_slot, l_slot, chest_dir)
+				if not ok then
 					return false, err
 				end
-				slot = f_slot
+				---@diagnostic disable-next-line: cast-local-type
+				chest_dir, err = place_inv(s_slot)
+				if not chest_dir then
+					return false, err
+				end
+				fuel_slot = f_slot
 			end
 
-			turtle.select(slot)
+			turtle.select(fuel_slot)
 			while true do
-				ok, _ = suck_fn(1)
+				ok, _ = op.suck[chest_dir](1)
 				if ok then
 					break
 				end
+				sleep(0.5)
 			end
 			ok, err = turtle.refuel(1)
 			if not ok then
-				break_inv(s_slot, inv_dir)
+				break_inv(s_slot, chest_dir)
 				return false, err
 			end
-			slot = slot + 1
+			fuel_slot = fuel_slot + 1
 		end
 	else
 		while turtle.getFuelLevel() < target do
 			turtle.select(f_slot)
-			ok, err = suck_fn(1)
+			ok, err = op.suck[chest_dir](1)
 			if ok then
 				ok, err = turtle.refuel(1)
 				if not ok then
-					break_inv(s_slot, inv_dir)
+					break_inv(s_slot, chest_dir)
 					return false, err
 				end
 			else
@@ -193,7 +207,7 @@ local function refuel(target, f_type, s_slot, d_slot, f_slot, l_slot)
 		end
 	end
 
-	ok, err = break_inv(s_slot, inv_dir)
+	ok, err = break_inv(s_slot, chest_dir)
 	turtle.select(p_slot)
 	return true
 end

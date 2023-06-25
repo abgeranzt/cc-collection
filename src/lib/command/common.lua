@@ -17,6 +17,7 @@ local directions = {
 ---@param logger lib_logger
 ---@param current_pos gpslib_position
 local function init(logger, current_pos)
+	-- TODO pass fuel type to individual operations
 	---@class lib_command_common Common turtle commands
 	local lib = {}
 	lib.current_pos = current_pos
