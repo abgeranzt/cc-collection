@@ -66,7 +66,7 @@ end
 ---@param d_slot integer | nil The slot with the dumping inv
 ---@param f_slot integer | nil The first slot to dump
 ---@param l_slot integer | nil The last slot to dump
----@param dir util_inv_dir | nil
+---@param dir util_inv_dir | nil The direction to place the dumping inv in
 local function dump(d_slot, f_slot, l_slot, dir)
 	d_slot = d_slot or 1
 	f_slot = f_slot or 3
@@ -106,8 +106,8 @@ local function dump(d_slot, f_slot, l_slot, dir)
 	return ok, err
 end
 
----@param target integer
----@param f_type util_fuel_type | nil
+---@param target integer The fuel target
+---@param f_type util_fuel_type | nil The used fuel type
 ---@param s_slot integer | nil The fuel source slot
 ---@param d_slot integer | nil The slot with the dumping inv
 ---@param f_slot integer | nil The first slot for temp fuel storage
