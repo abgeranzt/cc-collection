@@ -229,7 +229,7 @@ local function init(logger)
 		local chest_dir = dir == "down" and "up" or "down"
 		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
 
-		local ok, err = clear_deployment_area("down")
+		local ok, err = clear_deployment_area(chest_dir)
 		if not ok then
 			logger.error(err)
 			return false, err
