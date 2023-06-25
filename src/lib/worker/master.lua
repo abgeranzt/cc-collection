@@ -108,15 +108,21 @@ local function init(logger)
 	---@param worker_type worker_type | nil
 	---@param dir direction_ver | nil
 	function lib.deploy(label, worker_type, dir)
-		-- FIXME this does not check whether modems for loaders are available
 		-- TODO we can assert the worker_type using the label, get rid of the parameter
+		-- FIXME place worker chest in dir
 		worker_type = worker_type or "miner"
 		dir = dir or "down"
+
+		local ok, err
+		if worker_type == "loader" and not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS) then
+			err = "need at least one available " .. const.LABEL_MODEM
+			return false, err
+		end
 
 		logger.info("deploying worker '" .. label .. "'")
 		logger.trace("placing helper chests")
 		turtle.select(const.SLOT_FIRST_FREE)
-		local ok, err = dig.forward()
+		ok, err = dig.forward()
 		-- TODO this is getting tedious, there has to be a more elgant way to propagate errors
 		if not ok then
 			return false, err

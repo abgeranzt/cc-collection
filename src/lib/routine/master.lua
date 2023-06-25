@@ -269,6 +269,19 @@ local function init(task, worker, logger)
 	function lib.deploy_loaders(pos, size)
 		-- TODO error handling
 		logger.info("deploying loaders for " .. size * size .. " chunks")
+
+		local err
+		local n_chunks = size ^ 2
+		local avail_loaders = worker.get_labels_avail("loader")
+		if avail_loaders < n_chunks then
+			err = "not enough loaders available (has: " .. #avail_loaders .. ", needs " .. n_chunks .. ")"
+			return false, err
+		end
+		if not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS, n_chunks) then
+			err = "not enough " .. const.LABEL_MODEM .. " available (needs: " .. n_chunks .. ")"
+			return false, err
+		end
+
 		local i = 1
 		local chunks = {}
 		for j = 1, size do
@@ -277,7 +290,7 @@ local function init(task, worker, logger)
 				chunks[j][k] = {}
 			end
 		end
-		---@cast chunks {[integer]: {[integer]: {label: string, tid: integer}}}
+		---@cast chunks routine_chunk_grid
 		-- Reverse order because we want to deploy loaders that are further away first
 		for j = #chunks, 1, -1 do
 			for k = #chunks, 1, -1 do
@@ -317,7 +330,6 @@ local function init(task, worker, logger)
 				task.await(chunks[j][k].tid)
 			end
 		end
-		---@cast chunks routine_chunk_grid
 		return chunks
 	end
 
@@ -360,20 +372,20 @@ local function init(task, worker, logger)
 		end
 		limit = limit or -1
 		local size_blocks = size * 16
-		local n_miners = #worker.get_labels("miner")
+		local n_miners = #worker.get_labels_avail("miner")
 		if n_miners < 1 then
-			local err = "not enough miners configured (has: " .. n_miners .. ", needs at least 1)"
+			local err = "not enough miners available (has: " .. n_miners .. ", needs at least 1)"
 			logger.error(err)
 			return false, err
 		end
 		if use_loaders then
-		local n_loaders = #worker.get_labels("loader")
-		local n_chunks = size ^ 2
-		if n_loaders < n_chunks then
-			local err = "not enough loaders configured (has: " ..
-				n_loaders .. ", needs at least " .. n_chunks + 1 .. ")"
-			logger.error(err)
-			return false, err
+			local n_loaders = #worker.get_labels_avail("loader")
+			local n_chunks = size ^ 2
+			if n_loaders < n_chunks then
+				local err = "not enough loaders available (has: " ..
+					n_loaders .. ", needs at least " .. n_chunks + 1 .. ")"
+				logger.error(err)
+				return false, err
 			end
 		end
 
@@ -404,7 +416,11 @@ local function init(task, worker, logger)
 			local chunks
 			if use_loaders then
 				logger.trace("deploying loaders")
-				chunks = lib.deploy_loaders(pos, size)
+				chunks, err = lib.deploy_loaders(pos, size)
+				if not chunks then
+					return false, err
+				end
+				---@cast chunks routine_chunk_grid
 			end
 			logger.info("starting mining operation")
 			-- TODO error handling
