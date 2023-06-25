@@ -10,8 +10,10 @@
 
 ---@alias fs_open_mode 'r' | 'w' | 'a' | 'rb' | 'wb' | 'ab'
 ---@alias fs_open fun(path: string, mode: fs_open_mode): fs_filehandle
+---@alias fs_make_dir fun(path: string)
+---@alias fs_delete fun(path: string)
 
----@alias fs { open: fs_open}
+---@alias fs { open: fs_open, makeDir: fs_make_dir, delete: fs_delete}
 
 ---@diagnostic disable-next-line: lowercase-global
 if not fs then fs = {} end
