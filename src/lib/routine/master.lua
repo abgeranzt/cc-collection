@@ -438,13 +438,14 @@ local function init(task, worker, logger)
 				logger.info("navigating to next position")
 				local old_pos = util.table_copy(pos)
 				ok, err = exc.tunnel.forward(size_blocks)
+				-- Yield execution to allow pos to be updated
+				sleep(1)
 				if not ok then
 					logger.error(err)
 					logger.warn("navigation to next position failed")
 					logger.warn("returning" ..
 						(use_loaders and ", collecting loaders" or "") ..
 						" and exiting")
-					-- Yield execution to allow pos to be updated
 					sleep(1)
 					go.coords(pos, old_pos)
 				end
