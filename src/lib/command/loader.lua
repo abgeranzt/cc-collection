@@ -8,7 +8,7 @@ local util = require("lib.util")
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
----@param logger logger
+---@param logger lib_logger
 ---@param pos gpslib_position
 ---@param modem modem
 ---@param listen_ch integer

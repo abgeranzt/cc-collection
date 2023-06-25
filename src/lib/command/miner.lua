@@ -8,7 +8,7 @@ local util = require("lib.util")
 
 local directions = common.directions
 
----@param logger logger
+---@param logger lib_logger
 ---@param pos gpslib_position
 local function init(logger, pos)
 	---@class lib_command_miner: lib_command_common Commands for mining turtles

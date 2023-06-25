@@ -2,7 +2,7 @@
 ---@cast os os
 
 ---@param send_cmd fun(ch: number, rec_name: string, payload: msg_payload)
----@param logger logger
+---@param logger lib_logger
 ---@param worker lib_worker_master
 local function init(send_cmd, worker, logger)
 	---@class lib_task

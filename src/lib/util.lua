@@ -9,7 +9,6 @@ local dig = require("lib.dig")
 ---@param dir util_inv_dir | nil
 local function place_inv(slot, dir)
 	local p_slot = turtle.getSelectedSlot()
-	---@cast p_slot integer
 	turtle.select(slot)
 
 	local dig_fn = {
@@ -48,7 +47,6 @@ end
 ---@param dir util_inv_dir
 local function break_inv(slot, dir)
 	local p_slot = turtle.getSelectedSlot()
-	---@cast p_slot integer
 	turtle.select(slot)
 
 	local dig_fn = {
@@ -72,7 +70,6 @@ local function dump(d_slot, f_slot, l_slot, dir)
 	f_slot = f_slot or 3
 	l_slot = l_slot or 16
 	local p_slot = turtle.getSelectedSlot()
-	---@cast p_slot integer
 	turtle.select(d_slot)
 	local err
 	---@diagnostic disable-next-line: cast-local-type
@@ -151,7 +148,6 @@ local function refuel(target, f_type, s_slot, d_slot, f_slot, l_slot)
 	end
 
 	local p_slot = turtle.getSelectedSlot()
-	---@cast p_slot integer
 
 	local ok
 	if f_type == "container" then
@@ -206,7 +202,6 @@ end
 local function get_label()
 	return os.getComputerLabel()
 end
-
 
 ---@param name string The minecraft:item:identifier
 ---@param slot integer The turtle slot

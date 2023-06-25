@@ -8,7 +8,7 @@ local dig = require("lib.dig")
 local util = require("lib.util")
 
 -- Functionality related to managing a master's workers
----@param logger logger
+---@param logger lib_logger
 local function init(logger)
 	---@class lib_worker_master Worker management
 	---@field workers worker[]

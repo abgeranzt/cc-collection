@@ -5,7 +5,7 @@ local const = require("lib.const")
 
 ---@param modem modem
 ---@param listen_ch integer
----@param logger logger
+---@param logger lib_logger
 local function init(modem, listen_ch, logger)
 	---@class lib_message_common Common communication functionality
 	local lib = {}

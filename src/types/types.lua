@@ -54,7 +54,6 @@ end
 ---@alias gpslib_position {x: integer, y: integer, z: integer, dir: gpslib_direction}
 
 
----@alias logger {fatal: fun(s: string), error: fun(s: string), warn: fun(s: string), info: fun(s: string), debug: fun(s: string), trace: fun(s: string)}
 ---@alias log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
 ---@alias log_event {snd: string, lvl: log_level, msg: string, raw: string}
 

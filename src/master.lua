@@ -42,7 +42,6 @@ local function init(args)
 	---@cast master_ch integer
 
 	local logger = require("lib.logger").init(log_ch, log_lvl, nil, modem)
-	---@cast logger logger
 
 	local dir = parsed_args.direction
 	---@cast dir gpslib_direction

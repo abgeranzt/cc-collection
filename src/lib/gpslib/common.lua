@@ -2,7 +2,7 @@
 ---@cast os os
 
 ---@param send_gps fun(payload: { id: number, body:  msg_body_gps})
----@param logger logger
+---@param logger lib_logger
 ---@param dir gpslib_direction | nil
 local function init(send_gps, logger, dir)
 	-- TODO wrapper for turtle.turnX to track direction

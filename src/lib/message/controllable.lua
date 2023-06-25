@@ -2,7 +2,7 @@ local common = require("lib.message.common")
 
 ---@param modem modem
 ---@param listen_ch integer
----@param logger logger
+---@param logger lib_logger
 ---@param masters {[string]: true}
 ---@param queue queue
 local function init(modem, listen_ch, logger, masters, master_ch, queue)

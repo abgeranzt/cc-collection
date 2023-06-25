@@ -4,7 +4,7 @@
 local common = require("lib.gpslib.common")
 
 ---@param worker {get: fun(label: string)}
----@param logger logger
+---@param logger lib_logger
 ---@param dir gpslib_direction | nil
 local function init(worker, logger, dir)
 	-- TODO implement gps tracking for the master

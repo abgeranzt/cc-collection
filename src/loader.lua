@@ -47,7 +47,6 @@ local function init(args)
 	---@cast listen_ch number
 
 	local logger = require("lib.logger").init(log_ch, log_lvl, nil, modem)
-	---@cast logger logger
 	local masters = {}
 	masters[master_name] = true
 	local message = require("lib.message.controllable").init(modem, listen_ch, logger, masters, master_ch, queue)
