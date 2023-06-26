@@ -1,5 +1,8 @@
 name: Release
-on: [push]
+on: 
+  push:
+    branches:
+      - master
 permissions:
   contents: write
 jobs:
@@ -7,8 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: ./pack.sh
-      - uses: actions/upload-artifact@v3
+      - name: build
+        run: ./pack.sh
+      - name: release
+        uses: nicovince/manage-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: packed
-          path: .temp/packed
+          sha1: ${{ github.sha }}
+          files: .temp/packed
