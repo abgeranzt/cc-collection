@@ -1,8 +1,12 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast fs fs
--- TODO fetch packed file from release page
+
+---@diagnostic disable-next-line: unknown-cast-variable
+---@cast http http
+
+local packed_url = "https://github.com/marcel-engelke/atref/releases/download/master/packed"
 local packed = "/packed"
-local DELIM = "--------------------------------------------------"
+local delim = "--------------------------------------------------"
 
 fs.delete("/install.log")
 ---@param msg string
@@ -11,6 +15,28 @@ local function log(msg)
 	local log_file = fs.open("/install.log", "a")
 	log_file.writeLine(msg)
 	log_file.close()
+end
+
+---@param dest string
+local function fetch(dest)
+	log("fetching packed code from github")
+	local res = http.get(packed_url)
+	local code, _ = res.getResponseCode()
+	if code ~= 200 then
+		log("error: http status " .. code)
+		---@diagnostic disable-next-line: undefined-global
+		exit()
+	end
+	log("saving to '" .. dest .. "'")
+	local file = fs.open(dest, "w")
+	while true do
+		local line = res.readLine()
+		if not line then
+			file.close()
+			return
+		end
+		file.writeLine(line)
+	end
 end
 
 ---@param packed_path string
@@ -37,7 +63,7 @@ local function unpack(packed_path)
 				file.close()
 				return
 			end
-			if line == DELIM then
+			if line == delim then
 				log("delim: " .. line)
 				file.close()
 				break
@@ -47,4 +73,7 @@ local function unpack(packed_path)
 	end
 end
 
+log("this script will download and install atref to /atref")
+fetch(packed)
 unpack(packed)
+fs.delete(packed)
