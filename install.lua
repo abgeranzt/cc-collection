@@ -4,6 +4,8 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast http http
 
+-- TODO optionally just install from file, useful for situations in which CC cannot connect to the internet
+
 local packed_url = "https://github.com/marcel-engelke/atref/releases/download/master/packed"
 local packed = "/packed"
 local delim = "--------------------------------------------------"

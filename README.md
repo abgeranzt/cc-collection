@@ -1,7 +1,7 @@
 # atref
-#### Asynchronous Turtle Routine Execution Framework
+### Asynchronous Turtle Routine Execution Framework
 
-### Summary
+## Summary
 This is a collection of lua programs for the Minecraft [ComputerCraft](https://www.computercraft.info/) mod.
 In particular, this repository's code was written for the ComputerCraft fork [CC: Tweaked](https://computercraft.cc/)
 with additional features added by the [Advanced Peripherals](https://docs.intelligence-modding.de/) mod.
@@ -31,16 +31,35 @@ It is designed to be used in a heavily modded version of Minecraft. Because of t
 <!-- TODO create user instructions -->
 Various setup and configuration scripts have been created to speed up and facilitate user operation. See the instructions section for more information.
 
-### Showcase
+## Showcase
 TODO
 
-### Instructions
+## Installation
+### Automatic Installation
+The recommended way to install atref is to run the installation script directly from pastebin. Simply paste and execute the following command inside a computer:
+```
+pastebin run eNzmgc5c
+```
+
+### Manual Installation
+<!-- TODO implement this -->
+If the computer is not able to connect to the internet for some reason (i.e. disabled by the server you are playing on), you may also go to the [releases page]("https://github.com/marcel-engelke/atref/releases/tag/master") and download the packed source code (the file named "packed") and save it on the computer using the built-in text editor. Do the same for the [installation script](install.lua), execute it and pass the file name as an argument.
+
+To avoid having to this for every computer you want to use atref on, consider using the [built-in drives]("https://tweaked.cc/peripheral/drive.html").
+```
+/path/to/install.lua /path/to/packed
+```
+
+### Advanced Installation
 TODO
 
-### Development
+## Instructions
 TODO
 
-### License
+## Development
+TODO
+
+## License
 Copyright © Marcel Engelke 2023
 
 Licensed unter the GNU General Public License 3. See the [LICENSE](./LICENSE) file for more information.
