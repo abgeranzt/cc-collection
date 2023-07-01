@@ -51,7 +51,14 @@ To avoid having to this for every computer you want to use atref on, consider us
 ```
 
 ### Advanced Installation
-TODO
+Since files on a ComputerCraft computer are actually real files on the host's filesystem, it is possible to symlink the source files into the computer's root directory. This is especially useful for development where the files and their content changes regularly.
+
+To do this, simply create a symbolic link `.local` pointing to the computercraft directory of your world and execute the `link.sh` script. If the computercraft directory does not exist, create it by setting the label of any computer in the world.
+
+Note: The script only works on Unix-like operating systems, the process should similar on Windows, however. A PR with a batch file analogous to link.sh would be appreciated.
+```
+.local -> /path/to/minecraft/saves/worldname/computercraft
+```
 
 ## Instructions
 TODO
