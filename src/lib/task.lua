@@ -16,7 +16,7 @@ local function init(send_cmd, worker, logger)
 	---@param command cmd_type
 	---@param params table | nil
 	function lib.create(label, command, params)
-		logger.info("creating '" .. command .. "' task for '" .. label .. "'")
+		logger.info("creating '" .. command .. "' task (id: " .. _id .. ") for '" .. label .. "'")
 		local payload = {
 			id = _id,
 			body = {

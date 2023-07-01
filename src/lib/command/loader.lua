@@ -8,15 +8,17 @@ local util = require("lib.util")
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast turtle turtle
 
+---@param config lib_config
 ---@param logger lib_logger
 ---@param pos gpslib_position
 ---@param modem modem
 ---@param listen_ch integer
 ---@param s_slot integer | nil The slot to use for tool swapping
-local function init(logger, pos, modem, listen_ch, s_slot)
-	-- FIXME lib.navigate tries to refuel by itself, but this won't work with a loader.
+local function init(config, logger, pos, modem, listen_ch, s_slot)
+	-- FIXME lib.navigate tries to refuel by itself, but this won't work with a loader. -> swap before and after refuelling
+	-- TODO don't inherit from miner, move common functionality from miner to common
 	---@class lib_command_loader: lib_command_miner Commands for chunk loading mining turtles
-	local lib = miner.init(logger, pos)
+	local lib = miner.init(config, logger, pos)
 
 	s_slot = s_slot or 1
 
@@ -32,7 +34,6 @@ local function init(logger, pos, modem, listen_ch, s_slot)
 		end
 		return swapped
 	end
-
 
 	local function _swap()
 		local slot = turtle.getSelectedSlot()

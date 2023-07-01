@@ -124,17 +124,24 @@ local function refuel(target, fuel_type, s_slot, d_slot, f_slot, l_slot, chest_d
 	f_slot = f_slot or 3
 	l_slot = l_slot or 16
 
-	local ok, err
-	if fuel_type == "container" then
+	local function dump_containers()
 		for i = f_slot, l_slot do
 			if turtle.getItemCount(i) then
-				ok, err = dump(d_slot, f_slot, l_slot, chest_dir)
+				local ok, err = dump(d_slot, f_slot, l_slot, chest_dir)
 				if not ok then
 					return false, err
 				end
 				break
 			end
 		end
+	end
+
+	local ok, err
+	if fuel_type == "container" then
+		ok, err = dump_containers()
+	end
+	if not ok then
+		return false, err
 	end
 
 	-- Trigger a dump if a block had to be mined before placing the inv
@@ -208,6 +215,16 @@ local function refuel(target, fuel_type, s_slot, d_slot, f_slot, l_slot, chest_d
 	end
 
 	ok, err = break_inv(s_slot, chest_dir)
+	if not ok then
+		return false, err
+	end
+	-- Dump empty containers
+	if fuel_type == "container" then
+		ok, err = dump_containers()
+	end
+	if not ok then
+		return false, err
+	end
 	turtle.select(p_slot)
 	return true
 end

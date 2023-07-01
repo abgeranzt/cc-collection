@@ -22,11 +22,13 @@ local function init(args)
 	modem.closeAll()
 
 	local argparse = require("lib.argparse")
+	argparse.add_arg("fuel_type", "-f", "enum", false, "consumable", const.FUEL_TYPES)
+	argparse.add_arg("listen_ch", "-c", "number", true)
 	argparse.add_arg("log_ch", "-lc", "number", false, 9000)
 	argparse.add_arg("log_lvl", "-ll", "string", false, "info")
 	argparse.add_arg("master_ch", "-mc", "number", true)
 	argparse.add_arg("master_name", "-mn", "string", true)
-	argparse.add_arg("listen_ch", "-c", "number", true)
+
 	local parsed_args, e = argparse.parse(args)
 	if not parsed_args then
 		print(e)
@@ -35,27 +37,29 @@ local function init(args)
 	end
 	---@cast parsed_args table
 
-	local log_ch = parsed_args.log_ch
-	---@cast log_ch number
-	local log_lvl = parsed_args.log_lvl
-	---@cast log_lvl log_level
-	local master_ch = parsed_args.master_ch
-	---@cast master_ch number
-	local master_name = parsed_args.master_name
-	---@cast master_name string
-	local listen_ch = parsed_args.listen_ch
-	---@cast listen_ch number
+	local config = require("lib.config").init({
+		fuel_type = parsed_args.fuel_type,
+		listen_ch = parsed_args.listen_ch,
+		log_ch = parsed_args.log_ch,
+		log_lvl = parsed_args.log_lvl,
+		master_ch = parsed_args.master_ch,
+		master_name = parsed_args.master_name
+	})
 
-	local logger = require("lib.logger").init(log_ch, log_lvl, nil, modem)
+	local logger = require("lib.logger").init(config.log_ch, config.log_lvl, nil, modem)
+
 	local masters = {}
-	masters[master_name] = true
-	local message = require("lib.message.controllable").init(modem, listen_ch, logger, masters, master_ch, queue)
+	masters[config.master_name] = true
+	local message = require("lib.message.controllable").init(
+		modem, config.listen_ch, logger, masters, config.master_ch, queue
+	)
 	local gpslib = require("lib.gpslib.common").init(message.send_gps, logger)
-	local command = require("lib.command.loader").init(logger, gpslib.position, modem, listen_ch)
-	return command, gpslib, message, logger, queue, master_name, master_ch
+	local command = require("lib.command.loader").init(config, logger, gpslib.position, modem, config.listen_ch)
+
+	return config, command, gpslib, message, logger, queue
 end
 
-local command, gpslib, message, logger, queue, master_name, master_ch = init({ ... })
+local config, command, gpslib, message, logger, queue = init({ ... })
 
 local function work_queue()
 	while true do
@@ -68,16 +72,16 @@ local function work_queue()
 				if status then
 					logger.info("command '" .. task.body.cmd .. "' successful")
 					logger.info("task " .. task.id .. " complete")
-					message.reply(master_ch, master_name, task.id, "ok", out)
+					message.reply(config.master_ch, config.master_name, task.id, "ok", out)
 				else
 					---@cast err string
 					logger.error(err)
-					message.reply(master_ch, master_name, task.id, "err", err)
+					message.reply(config.master_ch, config.master_name, task.id, "err", err)
 				end
 			else
 				local err = "invalid command '" .. task.body.cmd .. "'"
 				logger.error(err)
-				message.reply(master_ch, master_name, task.id, "err", err)
+				message.reply(config.master_ch, config.master_name, task.id, "err", err)
 			end
 		else
 			sleep(0.5)

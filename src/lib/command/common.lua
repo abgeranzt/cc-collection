@@ -14,10 +14,10 @@ local directions = {
 	right = true
 }
 
+---@param config lib_config
 ---@param logger lib_logger
 ---@param current_pos gpslib_position
-local function init(logger, current_pos)
-	-- TODO pass fuel type to individual operations
+local function init(config, logger, current_pos)
 	---@class lib_command_common Common turtle commands
 	local lib = {}
 	lib.current_pos = current_pos
@@ -39,6 +39,14 @@ local function init(logger, current_pos)
 			elseif not const.DIRECTIONS[pos.dir] then
 				return false, "invalid parameter 'pos.dir'"
 			end
+		end
+		return true, nil
+	end
+
+	---@param fuel_type util_fuel_type
+	function lib.validators.fuel_type(fuel_type)
+		if not const.FUEL_TYPES[fuel_type] then
+			return false, "invalid fuel type '" .. fuel_type .. "'"
 		end
 		return true, nil
 	end
@@ -68,10 +76,9 @@ local function init(logger, current_pos)
 			---@cast e string
 			return false, e
 		end
-		-- TODO have the master control the refuelling?
 		local ok, err
 		if turtle.getFuelLevel() < params.distance then
-			ok, err = util.refuel(params.distance)
+			ok, err = util.refuel(params.distance, config.fuel_type)
 			if not ok then
 				return false, err
 			end
@@ -108,6 +115,18 @@ local function init(logger, current_pos)
 	function lib.get_fuel()
 		---@diagnostic disable-next-line: missing-return-value
 		return true, nil, turtle.getFuelLevel()
+	end
+
+	---@param params { fuel_type: util_fuel_type }
+	function lib.set_fuel_type(params)
+		local ok, err = lib.validators.fuel_type(params.fuel_type)
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "set_fuel_type command failed"
+		end
+		config.fuel_type = params.fuel_type
+		return true, nil
 	end
 
 	---@param params { pos: gpslib_position }

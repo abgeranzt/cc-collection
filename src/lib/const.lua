@@ -1,5 +1,10 @@
 local const = {}
 
+const.FUEL_TYPES = {
+	consumable = true,
+	container = true,
+}
+
 const.SLOT_DUMP = 1
 const.SLOT_FUEL = 2
 const.SLOT_HELPER = 3

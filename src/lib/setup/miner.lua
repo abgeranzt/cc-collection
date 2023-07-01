@@ -20,8 +20,7 @@ local function init()
 		lib.write_startup(const.PATH_MINER, {
 			"-mc", tostring(c_info.master_ch),
 			"-mn", c_info.master_name,
-			-- TODO change this to -lc
-			"-wc", tostring(c_info.listen_ch)
+			"-c", tostring(c_info.listen_ch)
 		})
 
 		if not util.has_item_equipped(const.ITEM_PICKAXE, "right", 16) then

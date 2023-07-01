@@ -6,10 +6,11 @@ local exc = require("lib.excavate")
 local go = require("lib.navigate").go
 local util = require("lib.util")
 
+---@param config lib_config
 ---@param task lib_task
 ---@param worker lib_worker_master
 ---@param logger lib_logger
-local function init(task, worker, logger)
+local function init(config, task, worker, logger)
 	---@class lib_routine_master Master routines for controlling workers
 	local lib = {}
 
@@ -80,7 +81,6 @@ local function init(task, worker, logger)
 	---@param dim dimensions
 	---@param scrape_bedrock boolean | nil
 	function lib.mine_cuboid(pos, dim, scrape_bedrock)
-		-- TODO scraping the bedrock accounts for ~50% of total time per chunk, optimize this by having splitting the bedrock layer between the first two workers, if possible
 		logger.trace("determining available workers")
 		local workers = worker.get_labels_avail("miner")
 		local workers_n = #workers
@@ -107,6 +107,7 @@ local function init(task, worker, logger)
 			worker.deploy(w, "miner", "down")
 			local w_pos = util.coord_add(pos, 0, -1, 0)
 			task.create(w, "set_position", { pos = w_pos })
+			task.create(w, "set_fuel_type", { fuel_type = config.fuel_type })
 			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 			task.await(task.create(w, "refuel", { target = const.TURTLE_MIN_FUEL }))
 			logger.trace("excavating segment 1")
@@ -156,6 +157,7 @@ local function init(task, worker, logger)
 		end
 		worker.deploy(first_w, "miner", "down")
 		task.create(first_w, "set_position", { pos = deploy_pos })
+		task.create(first_w, "set_fuel_type", { fuel_type = config.fuel_type })
 		-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 		task.await(task.create(first_w, "refuel", { target = const.TURTLE_MIN_FUEL }))
 		local target_y = scrape_bedrock
@@ -227,7 +229,6 @@ local function init(task, worker, logger)
 		for i = 1, limit do
 			logger.info("starting mining operation " .. i .. "/" .. (limit > -1 and limit or "inf"))
 			lib.mine_cuboid(pos, dim)
-			-- TODO determine fuel type somewhere
 			if turtle.getFuelLevel() < dim.w then
 				logger.trace("refuelling")
 				util.refuel(dim.w)
@@ -306,6 +307,7 @@ local function init(task, worker, logger)
 				chunks[j][k].label = loader
 				local loader_pos = util.coord_add(pos, 0, 1, 0)
 				task.create(loader, "set_position", { pos = loader_pos })
+				task.create(loader, "set_fuel_type", { fuel_type = config.fuel_type })
 
 				local fuel_target = j * 16 * 2 + k * 16 * 2
 				if fuel_target < const.TURTLE_MIN_FUEL then

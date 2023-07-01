@@ -8,11 +8,12 @@ local util = require("lib.util")
 
 local directions = common.directions
 
+---@param config lib_config
 ---@param logger lib_logger
 ---@param pos gpslib_position
-local function init(logger, pos)
+local function init(config, logger, pos)
 	---@class lib_command_miner: lib_command_common Commands for mining turtles
-	local lib = common.init(logger, pos)
+	local lib = common.init(config, logger, pos)
 
 	---@param params {l: number, w: number, h: number}
 	function lib.excavate(params)
@@ -28,7 +29,7 @@ local function init(logger, pos)
 				return false, e
 			end
 		end
-		local ok, err = exc.dig_cuboid(params.l, params.w, params.h)
+		local ok, err = exc.dig_cuboid(params.l, params.w, params.h, config.fuel_type)
 		if ok then
 			return true
 		else
@@ -52,7 +53,7 @@ local function init(logger, pos)
 				return false, e
 			end
 		end
-		local ok, err = exc.dig_cuboid_bedrock(params.l, params.w)
+		local ok, err = exc.dig_cuboid_bedrock(params.l, params.w, config.fuel_type)
 		if ok then
 			return true
 		else
@@ -126,11 +127,10 @@ local function init(logger, pos)
 		end
 	end
 
-	-- TODO use worker config to determine fuel type (or send fuel type from master?)
 	---@param params { target: number }
 	function lib.refuel(params)
 		if turtle.getFuelLevel() < params.target then
-			local ok, err = util.refuel(params.target)
+			local ok, err = util.refuel(params.target, config.fuel_type)
 			if not ok then
 				---@cast err string
 				logger.error(err)
