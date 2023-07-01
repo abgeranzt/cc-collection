@@ -51,7 +51,7 @@ local function parse(prov_args)
 			return false, "argument '" .. name .. "' is missing"
 		elseif arg.required and not v_pos then
 			return false, "missing value for argument '" .. name .. "'"
-		elseif arg.allowed and not arg.allowed[prov_args[v_pos]] then
+		elseif v_pos and arg.allowed and not arg.allowed[prov_args[v_pos]] then
 			return false, "invalid value '" .. prov_args[v_pos] .. "' for argument '" .. name .. "'"
 		elseif arg.type == "boolean" then
 			args[name] = a_pos and true or false
