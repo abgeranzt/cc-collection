@@ -4,8 +4,6 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast http http
 
--- TODO optionally just install from file, useful for situations in which CC cannot connect to the internet
-
 local packed_url = "https://github.com/marcel-engelke/atref/releases/download/master/packed"
 local packed = "/packed"
 local delim = "--------------------------------------------------"
@@ -75,7 +73,11 @@ local function unpack(packed_path)
 	end
 end
 
-log("this script will download and install atref to /atref")
-fetch(packed)
+if ... then
+	log("this script will install to /atref")
+	packed = ...
+else
+	log("this script will download and install atref to /atref")
+	fetch(packed)
+end
 unpack(packed)
-fs.delete(packed)

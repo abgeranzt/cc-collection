@@ -1,16 +1,19 @@
 name: Release
+
 on: 
   push:
     branches:
       - master
+
 permissions:
   contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: build
+      - name: pack
         run: ./pack.sh
       - name: release
         uses: nicovince/manage-release@v1

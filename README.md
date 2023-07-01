@@ -42,8 +42,9 @@ pastebin run eNzmgc5c
 ```
 
 ### Manual Installation
-<!-- TODO implement this -->
-If the computer is not able to connect to the internet for some reason (i.e. disabled by the server you are playing on), you may also go to the [releases page]("https://github.com/marcel-engelke/atref/releases/tag/master") and download the packed source code (the file named "packed") and save it on the computer using the built-in text editor. Do the same for the [installation script](install.lua), execute it and pass the file name as an argument.
+If the computer is not able to connect to the internet for some reason (i.e. disabled by the server you are playing on), you may also go to the [releases page]("https://github.com/marcel-engelke/atref/releases/tag/master") and download the packed source code (the file named "packed") and put it on the computer. Do the same for the [installation script](install.lua), execute it and pass the file name as an argument.
+
+Note: This requires access to your Minecraft world directory; if you are playing on a server, ask your admin to help you out.
 
 To avoid having to this for every computer you want to use atref on, consider using the [built-in drives]("https://tweaked.cc/peripheral/drive.html").
 ```
