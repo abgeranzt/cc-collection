@@ -2,17 +2,19 @@ name: Release
 
 on: 
   push:
-    branches:
-      - master
+    tags: [ '*' ]
 
 permissions:
   contents: write
 
 jobs:
-  release:
+  release_on_tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: pack
         run: ./pack.sh
       - name: release
@@ -20,5 +22,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          sha1: ${{ github.sha }}
           files: .temp/packed
+          tag: ${{ github.ref_name }}
