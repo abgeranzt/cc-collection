@@ -63,8 +63,6 @@ end
 ---@alias task_lib_create fun(worker: string, command: cmd_type, params: table): number
 ---@alias task_lib { await: fun(id: number), create: task_lib_create, get_data: fun(id: number), get_status: fun(id: number), is_completed: fun(id: number), monitor: fun() }
 
----@alias peripheral_inventory { size: fun(), list: fun(), getItemDetail: fun(s: number), getItemLimit: fun(s:number) }
-
 ---@alias dimensions {w: number, l: number, h: number}
 
 ---@alias util_inv_dir "forward" | "up" | "down"
