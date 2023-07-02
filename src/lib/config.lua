@@ -7,6 +7,9 @@ local function init(config)
 	---@field log_lvl log_level
 	---@field master_ch integer
 	---@field master_name string
+	---@field slot_dump integer
+	---@field slot_first_free integer
+	---@field slot_fuel integer
 	local lib = {}
 
 	lib.fuel_type = config.fuel_type
@@ -15,6 +18,9 @@ local function init(config)
 	lib.log_lvl = config.log_lvl
 	lib.master_ch = config.master_ch
 	lib.master_name = config.master_name
+	lib.slot_dump = config.slot_dump
+	lib.slot_first_free = config.slot_first_free
+	lib.slot_fuel = config.slot_fuel
 
 	return lib
 end

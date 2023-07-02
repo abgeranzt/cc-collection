@@ -154,7 +154,7 @@ local function init(config, logger, current_pos)
 	end
 
 	function lib.dump()
-		local ok, err = util.dump()
+		local ok, err = util.dump(config.slot_dump, config.slot_first_free)
 		if ok then
 			return true
 		else
@@ -173,7 +173,9 @@ local function init(config, logger, current_pos)
 	---@param params { target: number }
 	function lib.refuel(params)
 		if turtle.getFuelLevel() < params.target then
-			local ok, err = util.refuel(params.target, config.fuel_type)
+			local ok, err = util.refuel(
+				params.target, config.fuel_type, config.slot_fuel, config.slot_dump, config.slot_first_free
+			)
 			if not ok then
 				---@cast err string
 				logger.error(err)

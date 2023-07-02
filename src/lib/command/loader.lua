@@ -13,38 +13,36 @@ local util = require("lib.util")
 ---@param pos gpslib_position
 ---@param modem modem
 ---@param listen_ch integer
----@param s_slot integer | nil The slot to use for tool swapping
-local function init(config, logger, pos, modem, listen_ch, s_slot)
+local function init(config, logger, pos, modem, listen_ch)
 	---@class lib_command_loader: lib_command_miner Commands for chunk loading mining turtles
 	local lib = common.init(config, logger, pos)
-
-	s_slot = s_slot or 1
 
 	---@return boolean swapped true when the tool had to be swapped
 	local function equip_pick()
 		local swapped = false
-		if util.has_item(const.ITEM_PICKAXE, s_slot) then
-			local slot = turtle.getSelectedSlot()
-			turtle.select(s_slot)
+		if util.has_item(const.ITEM_PICKAXE, const.SLOT_LOADER_SWAP) then
+			local prev_slot = turtle.getSelectedSlot()
+			turtle.select(const.SLOT_LOADER_SWAP)
 			turtle.equipRight()
 			swapped = true
-			turtle.select(slot)
+			turtle.select(prev_slot)
 		end
 		return swapped
 	end
 
 	local function _swap()
-		local slot = turtle.getSelectedSlot()
-		turtle.select(s_slot)
+		local prev_slot = turtle.getSelectedSlot()
+		turtle.select(const.SLOT_LOADER_SWAP)
 		turtle.equipRight()
-		turtle.select(slot)
+		turtle.select(prev_slot)
+		if util.has_item(const.ITEM_PICKAXE, const.SLOT_LOADER_SWAP) then
+			-- The peripheral wrapper survives swapping, open channels do not
+			modem.open(listen_ch)
+		end
 	end
 
 	function lib.swap(_)
 		_swap()
-		if util.has_item(const.ITEM_PICKAXE, s_slot) then
-			modem.open(listen_ch)
-		end
 		return true, nil
 	end
 
@@ -55,8 +53,6 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._navigate(params)
 		if swapped then
 			_swap()
-			-- The peripheral wrapper survives swapping, open channels do not
-			modem.open(listen_ch)
 			os.queueEvent("pos_update")
 			-- Yield to allow the position update to be propagated
 			sleep(1)
@@ -75,8 +71,6 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._navigate_pos(params)
 		if swapped then
 			_swap()
-			-- The peripheral wrapper survives swapping, open channels do not
-			modem.open(listen_ch)
 			os.queueEvent("pos_update")
 			-- Yield to allow the position update to be propagated
 			sleep(1)
@@ -96,8 +90,6 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._tunnel(params)
 		if swapped then
 			_swap()
-			-- The peripheral wrapper survives swapping, open channels do not
-			modem.open(listen_ch)
 			os.queueEvent("pos_update")
 			-- Yield to allow the position update to be propagated
 			sleep(1)
@@ -118,8 +110,6 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._tunnel_pos(params)
 		if swapped then
 			_swap()
-			-- The peripheral wrapper survives swapping, open channels do not
-			modem.open(listen_ch)
 			os.queueEvent("pos_update")
 			-- Yield to allow the position update to be propagated
 			sleep(1)
@@ -138,12 +128,12 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._dump()
 		if swapped then
 			_swap()
-			modem.open(listen_ch)
 		end
 		if not ok then
 			logger.error(err)
 			return false, "dump command (loader) failed"
 		end
+		return true, nil
 	end
 
 	lib._refuel = lib.refuel
@@ -154,8 +144,6 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		local ok, err = lib._refuel(params)
 		if swapped then
 			_swap()
-			-- The peripheral wrapper survives swapping, open channels do not
-			modem.open(listen_ch)
 		end
 		if not ok then
 			---@cast err string

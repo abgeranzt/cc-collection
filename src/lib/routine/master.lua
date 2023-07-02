@@ -277,7 +277,7 @@ local function init(config, task, worker, logger)
 			err = "not enough loaders available (has: " .. n_avail_loaders .. ", needs " .. n_chunks .. ")"
 			return false, err
 		end
-		if not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS, n_chunks) then
+		if not util.has_item(const.ITEM_MODEM, const.SLOT_MASTER_MODEMS, n_chunks) then
 			err = "not enough " .. const.LABEL_MODEM .. " available (needs: " .. n_chunks .. ")"
 			return false, err
 		end
@@ -355,6 +355,7 @@ local function init(config, task, worker, logger)
 				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
 				target_pos = util.coord_add(pos, 0, 1, 0)
 				task.await(task.create(loader, "tunnel_pos", { pos = target_pos }))
+				task.await(task.create(loader, "dump", {}))
 				task.create(loader, "swap", {})
 				-- Yield to allow the worker to swap
 				sleep(1)

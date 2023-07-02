@@ -10,12 +10,12 @@ local util = require("lib.util")
 local function init(args)
 	local queue = require("lib.queue").queue
 
-	if not util.has_item(const.ITEM_MODEM, 1) then
+	if not util.has_item(const.ITEM_MODEM, const.SLOT_LOADER_SWAP) then
 		print("No modem found, exiting!")
 		---@diagnostic disable-next-line: undefined-global
 		exit()
 	end
-	turtle.select(1)
+	turtle.select(const.SLOT_LOADER_SWAP)
 	turtle.equipRight()
 	local modem = peripheral.find("modem")
 	---@cast modem modem
@@ -43,7 +43,10 @@ local function init(args)
 		log_ch = parsed_args.log_ch,
 		log_lvl = parsed_args.log_lvl,
 		master_ch = parsed_args.master_ch,
-		master_name = parsed_args.master_name
+		master_name = parsed_args.master_name,
+		slot_dump = const.SLOT_DUMP,
+		slot_first_free = const.SLOT_LOADER_FIRST_FREE,
+		slot_fuel = const.SLOT_FUEL
 	})
 
 	local logger = require("lib.logger").init(config.log_ch, config.log_lvl, nil, modem)

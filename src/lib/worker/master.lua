@@ -107,7 +107,7 @@ local function init(logger)
 	---@param dir direction_ver | nil The direction in which to clear, nil for both
 	local function clear_deployment_area(dir)
 		logger.trace("clearing deployment area")
-		turtle.select(const.SLOT_FIRST_FREE)
+		turtle.select(const.SLOT_MASTER_FIRST_FREE)
 		local err_def = "failed to clear deployment area"
 		local ok, err
 		if not dir or dir == "up" then
@@ -124,8 +124,8 @@ local function init(logger)
 				return false, err_def
 			end
 		end
-		if turtle.getItemCount(const.SLOT_FIRST_FREE) > 0 then
-			ok, err = util.dump(const.SLOT_DUMP, const.SLOT_FIRST_FREE, 16, dir)
+		if turtle.getItemCount(const.SLOT_MASTER_FIRST_FREE) > 0 then
+			ok, err = util.dump(const.SLOT_DUMP, const.SLOT_MASTER_FIRST_FREE, 16, dir)
 		end
 		if not ok then
 			logger.error(err)
@@ -144,7 +144,7 @@ local function init(logger)
 		local helper_dir = dir == "down" and "up" or "down"
 
 		local ok, err
-		if worker_type == "loader" and not util.has_item(const.ITEM_MODEM, const.SLOT_MODEMS) then
+		if worker_type == "loader" and not util.has_item(const.ITEM_MODEM, const.SLOT_MASTER_MODEMS) then
 			err = "need at least one available " .. const.LABEL_MODEM
 			logger.error(err)
 			return false, err
@@ -159,16 +159,16 @@ local function init(logger)
 		end
 
 		logger.info("deploying worker '" .. label .. "' " .. dir .. "wards")
-		turtle.select(const.SLOT_FIRST_FREE)
+		turtle.select(const.SLOT_MASTER_FIRST_FREE)
 		logger.trace("placing helper chests")
-		ok, err = util.place_inv(const.SLOT_HELPER, helper_dir)
+		ok, err = util.place_inv(const.SLOT_MASTER_HELPER, helper_dir)
 		if not ok then
 			err = "failed to place helper chest"
 			logger.error(err)
 			return false, err
 		end
 		logger.trace("placing worker chest")
-		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
+		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MASTER_MINERS or const.SLOT_MASTER_LOADERS
 		ok, err = util.place_inv(chest_slot, dir)
 		if not ok then
 			err = "failed to place worker chest"
@@ -184,7 +184,7 @@ local function init(logger)
 			-- TODO handle missing worker
 			if turtle.getItemDetail(chest_slot, true).displayName == label then
 				logger.trace("worker found")
-				turtle.transferTo(const.SLOT_DEPLOY)
+				turtle.transferTo(const.SLOT_MASTER_DEPLOY)
 				break
 			end
 			op.drop[helper_dir]()
@@ -196,20 +196,20 @@ local function init(logger)
 		util.break_inv(chest_slot, dir)
 
 		logger.trace("deploying worker")
-		turtle.select(const.SLOT_DEPLOY)
+		turtle.select(const.SLOT_MASTER_DEPLOY)
 		op.place[dir]()
-		if worker_type == "loader" then
-			turtle.select(const.SLOT_MODEMS)
-		else
-			turtle.select(const.SLOT_DUMP)
-		end
+		turtle.select(const.SLOT_DUMP)
 		op.drop[dir](1)
 		turtle.select(const.SLOT_FUEL)
 		op.drop[dir](1)
+		if worker_type == "loader" then
+			turtle.select(const.SLOT_MASTER_MODEMS)
+			op.drop[dir](1)
+		end
 		lib.workers[label].deployed = true
 
 		logger.trace("removing helper chests")
-		util.break_inv(const.SLOT_HELPER, helper_dir)
+		util.break_inv(const.SLOT_MASTER_HELPER, helper_dir)
 
 		logger.trace("starting worker")
 		local side = dir == "up" and "top" or "bottom"
@@ -225,7 +225,7 @@ local function init(logger)
 	function lib.collect(label, dir)
 		dir = dir or "down"
 		local chest_dir = dir == "down" and "up" or "down"
-		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MINERS or const.SLOT_LOADERS
+		local chest_slot = lib.workers[label].type == "miner" and const.SLOT_MASTER_MINERS or const.SLOT_MASTER_LOADERS
 
 		local ok, err = clear_deployment_area(chest_dir)
 		if not ok then
@@ -259,9 +259,9 @@ local function init(logger)
 
 		-- Handle extra items the worker was carrying
 		while turtle.getItemCount(chest_slot) > 0 do
-			ok, err = util.transfer_first_free(chest_slot, const.SLOT_FIRST_FREE)
+			ok, err = util.transfer_first_free(chest_slot, const.SLOT_MASTER_FIRST_FREE)
 			logger.trace("dumping inventory")
-			util.dump(const.SLOT_DUMP, const.SLOT_FIRST_FREE, nil, dir)
+			util.dump(const.SLOT_DUMP, const.SLOT_MASTER_FIRST_FREE, nil, dir)
 			if ok then
 				break
 			end

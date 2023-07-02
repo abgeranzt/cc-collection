@@ -37,7 +37,10 @@ local function init(args)
 		log_ch = parsed_args.log_ch,
 		log_lvl = parsed_args.log_lvl,
 		master_ch = parsed_args.master_ch,
-		master_name = parsed_args.master_name
+		master_name = parsed_args.master_name,
+		slot_dump = const.SLOT_DUMP,
+		slot_first_free = const.SLOT_MINER_FIRST_FREE,
+		slot_fuel = const.SLOT_FUEL
 	})
 
 	local logger = require("lib.logger").init(config.log_ch, config.log_lvl, nil, modem)
