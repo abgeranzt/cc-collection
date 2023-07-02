@@ -41,6 +41,8 @@ local function place_inv(slot, dir)
 	place_fn[dir]()
 
 	turtle.select(p_slot)
+	-- Wait for the inventory to become available
+	sleep(1)
 	return dir
 end
 
@@ -309,11 +311,28 @@ local function table_compare(t1, t2)
 	return true
 end
 
----@param t table
+---@generic T: table
+---@param t T
+---@return T
 local function table_copy(t)
 	local new_t = {}
 	for k, v in pairs(t) do
 		new_t[k] = v
+	end
+	return new_t
+end
+
+---@generic T: table
+---@param t T
+---@return T
+local function table_copy_recursive(t)
+	local new_t = {}
+	for k, v in pairs(t) do
+		if type(v) == "table" then
+			new_t[k] = table_copy_recursive(v)
+		else
+			new_t[k] = v
+		end
 	end
 	return new_t
 end
@@ -344,5 +363,6 @@ return {
 	find_item = find_item,
 	table_compare = table_compare,
 	table_copy = table_copy,
+	table_copy_recursive = table_copy_recursive,
 	coord_add = coord_add
 }
