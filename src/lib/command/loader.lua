@@ -1,5 +1,5 @@
 local const = require("lib.const")
-local miner = require("lib.command.miner")
+local common = require("lib.command.common")
 local util = require("lib.util")
 
 ---@diagnostic disable-next-line: unknown-cast-variable
@@ -15,10 +15,8 @@ local util = require("lib.util")
 ---@param listen_ch integer
 ---@param s_slot integer | nil The slot to use for tool swapping
 local function init(config, logger, pos, modem, listen_ch, s_slot)
-	-- FIXME lib.navigate tries to refuel by itself, but this won't work with a loader. -> swap before and after refuelling
-	-- TODO don't inherit from miner, move common functionality from miner to common
 	---@class lib_command_loader: lib_command_miner Commands for chunk loading mining turtles
-	local lib = miner.init(config, logger, pos)
+	local lib = common.init(config, logger, pos)
 
 	s_slot = s_slot or 1
 
@@ -50,21 +48,42 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 		return true, nil
 	end
 
-	lib._refuel = lib.refuel
+	lib._navigate = lib.navigate
 	---@param params {direction: cmd_direction, distance: number}
-	---@diagnostic disable-next-line: duplicate-set-field
-	function lib.refuel(params)
+	function lib.navigate(params)
 		local swapped = equip_pick()
-		local ok, err = lib._refuel(params)
+		local ok, err = lib._navigate(params)
 		if swapped then
 			_swap()
 			-- The peripheral wrapper survives swapping, open channels do not
 			modem.open(listen_ch)
+			os.queueEvent("pos_update")
+			-- Yield to allow the position update to be propagated
+			sleep(1)
 		end
 		if not ok then
-			---@cast err string
 			logger.error(err)
-			return false, "refuel command (loader) failed"
+			return false, "navigate command (loader) failed"
+		end
+		return true, nil
+	end
+
+	lib._navigate_pos = lib.navigate_pos
+	---@param params {pos: gpslib_position}
+	function lib.navigate_pos(params)
+		local swapped = equip_pick()
+		local ok, err = lib._navigate_pos(params)
+		if swapped then
+			_swap()
+			-- The peripheral wrapper survives swapping, open channels do not
+			modem.open(listen_ch)
+			os.queueEvent("pos_update")
+			-- Yield to allow the position update to be propagated
+			sleep(1)
+		end
+		if not ok then
+			logger.error(err)
+			return false, "navigate_pos command (loader) failed"
 		end
 		return true, nil
 	end
@@ -79,6 +98,9 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 			_swap()
 			-- The peripheral wrapper survives swapping, open channels do not
 			modem.open(listen_ch)
+			os.queueEvent("pos_update")
+			-- Yield to allow the position update to be propagated
+			sleep(1)
 		end
 		if not ok then
 			---@cast err string
@@ -106,6 +128,39 @@ local function init(config, logger, pos, modem, listen_ch, s_slot)
 			---@cast err string
 			logger.error(err)
 			return false, "tunnel_pos command (loader) failed"
+		end
+		return true, nil
+	end
+
+	lib._dump = lib.dump
+	function lib.dump()
+		local swapped = equip_pick()
+		local ok, err = lib._dump()
+		if swapped then
+			_swap()
+			modem.open(listen_ch)
+		end
+		if not ok then
+			logger.error(err)
+			return false, "dump command (loader) failed"
+		end
+	end
+
+	lib._refuel = lib.refuel
+	---@param params {direction: cmd_direction, distance: number}
+	---@diagnostic disable-next-line: duplicate-set-field
+	function lib.refuel(params)
+		local swapped = equip_pick()
+		local ok, err = lib._refuel(params)
+		if swapped then
+			_swap()
+			-- The peripheral wrapper survives swapping, open channels do not
+			modem.open(listen_ch)
+		end
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "refuel command (loader) failed"
 		end
 		return true, nil
 	end

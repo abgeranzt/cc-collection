@@ -2,6 +2,7 @@
 ---@cast os os
 
 local const = require("lib.const")
+local exc = require("lib.excavate")
 local go = require("lib.navigate").go
 local util = require("lib.util")
 
@@ -43,6 +44,25 @@ local function init(config, logger, current_pos)
 		return true, nil
 	end
 
+	---@param params {direction: cmd_direction, distance: number}
+	function lib.validators.navigate(params)
+		if not params.direction then
+			return false, "missing parameter direction"
+		end
+		if not directions[params.direction]
+			or type(params.direction) ~= "string"
+		then
+			return false, "invalid parameter direction '" .. params.direction .. "'"
+		end
+		if not params.distance then
+			return false, "missing parameter distance"
+		end
+		if type(params.distance) ~= "number" then
+			return false, "invalid parameter distance '" .. params.distance .. "'"
+		end
+		return true, nil
+	end
+
 	---@param fuel_type util_fuel_type
 	function lib.validators.fuel_type(fuel_type)
 		if not const.FUEL_TYPES[fuel_type] then
@@ -53,30 +73,11 @@ local function init(config, logger, current_pos)
 
 	---@param params {direction: cmd_direction, distance: number}
 	function lib.navigate(params)
-		-- validate params
-		if not params.direction then
-			local e = "missing parameter direction"
-			---@cast e string
-			return false, e
+		local ok, err = lib.validators.navigate(params)
+		if not ok then
+			return false, err
 		end
-		if not directions[params.direction]
-			or type(params.direction) ~= "string"
-		then
-			local e = "invalid parameter direction '" .. params.direction .. "'"
-			---@cast e string
-			return false, e
-		end
-		if not params.distance then
-			local e = "missing parameter distance"
-			---@cast e string
-			return false, e
-		end
-		if type(params.distance) ~= "number" then
-			local e = "invalid parameter distance '" .. params.distance .. "'"
-			---@cast e string
-			return false, e
-		end
-		local ok, err
+
 		if turtle.getFuelLevel() < params.distance then
 			ok, err = util.refuel(params.distance, config.fuel_type)
 			if not ok then
@@ -86,7 +87,7 @@ local function init(config, logger, current_pos)
 
 		ok, err = go[params.direction](params.distance)
 		if ok then
-			return true
+			return true, nil
 		else
 			---@cast err string
 			logger.error(err)
@@ -111,10 +112,75 @@ local function init(config, logger, current_pos)
 		return true, nil
 	end
 
+	---@param params {direction: cmd_direction, distance: number}
+	function lib.tunnel(params)
+		local ok, err = lib.validators.navigate(params)
+		if not ok then
+			return false, err
+		end
+
+		if turtle.getFuelLevel() < params.distance then
+			ok, err = util.refuel(params.distance, config.fuel_type)
+			if not ok then
+				return false, err
+			end
+		end
+
+		ok, err = exc.tunnel[params.direction](params.distance)
+		if ok then
+			return true
+		else
+			---@cast err string
+			logger.error(err)
+			return false, "tunnel command failed"
+		end
+	end
+
+	---@param params {pos: gpslib_position}
+	function lib.tunnel_pos(params)
+		local ok, err = lib.validators.gpslib_position(params.pos)
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "tunnel_pos command failed"
+		end
+		ok, err = go.coords(lib.current_pos, params.pos, exc.tunnel)
+		if not ok then
+			---@cast err string
+			logger.error(err)
+			return false, "tunnel_pos command failed"
+		end
+		return true, nil
+	end
+
+	function lib.dump()
+		local ok, err = util.dump()
+		if ok then
+			return true
+		else
+			---@cast err string
+			logger.error(err)
+			return false, "dump command failed"
+		end
+	end
+
 	---@return true, nil, number
 	function lib.get_fuel()
 		---@diagnostic disable-next-line: missing-return-value
 		return true, nil, turtle.getFuelLevel()
+	end
+
+	---@param params { target: number }
+	function lib.refuel(params)
+		if turtle.getFuelLevel() < params.target then
+			local ok, err = util.refuel(params.target, config.fuel_type)
+			if not ok then
+				---@cast err string
+				logger.error(err)
+				return false, "refuel command failed"
+			end
+		end
+		return true
 	end
 
 	---@param params { fuel_type: util_fuel_type }
