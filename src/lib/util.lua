@@ -118,6 +118,7 @@ end
 ---@param l_slot integer | nil The last slot for temp fuel storage
 ---@param chest_dir util_inv_dir | nil The direction to place the fuel chest in
 local function refuel(target, fuel_type, s_slot, d_slot, f_slot, l_slot, chest_dir)
+	-- FIXME containers do not work with with loaders because they have no dumping inventory
 	fuel_type = fuel_type or "consumable"
 	s_slot = s_slot or 2
 	d_slot = d_slot or 1
@@ -134,14 +135,15 @@ local function refuel(target, fuel_type, s_slot, d_slot, f_slot, l_slot, chest_d
 				break
 			end
 		end
+		return true, nil
 	end
 
 	local ok, err
 	if fuel_type == "container" then
 		ok, err = dump_containers()
-	end
-	if not ok then
-		return false, err
+		if not ok then
+			return false, err
+		end
 	end
 
 	-- Trigger a dump if a block had to be mined before placing the inv
