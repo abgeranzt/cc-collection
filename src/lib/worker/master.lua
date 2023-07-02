@@ -136,12 +136,10 @@ local function init(logger)
 
 	-- TODO function to check whether all registered workers of a type are actually present and available
 	---@param label string
-	---@param worker_type worker_type | nil
 	---@param dir direction_ver | nil
-	function lib.deploy(label, worker_type, dir)
-		-- TODO we can assert the worker_type using the label, get rid of the parameter
+	function lib.deploy(label, dir)
 		-- TODO ensure that enough fuel and dump chests are available
-		worker_type = worker_type or "miner"
+		local worker_type = lib.get(label).type
 		dir = dir or "down"
 		local helper_dir = dir == "down" and "up" or "down"
 

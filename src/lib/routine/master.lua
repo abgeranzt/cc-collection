@@ -104,7 +104,7 @@ local function init(config, task, worker, logger)
 		if workers_n == 1 then
 			local w = worker.get_labels_avail("miner")[1]
 			logger.info("deploying worker '" .. w .. "' for excavation")
-			worker.deploy(w, "miner", "down")
+			worker.deploy(w, "down")
 			local w_pos = util.coord_add(pos, 0, -1, 0)
 			task.create(w, "set_position", { pos = w_pos })
 			task.create(w, "set_fuel_type", { fuel_type = config.fuel_type })
@@ -155,7 +155,7 @@ local function init(config, task, worker, logger)
 		else
 			logger.info("deploying worker '" .. first_w .. "' for segment " .. #segments .. "/" .. segments_n)
 		end
-		worker.deploy(first_w, "miner", "down")
+		worker.deploy(first_w, "down")
 		task.create(first_w, "set_position", { pos = deploy_pos })
 		task.create(first_w, "set_fuel_type", { fuel_type = config.fuel_type })
 		-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
@@ -190,7 +190,7 @@ local function init(config, task, worker, logger)
 			target_y = target_y + segments[#segments]
 			local w = worker.get_any_avail("miner")
 			logger.info("deploying worker '" .. w .. "' for segment " .. #segments .. "/" .. segments_n)
-			worker.deploy(w, "miner", "down")
+			worker.deploy(w, "down")
 			task.create(w, "set_position", { pos = deploy_pos })
 			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 			task.await(task.create(w, "refuel", { target = const.TURTLE_MIN_FUEL }))
@@ -297,7 +297,7 @@ local function init(config, task, worker, logger)
 				local loader = worker.get_any_avail("loader")
 				logger.info("deploying loader '" .. loader .. "' for chunk " .. i)
 				i = i + 1
-				ok, err = worker.deploy(loader, "loader", "up")
+				ok, err = worker.deploy(loader, "up")
 				if not ok then
 					err = "failed to deploy loader '" .. loader .. "'"
 					logger.error(err)
