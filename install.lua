@@ -4,6 +4,7 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast http http
 
+-- FIXME since the release tag changes now, this no longer works -> determine download url using GH API
 local packed_url = "https://github.com/marcel-engelke/atref/releases/download/master/packed"
 local packed = "/packed"
 local delim = "--------------------------------------------------"
