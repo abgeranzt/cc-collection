@@ -11,7 +11,7 @@ local util = require("lib.util")
 ---@param logger lib_logger
 local function init(logger)
 	---@class lib_worker_master Worker management
-	---@field workers worker[]
+	---@field workers {[string]: worker}
 	local lib = { workers = {} }
 
 	---@param label string
@@ -134,11 +134,80 @@ local function init(logger)
 		return true
 	end
 
-	-- TODO function to check whether all registered workers of a type are actually present and available
+	---@param dir direction_ver | nil The direction in which to place the worker inventory
+	function lib.verify_workers(dir)
+		-- TODO function that handles uses this function's return value and updates the worker list
+		dir = dir or "down"
+		logger.trace("clearing space for worker inventories")
+		local ok, err = clear_deployment_area(dir)
+		if not ok then
+			logger.error(err)
+			return false, err
+		end
+
+		local found = {}
+		---@cast found { [string]: { [string]: boolean }}
+		for wt, _ in pairs(const.WORKER_TYPES) do
+			logger.info("verifying workers of type '" .. wt .. "'")
+			local inv_slot = const.WORKER_TYPE_SLOTS[wt]
+			local inv_dir
+			logger.trace("placing worker inventory")
+			inv_dir, err = util.place_inv(inv_slot, dir)
+			if not inv_dir then
+				logger.error(err)
+				return false, err
+			end
+
+			found[wt] = {}
+			for _, label in ipairs(lib.get_labels(wt)) do
+				found[wt][label] = false
+			end
+			logger.trace("verifying worker list")
+			local inv = peripheral.wrap(dir == "up" and "top" or "bottom")
+			---@cast inv peripheral_inventory
+			for slot = 1, inv.size() do
+				local item = inv.getItemDetail(slot)
+				if item then
+					if lib.workers[item.displayName] then
+						logger.trace("found worker '" .. item.displayName .. "'")
+						found[wt][item.displayName] = true
+					else
+						logger.trace("item '" .. item.displayName .. "' is not a known worker")
+					end
+				else
+					logger.trace("slot " .. slot .. " empty")
+				end
+			end
+			logger.trace("breaking worker inventory")
+			ok, err = util.break_inv(inv_slot, dir)
+			if not ok then
+				logger.error(err)
+				return false, err
+			end
+		end
+
+		local verified = util.table_copy_recursive(found)
+		local complete = true
+		for wt, _ in pairs(const.WORKER_TYPES) do
+			for label, was_found in pairs(found[wt]) do
+				if not was_found then
+					logger.warn("worker '" .. label .. "' is missing")
+					verified[wt][label] = nil
+					complete = false
+				end
+			end
+		end
+		if not complete then
+			logger.error("missing workers detected")
+		end
+		return complete, verified
+	end
+
 	---@param label string
 	---@param dir direction_ver | nil
 	function lib.deploy(label, dir)
 		-- TODO ensure that enough fuel and dump chests are available
+		-- TODO refactor this and get rid of the helper chests as in verify_workers
 		local worker_type = lib.get(label).type
 		dir = dir or "down"
 		local helper_dir = dir == "down" and "up" or "down"

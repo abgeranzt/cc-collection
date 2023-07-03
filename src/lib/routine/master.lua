@@ -377,6 +377,7 @@ local function init(config, task, worker, logger)
 	---@param use_loaders boolean Whether to use loaders
 	---@param limit integer | nil Operation limit (-1 for infinite)
 	function lib.auto_mine_chunk(pos, size, dir, use_loaders, limit)
+		-- TODO use worker.verify_workers and handle result, if missing, decide whether to continue with remaining workers
 		if not use_loaders then
 			logger.warn(
 				"using auto chunk mining without chunk loaders may lead to unexpected behavior due to chunks being unloaded"

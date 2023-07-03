@@ -5,6 +5,11 @@ const.FUEL_TYPES = {
 	container = true,
 }
 
+const.WORKER_TYPES = {
+	miner = true,
+	loader = true
+}
+
 const.SLOT_DUMP = 1
 const.SLOT_FUEL = 2
 
@@ -19,6 +24,11 @@ const.SLOT_LOADER_SWAP = 3
 const.SLOT_LOADER_FIRST_FREE = 4
 
 const.SLOT_MINER_FIRST_FREE = 3
+
+const.WORKER_TYPE_SLOTS = {
+	miner = const.SLOT_MASTER_MINERS,
+	loader = const.SLOT_MASTER_LOADERS
+}
 
 const.CH_GPS = 65534
 
