@@ -9,53 +9,63 @@ local go = {}
 local MAX_TRIES = 5
 
 for _, dir in ipairs({ "forward", "back", "up", "down" }) do
-	---@param n number | nil
+	---@param n number | nil Distance
+	---@return boolean success Success
+	---@return string | nil error Error message
+	---@return integer trav Distance travelled
 	go[dir] = function(n)
 		n = n or 1
+		local rem = n
 		local try = 1
 		local ok, err
-		while n > 0 do
+		while rem > 0 do
 			if try > MAX_TRIES then
-				return false, err
+				return false, err, n - rem
 			end
 
 			ok, err = turtle[dir]()
 			if ok then
 				os.queueEvent("pos_update")
-				n = n - 1
+				rem = rem - 1
 				try = 1
 			else
 				try = try + 1
 				sleep(1)
 			end
 		end
-		return true
+		return true, nil, n - rem
 	end
 end
 
----@param n number | nil
+---@param n number | nil Distance
+---@return boolean success Success
+---@return string | nil error Error message
+---@return integer trav Distance travelled
 function go.left(n)
 	turtle.turnLeft()
-	local ok, err = go.forward(n)
+	local ok, err, trav = go.forward(n)
 	if ok then
 		turtle.turnRight()
-		return true
+		return true, nil, trav
 	else
 		turtle.turnRight()
-		return false, err
+		return false, err, trav
 	end
 end
 
----@param n number | nil
+---@param n number | nil Distance
+---@return boolean success Success
+---@return string | nil error Error message
+---@return integer trav Distance travelled
 function go.right(n)
 	turtle.turnRight()
-	local ok, err = go.forward(n)
+	local ok, err, trav = go.forward(n)
 	if ok then
 		turtle.turnLeft()
-		return true
+		return true, nil, trav
 	else
 		turtle.turnLeft()
-		return false, err
+		return false, err, trav
 	end
 end
 
@@ -65,8 +75,9 @@ local function turn()
 	return true
 end
 
----@param current_dir gpslib_direction
----@param target_dir gpslib_direction
+---@param current_dir gpslib_direction Current direction
+---@param target_dir gpslib_direction Target direction
+---@return gpslib_direction new_dir Same as target_dir
 local function turn_dir(current_dir, target_dir)
 	local function nothing()
 	end
