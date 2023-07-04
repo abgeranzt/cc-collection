@@ -110,7 +110,7 @@ local function init(config, task, worker, logger)
 			task.create(w, "set_fuel_type", { fuel_type = config.fuel_type })
 			-- TODO ? reduce the amount of fuel chests needed by calculating the fuel required for all tasks?
 			task.await(task.create(w, "refuel", { target = const.TURTLE_MIN_FUEL }))
-			logger.trace("excavating segment 1")
+			logger.info("excavating segment 1")
 			local tid = task.create(w, "excavate", { l = dim.l, w = dim.w, h = dim.h })
 			task.await(tid)
 			if not task.is_successful(tid) then

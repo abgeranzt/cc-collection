@@ -18,7 +18,7 @@ local function init(worker, logger, dir)
 			---@cast msg msg
 			local pos = msg.payload.body
 			---@cast pos gpslib_position
-			logger.trace("updating position for  '" .. msg.snd .. "'")
+			logger.debug("updating position for  '" .. msg.snd .. "'")
 			worker.get(msg.snd).position = pos
 		end
 	end

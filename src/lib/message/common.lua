@@ -54,7 +54,8 @@ local function init(modem, listen_ch, logger)
 				logger.trace("ignoring gps message")
 			elseif lib.validate(msg) then
 				---@cast msg msg
-				logger.trace("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
+				logger.trace("valid message")
+				logger.debug("valid message " .. msg.payload.id .. " type: '" .. msg.type .. "'")
 				if not lib.handlers[msg.type] then
 					logger.warn("no handler for message type '" .. msg.type .. "'")
 				else

@@ -169,10 +169,12 @@ local function init(logger)
 				local item = inv.getItemDetail(slot)
 				if item then
 					if lib.workers[item.displayName] then
-						logger.trace("found worker '" .. item.displayName .. "'")
+						logger.trace("found worker")
+						logger.debug("found worker '" .. item.displayName .. "'")
 						found[wt][item.displayName] = true
 					else
-						logger.trace("item '" .. item.displayName .. "' is not a known worker")
+						logger.trace("unknown worker")
+						logger.debug("item '" .. item.displayName .. "' is not a known worker")
 					end
 				else
 					logger.trace("slot " .. slot .. " empty")
