@@ -8,6 +8,13 @@
 local go = {}
 local MAX_TRIES = 5
 
+local reverse = {
+	forward = "back",
+	back = "forward",
+	up = "down",
+	down = "up"
+}
+
 for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 	---@param n number | nil Distance
 	---@return boolean success Success
@@ -35,6 +42,23 @@ for _, dir in ipairs({ "forward", "back", "up", "down" }) do
 		end
 		return true, nil, n - rem
 	end
+
+	---@param n number | nil Distance
+	---@return boolean success Success
+	---@return string | nil error Error message
+	---@return integer trav Distance travelled
+	go[dir .. "or_return"] = function(n)
+		local ok, err, trav = go[dir](n)
+		if not ok then
+			local trav_back
+			ok, err, trav_back = go[reverse[dir]](trav)
+			if not ok then
+				return false, "could not return after failed initial move", trav_back
+			end
+			return false, err, trav
+		end
+		return true, nil, trav
+	end
 end
 
 ---@param n number | nil Distance
@@ -53,6 +77,21 @@ function go.left(n)
 	end
 end
 
+function go.left_or_return(n)
+	turtle.turnLeft()
+	local ok, err, trav = go.forward(n)
+	turtle.turnRight()
+	if not ok then
+		local trav_back
+		ok, err, trav_back = go.right(trav)
+		if not ok then
+			return false, "could not return after failed initial move", trav_back
+		end
+		return false, err, trav
+	end
+	return true, nil, trav
+end
+
 ---@param n number | nil Distance
 ---@return boolean success Success
 ---@return string | nil error Error message
@@ -60,13 +99,16 @@ end
 function go.right(n)
 	turtle.turnRight()
 	local ok, err, trav = go.forward(n)
-	if ok then
-		turtle.turnLeft()
-		return true, nil, trav
-	else
-		turtle.turnLeft()
+	turtle.turnLeft()
+	if not ok then
+		local trav_back
+		ok, err, trav_back = go.left(trav)
+		if not ok then
+			return false, "could not return after failed initial move", trav_back
+		end
 		return false, err, trav
 	end
+	return true, nil, trav
 end
 
 local function turn()
