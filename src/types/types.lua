@@ -54,6 +54,8 @@ end
 ---@alias gpslib_direction "north" | "east" | "south" | "west"
 ---@alias gpslib_position {x: integer, y: integer, z: integer, dir: gpslib_direction}
 
+---@alias lib_go_axis "x" | "y" | "z"
+---@alias lib_go_axis_order "xyz" | "xzy" | "yxz" | "yzx" | "zxy" | "zyx"
 
 ---@alias log_level "fatal" | "error" | "warn" | "info" | "debug" | "trace"
 ---@alias log_event {snd: string, lvl: log_level, msg: string, raw: string}

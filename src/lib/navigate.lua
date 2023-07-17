@@ -1,6 +1,8 @@
 ---@diagnostic disable-next-line: unknown-cast-variable
 ---@cast os os
 
+local util = require("lib.util")
+
 -- TODO handle navigation errrors by returning to the original position
 
 -- Navigate using relative coordinates.
@@ -228,76 +230,132 @@ local function turn_dir(current_dir, target_dir)
 	return target_dir
 end
 
+-- Attempt to navigate along the specified axis
+-- The lib_go parameter accepts any interface that implements basic turtle movement.
+-- This allows overriding the behavior while moving, which is useful for tasks
+-- such as mining blocks or interacting with the environment.
+-- The order in which the axis are traversed can be set by the axis_order parameter
+---@param axis lib_go_axis The axis to move on
+---@param current_dir gpslib_direction The current direction
+---@param current_point integer The current point on the axis
+---@param target_point integer The target point on the axis
+---@param lib_go lib_go | nil Interface implementing basic navigation functions
+---@return boolean success Success
+---@return string | nil error Error message
+---@return integer trav Distance travelled
+function go.axis(axis, current_dir, current_point, target_point, lib_go)
+	lib_go = lib_go and lib_go or go
+	if current_point == target_point then
+		return true, nil, 0
+	end
+	local distance = math.abs(current_point - target_point)
+	if axis == "y" then
+		if target_point > current_point then
+			return lib_go.up(distance)
+		end
+	elseif axis == "x" then
+		turn_dir(current_dir, "east")
+		local ok, err, trav
+		if target_point > current_point then
+			ok, err, trav = lib_go.forward(distance)
+		else
+			ok, err, trav = lib_go.back(distance)
+		end
+		turn_dir("east", current_dir)
+		return ok, err, trav
+	end
+	-- z
+	turn_dir(current_dir, "south")
+	local ok, err, trav
+	if target_point > current_point then
+		ok, err, trav = lib_go.forward(distance)
+	else
+		ok, err, trav = lib_go.back(distance)
+	end
+	turn_dir("south", current_dir)
+	return ok, err, trav
+end
+
 -- Attempt to navigate the target position.
 -- The lib_go parameter accepts any interface that implements basic turtle movement.
 -- This allows overriding the behavior while moving, which is useful for tasks
 -- such as mining blocks or interacting with the environment.
----@param current_pos gpslib_position
----@param target_pos gpslib_position
+-- The order in which the axis are traversed can be set by the axis_order parameter
+---@param current_pos gpslib_position The current position
+---@param target_pos gpslib_position The target position
 ---@param lib_go lib_go | nil Interface implementing basic navigation functions
-function go.coords(current_pos, target_pos, lib_go)
-	if not lib_go then
-		lib_go = go
-	end
-	local ok, err
-	-- TODO current_pos.dir is updated manually, remove this behaviour once a wrapper for turtle.turnX has been written
-	if current_pos.x ~= target_pos.x then
-		local go_func_fw = lib_go.forward
-		local go_func_bk = lib_go.back
-		if current_pos.dir == "west" then
-			go_func_fw = lib_go.back
-			go_func_bk = lib_go.forward
-		else
-			if current_pos.dir == "north" then
-				turtle.turnRight()
-			elseif current_pos.dir == "south" then
-				turtle.turnLeft()
-			end
-			current_pos.dir = "east"
-		end
-		local dist = math.abs(current_pos.x - target_pos.x)
-		if current_pos.x < target_pos.x then
-			ok, err = go_func_fw(dist)
-		else
-			ok, err = go_func_bk(dist)
-		end
+---@param axis_order lib_go_axis_order | nil The order in which to travel along the axes
+---@return boolean success Success
+---@return string | nil error Error message
+---@return integer trav Distance travelled
+function go.coords(current_pos, target_pos, lib_go, axis_order)
+	axis_order = axis_order and axis_order or "xyz"
+	local ok, err, trav
+	local trav_all = 0
+	for i in 1, 3 do
+		local axis = axis_order[i]
+		---@cast axis lib_go_axis
+		ok, err, trav = go.axis(axis, current_pos.dir, current_pos[axis], target_pos[axis], lib_go)
+		trav_all = trav_all + trav
 		if not ok then
-			return false, err
+			return false, err, trav_all
 		end
 	end
-	if current_pos.z ~= target_pos.z then
-		local go_func_fw = lib_go.forward
-		local go_func_bk = lib_go.back
-		if current_pos.dir == "north" then
-			go_func_fw = lib_go.back
-			go_func_bk = lib_go.forward
-		else
-			if current_pos.dir == "east" then
-				turtle.turnRight()
-			elseif current_pos.dir == "west" then
-				turtle.turnLeft()
-			end
-			current_pos.dir = "south"
-		end
-		local dist = math.abs(current_pos.z - target_pos.z)
-		if current_pos.z < target_pos.z then
-			ok, err = go_func_fw(dist)
-		else
-			ok, err = go_func_bk(dist)
-		end
-		if not ok then
-			return false, err
-		end
-	end
-	local dist = math.abs(current_pos.y - target_pos.y)
-	if current_pos.y < target_pos.y then
-		ok, err = lib_go.up(dist)
-	else
-		ok, err = lib_go.down(dist)
-	end
-	current_pos.dir = turn_dir(current_pos.dir, target_pos.dir)
-	return ok and ok, nil or false, err
+	return true, nil, trav_all
 end
+
+-- Attempt to navigate the target position and return on the same path after encountering an obstacle.
+-- The lib_go parameter accepts any interface that implements basic turtle movement.
+-- This allows overriding the behavior while moving, which is useful for tasks
+-- such as mining blocks or interacting with the environment.
+-- The order in which the axis are traversed can be set by the axis_order parameter
+---@param current_pos gpslib_position The current position
+---@param target_pos gpslib_position The target position
+---@param lib_go lib_go | nil Interface implementing basic navigation functions
+---@param axis_order lib_go_axis_order | nil The order in which to travel along the axes
+---@return boolean success Success
+---@return string | nil error Error message
+---@return integer trav Distance travelled
+function go.coords_or_return(current_pos, target_pos, lib_go, axis_order)
+	axis_order = axis_order and axis_order or "xyz"
+	local ok, err
+	local trav = { 0, 0, 0 }
+	---@param t integer[]
+	local function sum(t)
+		local s = 0
+		for _, i in ipairs(t) do
+			s = s + t[i]
+		end
+		return s
+	end
+	-- Copy the table because current_pos is being updated as the turtle moves
+	local init_pos = util.table_copy(current_pos)
+	local i = 1
+	while i <= 3 do
+		local axis = axis_order[i]
+		---@cast axis lib_go_axis
+		ok, err, trav[i] = go.axis(axis, current_pos.dir, current_pos[axis], target_pos[axis], lib_go)
+		if not ok then
+			break
+		end
+		i = i + 1
+	end
+	if not ok then
+		local back_trav = { 0, 0, 0 }
+		local back_err
+		while i <= 3 do
+			local axis = axis_order[i]
+			---@cast axis lib_go_axis
+			ok, back_err, back_trav[i] = go.axis(axis, current_pos.dir, current_pos[axis], init_pos[axis], lib_go)
+			if not ok then
+				return false, back_err, sum(back_trav)
+			end
+		end
+	end
+	return ok, err, sum(trav)
+end
+
+--- FIXME not tested yet!
 
 return {
 	go = go,
