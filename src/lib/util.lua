@@ -295,6 +295,7 @@ local function find_item(name, f_slot, l_slot)
 	return false
 end
 
+-- TODO move data structure related functions to helpers.lua
 ---@param t1 table
 ---@param t2 table
 local function table_compare(t1, t2)

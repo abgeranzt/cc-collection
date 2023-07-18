@@ -1,8 +1,8 @@
 -- Task queue
 local queue = { fpos = 1, lpos = 1, len = 0 }
 
-function queue.push(task)
-	queue[queue.fpos] = task
+function queue.push(item)
+	queue[queue.fpos] = item
 	queue.fpos = queue.fpos + 1
 	queue.len = queue.len + 1
 end
