@@ -2,6 +2,13 @@ local h = require("lib.helpers")
 
 -- Note: This file does not use the testing library because the latter depends on it.
 
+local function test_table_to_str()
+	local t1 = { foo = "bar" }
+	assert("{foo = bar, }" == h.table_to_str(t1))
+	local t2 = { bar = t1 }
+	assert("{bar = {foo = bar, }, }", h.table_to_str(t2))
+end
+
 local function test_table_compare()
 	local t1 = { foo = "bar", bar = 1 }
 	local t2 = { foo = "bar", bar = 1 }
@@ -108,6 +115,7 @@ local function test_compare()
 	assert(not h.compare(t3, t4))
 end
 
+test_table_to_str()
 test_table_compare()
 test_table_compare_recursive()
 test_table_copy()
