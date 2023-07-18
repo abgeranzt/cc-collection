@@ -1,4 +1,4 @@
 .local*
 .vscode
-test*.lua
+_test*.lua
 .temp
