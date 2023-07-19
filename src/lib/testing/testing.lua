@@ -1,5 +1,5 @@
 local helpers = require("lib.helpers")
-local queue = require("lib.queue")
+local Queue = require("lib.queue").Queue
 local term = require("lib.testing.term")
 
 -- TODO test runtime to run all tests in this project
@@ -38,7 +38,7 @@ end
 -- Reset the following: Function queues and defaults, _current_test
 function Testing.reset()
 	for _, f in pairs(Testing._functions) do
-		f.queue = helpers.table_copy(queue.queue)
+		f.queue = Queue.create()
 		f.default = nil
 	end
 	Testing._current_test = { total = 0, passed = 0, failed = 0 }
@@ -69,7 +69,6 @@ function Testing.test(name, test_fn)
 	if not ok or Testing._tests[name].failed > 0 then
 		print_fail(term.fg.bright_red .. "Test failed!" .. term.reset)
 	end
-	-- TODO summary for all tests
 	local run_msg = ok and "executed successfully, "
 		or term.fg.bright_red .. "failed to execute" .. term.reset .. ", "
 	local total_msg = "assertions: " .. Testing._tests[name].total .. ", "
@@ -100,7 +99,7 @@ function Testing.assert(name, expected, actual)
 	if not helpers.compare(expected, actual) then
 		print_err(msg_prefix .. "Value mismatch \nExpected:")
 		print(helpers.table_to_str(expected))
-		print("Found:")
+		print("Actual:")
 		print(helpers.table_to_str(actual))
 		print(trace)
 		Testing._current_test.failed = Testing._current_test.failed + 1
@@ -114,9 +113,9 @@ end
 -- Create a function mock up that takes a variable number of arguments.
 -- The mocked function returns queued mock values or pre-defined default values.
 ---@param name string
-function Testing.fn(name, ...)
+function Testing.fn(name)
 	Testing._functions[name] = {
-		queue = helpers.table_copy(queue),
+		queue = Queue.create(),
 		default = nil
 	}
 
@@ -125,19 +124,23 @@ function Testing.fn(name, ...)
 		if q.len > 0 then
 			return table.unpack(q.pop())
 		end
-		return Testing._functions[name].default
+		return table.unpack(Testing._functions[name].default)
 	end
 	return fn
 end
 
 ---@param name string
 function Testing.set_default_return(name, ...)
-	Testing._functions[name].default = table.pack(...)
+	local vals = table.pack(...)
+	vals.n = nil
+	Testing._functions[name].default = vals
 end
 
 ---@param name string
 function Testing.set_return(name, ...)
-	Testing._functions[name].queue.push(table.pack(...))
+	local vals = table.pack(...)
+	vals.n = nil
+	Testing._functions[name].queue.push(vals)
 end
 
 ---@param name string

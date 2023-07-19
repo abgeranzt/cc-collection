@@ -36,3 +36,15 @@ Testing.test("function with multiple return values", function()
 	local actual = table.pack(create_vargs(4))
 	Testing.assert("complex assertion", expected, actual)
 end)
+
+Testing.test("mock function", function()
+	local f = Testing.fn("f")
+	Testing.set_default_return("f", false)
+	Testing.set_return("f", true, "foo")
+	local expected = { true, "foo", n = 2 }
+	local actual = table.pack(f())
+	Testing.assert("mocked return", expected, actual)
+	expected = { false, n = 1 }
+	actual = table.pack(f())
+	Testing.assert("default return", expected, actual)
+end)
