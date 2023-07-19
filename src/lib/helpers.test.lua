@@ -2,6 +2,37 @@ local h = require("lib.helpers")
 
 -- Note: This file does not use the testing library because the latter depends on it.
 
+local function test_string_split()
+	local s = "a,b,c"
+	local split = h.string_split(s, "%,")
+	assert(3 == #split)
+	assert("a" == split[1])
+	assert("b" == split[2])
+	assert("c" == split[3])
+
+	s = "a;,b;,c"
+	split = h.string_split(s, "%;%,")
+	assert(3 == #split)
+	assert("a" == split[1])
+	assert("b" == split[2])
+	assert("c" == split[3])
+
+	s = ",abc"
+	split = h.string_split(s, "%,")
+	assert(2 == #split)
+	assert("" == split[1])
+	assert("abc" == split[2])
+
+	s = "abc,"
+	split = h.string_split(s, "%,")
+	assert(2 == #split)
+	assert("abc" == split[1])
+	assert("" == split[2])
+
+	s = ","
+	split = h.string_split(s, "%,")
+end
+
 local function test_table_to_str()
 	local t1 = { foo = "bar" }
 	assert("{foo = bar, }" == h.table_to_str(t1))
@@ -115,6 +146,7 @@ local function test_compare()
 	assert(not h.compare(t3, t4))
 end
 
+test_string_split()
 test_table_to_str()
 test_table_compare()
 test_table_compare_recursive()

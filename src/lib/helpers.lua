@@ -1,3 +1,27 @@
+-- Split a string at every occurance of the delimiter provided.
+-- Leading and trailng patterns are treated as if they were surrounded by an empty string.
+-- See Lua stdlib string.find() for pattern documentation
+---@param s string The string to split`
+---@param pattern string The pattern use as a delimter
+---@return string[]
+local function string_split(s, pattern)
+	local split = {}
+	local i, j
+	while true do
+		i, j = string.find(s, pattern)
+		if not i then
+			break
+		end
+		table.insert(split, string.sub(s, 0, i - 1))
+		s = string.sub(s, j + 1)
+		if j == string.len(s) then
+			break
+		end
+	end
+	table.insert(split, s)
+	return split
+end
+
 ---@param t table
 local function table_to_str(t)
 	local s = "{"
@@ -95,6 +119,7 @@ local function compare(v1, v2)
 end
 
 return {
+	string_split = string_split,
 	table_to_str = table_to_str,
 	table_compare = table_compare,
 	table_compare_recursive = table_compare_recursive,
