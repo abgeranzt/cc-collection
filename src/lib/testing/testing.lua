@@ -117,7 +117,7 @@ end
 function Testing.fn(name)
 	Testing._functions[name] = {
 		queue = Queue.create(),
-		default = nil,
+		default = {},
 		calls = 0,
 		last_call = nil
 	}
