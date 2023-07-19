@@ -22,6 +22,16 @@ Testing = {
 	_tests = {}
 }
 
+-- Reset function queues, defaults, and recorded calls
+function Testing.reset_fns()
+	for _, f in pairs(Testing._functions) do
+		f.queue = Queue.create()
+		f.default = nil
+		f.calls = 0
+		f.last_call = nil
+	end
+end
+
 ---@param msg string
 local function print_err(msg)
 	print(term.bg.red .. "ERROR" .. term.reset .. " " .. msg)
@@ -35,23 +45,17 @@ local function print_pass(msg)
 	print(term.bg.green .. term.fg.black .. "PASS" .. term.reset .. "  " .. msg)
 end
 
--- Reset the following: Function queues, defaults, recorded calls, _current_test
-function Testing.reset()
-	for _, f in pairs(Testing._functions) do
-		f.queue = Queue.create()
-		f.default = nil
-		f.calls = 0
-		f.last_call = nil
-	end
-	Testing._current_test = { total = 0, passed = 0, failed = 0 }
-end
-
 -- Create and run a unit test.
 -- Execture the code defined in test_fn, catch and print runtime errors.
 -- Print a test summary.
 ---@param name string The name of the test as it gets printed to the terminal
 ---@param test_fn fun() The function containing all the test code to be run, including assertions
 function Testing.test(name, test_fn)
+	Testing._current_test = {
+		total = 0,
+		failed = 0,
+		passed = 0,
+	}
 	print("[test] " .. name)
 
 	local ok, err = pcall(test_fn)
@@ -75,7 +79,7 @@ function Testing.test(name, test_fn)
 		and "failed: 0"
 		or "failed: " .. term.fg.bright_red .. Testing._tests[name].failed .. term.reset
 	print("[test summary] " .. run_msg .. total_msg .. passed_msg .. failed_msg .. "\n")
-	Testing.reset()
+	Testing.reset_fns()
 end
 
 -- Create and evaluate an assertion.
@@ -127,7 +131,9 @@ function Testing.fn(name)
 		if q.len > 0 then
 			return table.unpack(q.pop())
 		end
-		return Testing._functions[name].default and table.unpack(Testing._functions[name].default) or nil
+		if #Testing._functions[name].default > 0 then
+			return table.unpack(Testing._functions[name].default)
+		end
 	end
 	return fn
 end
@@ -141,6 +147,7 @@ end
 
 -- Mock a single function return
 ---@param name string The function name
+---@param ... any Return values
 function Testing.set_return(name, ...)
 	local vals = table.pack(...)
 	vals.n = nil
@@ -150,6 +157,7 @@ end
 -- Mock multiple subsequent function returns
 ---@param name string The function name
 ---@param count integer The amount of returns to mock
+---@param ... any Return values
 function Testing.set_return_many(name, count, ...)
 	for _ = 1, count do
 		Testing.set_return(name, ...)
