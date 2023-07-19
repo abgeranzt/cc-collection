@@ -23,7 +23,7 @@ local function table_compare(t1, t2)
 		end
 	end
 	for k, _ in pairs(t2) do
-		if not t1[k] then
+		if type(t1[k]) == "nil" then
 			return false
 		end
 	end
@@ -47,7 +47,7 @@ local function table_compare_recursive(t1, t2)
 		end
 	end
 	for k, _ in pairs(t2) do
-		if not t1[k] then
+		if type(t1[k]) == "nil" then
 			return false
 		end
 	end
