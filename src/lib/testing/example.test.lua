@@ -48,3 +48,13 @@ Testing.test("mock function", function()
 	actual = table.pack(f())
 	Testing.assert("default return", expected, actual)
 end)
+
+Testing.test("function calls", function()
+	local f = Testing.fn("f")
+	for _ = 1, 5 do
+		f()
+	end
+	Testing.assert("five calls", { 5 }, { Testing.get_call_amount("f") })
+	f("foo")
+	Testing.assert("called with foo", { "foo" }, { Testing.get_last_call("f") })
+end)

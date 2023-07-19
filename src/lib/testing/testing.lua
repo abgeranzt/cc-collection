@@ -13,8 +13,8 @@ local term = require("lib.testing.term")
 --   The test files are meant to be executed by a command line lua interpreter.
 --   See example.test.lua for usage examples.
 ---@class lib_testing
----@field mockups {[string]: {[string]: fun(...)}}
----@field _functions { [string]: { queue: queue, default: table | nil} }
+---@field mockups {[string]: {[string]: fun(...)} | fun(...) }
+---@field _functions { [string]: { queue: queue, default: table | nil, calls: integer, last_call: table | nil } }
 ---@field _tests { [string]: { total: integer, passed: integer, failed: integer }}
 Testing = {
 	_current_test = { total = 0, passed = 0, failed = 0 },
@@ -35,11 +35,13 @@ local function print_pass(msg)
 	print(term.bg.green .. term.fg.black .. "PASS" .. term.reset .. "  " .. msg)
 end
 
--- Reset the following: Function queues and defaults, _current_test
+-- Reset the following: Function queues, defaults, recorded calls, _current_test
 function Testing.reset()
 	for _, f in pairs(Testing._functions) do
 		f.queue = Queue.create()
 		f.default = nil
+		f.calls = 0
+		f.last_call = nil
 	end
 	Testing._current_test = { total = 0, passed = 0, failed = 0 }
 end
@@ -111,15 +113,21 @@ end
 function Testing.fn(name)
 	Testing._functions[name] = {
 		queue = Queue.create(),
-		default = nil
+		default = nil,
+		calls = 0,
+		last_call = nil
 	}
 
 	local q = Testing._functions[name].queue
 	local function fn(...)
+		local args = table.pack(...)
+		args.n = nil
+		Testing._functions[name].last_call = args
+		Testing._functions[name].calls = Testing._functions[name].calls + 1
 		if q.len > 0 then
 			return table.unpack(q.pop())
 		end
-		return table.unpack(Testing._functions[name].default)
+		return Testing._functions[name].default and table.unpack(Testing._functions[name].default) or nil
 	end
 	return fn
 end
@@ -131,19 +139,32 @@ function Testing.set_default_return(name, ...)
 	Testing._functions[name].default = vals
 end
 
----@param name string
+-- Mock a single function return
+---@param name string The function name
 function Testing.set_return(name, ...)
 	local vals = table.pack(...)
 	vals.n = nil
 	Testing._functions[name].queue.push(vals)
 end
 
----@param name string
----@param count integer
+-- Mock multiple subsequent function returns
+---@param name string The function name
+---@param count integer The amount of returns to mock
 function Testing.set_return_many(name, count, ...)
 	for _ = 1, count do
 		Testing.set_return(name, ...)
 	end
+end
+
+---@name string The function name
+function Testing.get_call_amount(name)
+	return Testing._functions[name].calls
+end
+
+---@name string The function name
+---@return ... The arguments of the last call for the specified funciton
+function Testing.get_last_call(name)
+	return table.unpack(Testing._functions[name].last_call)
 end
 
 -- Add pre-built mockups
