@@ -26,7 +26,7 @@ Testing = {
 function Testing.reset_fns()
 	for _, f in pairs(Testing._functions) do
 		f.queue = Queue.create()
-		f.default = nil
+		f.default = {}
 		f.calls = 0
 		f.last_call = nil
 	end
