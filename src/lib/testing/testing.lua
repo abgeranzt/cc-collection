@@ -122,14 +122,13 @@ function Testing.fn(name)
 		last_call = nil
 	}
 
-	local q = Testing._functions[name].queue
 	local function fn(...)
 		local args = table.pack(...)
 		args.n = nil
 		Testing._functions[name].last_call = args
 		Testing._functions[name].calls = Testing._functions[name].calls + 1
-		if q.len > 0 then
-			return table.unpack(q.pop())
+		if Testing._functions[name].queue.len > 0 then
+			return table.unpack(Testing._functions[name].queue.pop())
 		end
 		if #Testing._functions[name].default > 0 then
 			return table.unpack(Testing._functions[name].default)
