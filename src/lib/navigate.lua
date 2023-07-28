@@ -4,6 +4,7 @@
 local util = require("lib.util")
 
 -- TODO handle navigation errrors by returning to the original position
+-- TODO is returning trav actually required?
 
 -- Navigate using relative coordinates.
 -- Not equivalent to Minecraft coordinates
@@ -18,12 +19,12 @@ local reverse = {
 	down = "up"
 }
 
----@param dir cmd_direction Direction
+---@param dir direction_turtle Direction
 ---@param n number | nil Distance
 ---@return boolean success Success
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
-local function _go(dir, n)
+function go._go(dir, n)
 	n = n or 1
 	local rem = n
 	local try = 1
@@ -46,16 +47,16 @@ local function _go(dir, n)
 	return true, nil, n - rem
 end
 
----@param dir cmd_direction Direction
+---@param dir direction_turtle Direction
 ---@param n number | nil Distance
 ---@return boolean success Success
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
-local function _go_or_return(dir, n)
-	local ok, err, trav = _go(dir, n)
+function go._go_or_return(dir, n)
+	local ok, err, trav = go._go(dir, n)
 	if not ok then
 		local trav_back
-		ok, err, trav_back = _go(reverse[dir], trav)
+		ok, _, trav_back = go._go(reverse[dir], trav)
 		if not ok then
 			return false, "could not return after failed initial move", trav_back
 		end
@@ -69,7 +70,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.forward(n)
-	return _go("forward", n)
+	return go._go("forward", n)
 end
 
 ---@param n number | nil Distance
@@ -77,7 +78,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.forward_or_return(n)
-	return _go_or_return("forward", n)
+	return go._go_or_return("forward", n)
 end
 
 ---@param n number | nil Distance
@@ -85,7 +86,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.back(n)
-	return _go("back", n)
+	return go._go("back", n)
 end
 
 ---@param n number | nil Distance
@@ -93,7 +94,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.back_or_return(n)
-	return _go_or_return("back", n)
+	return go._go_or_return("back", n)
 end
 
 ---@param n number | nil Distance
@@ -101,7 +102,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.up(n)
-	return _go("up", n)
+	return go._go("up", n)
 end
 
 ---@param n number | nil Distance
@@ -109,7 +110,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.up_or_return(n)
-	return _go_or_return("up", n)
+	return go._go_or_return("up", n)
 end
 
 ---@param n number | nil Distance
@@ -117,7 +118,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.down(n)
-	return _go("down", n)
+	return go._go("down", n)
 end
 
 ---@param n number | nil Distance
@@ -125,7 +126,7 @@ end
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
 function go.down_or_return(n)
-	return _go_or_return("down", n)
+	return go._go_or_return("down", n)
 end
 
 ---@param n number | nil Distance
@@ -357,7 +358,13 @@ end
 
 --- FIXME not tested yet!
 
+local _local = {
+	_go = go._go,
+	_go_or_return = go._go_or_return,
+}
+
 return {
+	_local = _local,
 	go = go,
 	turn = turn,
 	turn_dir = turn_dir

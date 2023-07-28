@@ -37,6 +37,7 @@ end
 ---@alias cmd_type "excavate" | "excavate_bedrock" | "tunnel" | "tunnel_pos" | "navigate" | "navigate_pos" | "dump" | "set_fuel_type" | "get_fuel" | "refuel" | "set_position" | "swap" | "update_position"
 ---@alias cmd_direction "forward" | "back" | "up" | "down" | "left" | "right"
 
+---@alias direction_turtle "forward" | "back" | "up" | "down"
 ---@alias direction_hoz "forward" | "back" | "left" | "right"
 ---@alias direction_ver "up" | "down"
 
