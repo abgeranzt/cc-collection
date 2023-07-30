@@ -146,11 +146,11 @@ end
 ---@return integer trav Distance travelled
 function go.left_or_return(n)
 	turtle.turnLeft()
-	local ok, err, trav = _go("forward", n)
+	local ok, err, trav = go._go("forward", n)
 	turtle.turnRight()
 	if not ok then
 		local trav_back
-		ok, err, trav_back = _go("right", trav)
+		ok, err, trav_back = go.right(trav)
 		if not ok then
 			return false, "could not return after failed initial move", trav_back
 		end
@@ -176,11 +176,11 @@ end
 ---@return integer trav Distance travelled
 function go.right_or_return(n)
 	turtle.turnRight()
-	local ok, err, trav = _go("forward", n)
+	local ok, err, trav = go._go("forward", n)
 	turtle.turnLeft()
 	if not ok then
 		local trav_back
-		ok, err, trav_back = _go("left", trav)
+		ok, err, trav_back = go._go("left", trav)
 		if not ok then
 			return false, "could not return after failed initial move", trav_back
 		end
@@ -198,7 +198,7 @@ end
 ---@param current_dir gpslib_direction Current direction
 ---@param target_dir gpslib_direction Target direction
 ---@return gpslib_direction new_dir Same as target_dir
-local function turn_dir(current_dir, target_dir)
+function go.turn_dir(current_dir, target_dir)
 	local function nothing()
 	end
 	local select_action = {
@@ -253,27 +253,29 @@ function go.axis(axis, current_dir, current_point, target_point, lib_go)
 	if axis == "y" then
 		if target_point > current_point then
 			return lib_go.up(distance)
+		else
+			return lib_go.down(distance)
 		end
 	elseif axis == "x" then
-		turn_dir(current_dir, "east")
+		go.turn_dir(current_dir, "east")
 		local ok, err, trav
 		if target_point > current_point then
 			ok, err, trav = lib_go.forward(distance)
 		else
 			ok, err, trav = lib_go.back(distance)
 		end
-		turn_dir("east", current_dir)
+		go.turn_dir("east", current_dir)
 		return ok, err, trav
 	end
 	-- z
-	turn_dir(current_dir, "south")
+	go.turn_dir(current_dir, "south")
 	local ok, err, trav
 	if target_point > current_point then
 		ok, err, trav = lib_go.forward(distance)
 	else
 		ok, err, trav = lib_go.back(distance)
 	end
-	turn_dir("south", current_dir)
+	go.turn_dir("south", current_dir)
 	return ok, err, trav
 end
 
@@ -366,6 +368,6 @@ local _local = {
 return {
 	_local = _local,
 	go = go,
+	-- TODO move turn to go.turn
 	turn = turn,
-	turn_dir = turn_dir
 }
