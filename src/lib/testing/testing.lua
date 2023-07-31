@@ -93,6 +93,10 @@ function Testing.assert(name, expected, actual)
 	local msg_prefix = "(Assertion) " .. name .. ": "
 	if #expected ~= #actual then
 		print_err(msg_prefix .. "Expected " .. #expected .. " values, but got " .. #actual)
+		print("Expected")
+		print(helpers.table_to_str(expected))
+		print("Actual:")
+		print(helpers.table_to_str(actual))
 		print(trace)
 		return false
 	end
