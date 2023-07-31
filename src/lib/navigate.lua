@@ -3,7 +3,6 @@
 
 local util = require("lib.util")
 
--- TODO handle navigation errrors by returning to the original position
 -- TODO is returning trav actually required?
 
 -- Navigate using relative coordinates.
@@ -295,8 +294,8 @@ function go.coords(current_pos, target_pos, lib_go, axis_order)
 	axis_order = axis_order and axis_order or "xyz"
 	local ok, err, trav
 	local trav_all = 0
-	for i in 1, 3 do
-		local axis = axis_order[i]
+	for i = 1, 3 do
+		local axis = string.sub(axis_order, i, i)
 		---@cast axis lib_go_axis
 		ok, err, trav = go.axis(axis, current_pos.dir, current_pos[axis], target_pos[axis], lib_go)
 		trav_all = trav_all + trav
