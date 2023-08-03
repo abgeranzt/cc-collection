@@ -290,20 +290,25 @@ end
 ---@return boolean success Success
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
+---@return gpslib_position new_pos The new position
 function go.coords(current_pos, target_pos, lib_go, axis_order)
 	axis_order = axis_order and axis_order or "xyz"
 	local ok, err, trav
 	local trav_all = 0
+	local new_pos = util.table_copy(current_pos)
 	for i = 1, 3 do
 		local axis = string.sub(axis_order, i, i)
 		---@cast axis lib_go_axis
 		ok, err, trav = go.axis(axis, current_pos.dir, current_pos[axis], target_pos[axis], lib_go)
 		trav_all = trav_all + trav
+		local delta = current_pos[axis] < target_pos[axis] and trav or trav * -1
+		new_pos[axis] = new_pos[axis] + delta
 		if not ok then
-			return false, err, trav_all
+			return false, err, trav_all, new_pos
 		end
 	end
-	return true, nil, trav_all
+	new_pos.dir = go.turn_dir(current_pos.dir, target_pos.dir)
+	return true, nil, trav_all, new_pos
 end
 
 -- Attempt to navigate the target position and return on the same path after encountering an obstacle.
@@ -318,54 +323,22 @@ end
 ---@return boolean success Success
 ---@return string | nil error Error message
 ---@return integer trav Distance travelled
+---@return gpslib_position new_pos The new position
 function go.coords_or_return(current_pos, target_pos, lib_go, axis_order)
-	axis_order = axis_order and axis_order or "xyz"
-	local ok, err
-	local trav = { 0, 0, 0 }
-	---@param t integer[]
-	local function sum(t)
-		local s = 0
-		for _, i in ipairs(t) do
-			s = s + t[i]
-		end
-		return s
+	axis_order = axis_order or "xyz"
+	local ok, err, trav, new_pos = go.coords(current_pos, target_pos, lib_go, axis_order)
+	if ok then
+		return true, nil, trav, new_pos
 	end
-	-- Copy the table because current_pos is being updated as the turtle moves
-	local init_pos = util.table_copy(current_pos)
-	local i = 1
-	while i <= 3 do
-		local axis = axis_order[i]
-		---@cast axis lib_go_axis
-		ok, err, trav[i] = go.axis(axis, current_pos.dir, current_pos[axis], target_pos[axis], lib_go)
-		if not ok then
-			break
-		end
-		i = i + 1
-	end
+	local trav_back
+	ok, _, trav_back, new_pos = go.coords(new_pos, current_pos, lib_go, string.reverse(axis_order))
 	if not ok then
-		local back_trav = { 0, 0, 0 }
-		local back_err
-		while i <= 3 do
-			local axis = axis_order[i]
-			---@cast axis lib_go_axis
-			ok, back_err, back_trav[i] = go.axis(axis, current_pos.dir, current_pos[axis], init_pos[axis], lib_go)
-			if not ok then
-				return false, back_err, sum(back_trav)
-			end
-		end
+		return false, "could not return after failed initial move", trav_back, new_pos
 	end
-	return ok, err, sum(trav)
+	return false, err, trav, new_pos
 end
 
---- FIXME not tested yet!
-
-local _local = {
-	_go = go._go,
-	_go_or_return = go._go_or_return,
-}
-
 return {
-	_local = _local,
 	go = go,
 	-- TODO move turn to go.turn
 	turn = turn,
