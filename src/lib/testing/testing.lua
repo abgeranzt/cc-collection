@@ -14,7 +14,7 @@ local term = require("lib.testing.term")
 --   See example.test.lua for usage examples.
 ---@class lib_testing
 ---@field mockups {[string]: {[string]: fun(...)} | fun(...) }
----@field _functions { [string]: { queue: queue, default: table | nil, calls: integer, last_call: table | nil } }
+---@field _functions { [string]: { queue: queue, default: table | nil, total_calls: integer, calls: table | nil, last_call: table | nil } }
 ---@field _tests { [string]: { total: integer, passed: integer, failed: integer }}
 Testing = {
 	_current_test = { total = 0, passed = 0, failed = 0 },
@@ -27,7 +27,8 @@ function Testing.reset_fns()
 	for _, f in pairs(Testing._functions) do
 		f.queue = Queue.create()
 		f.default = {}
-		f.calls = 0
+		f.total_calls = 0
+		f.calls = {}
 		f.last_call = nil
 	end
 end
@@ -58,7 +59,7 @@ function Testing.test(name, test_fn)
 	}
 	print("[test] " .. name)
 
-	local ok, err = pcall(test_fn)
+	local ok, err = xpcall(test_fn, debug.traceback)
 	if not ok then
 		print_err("Caught Lua exception")
 		print(err)
@@ -118,11 +119,13 @@ end
 -- Create a function mock up that takes a variable number of arguments.
 -- The mocked function returns queued mock values or pre-defined default values.
 ---@param name string
-function Testing.fn(name)
+---@param store_calls boolean | nil
+function Testing.fn(name, store_calls)
 	Testing._functions[name] = {
 		queue = Queue.create(),
 		default = {},
-		calls = 0,
+		total_calls = 0,
+		calls = store_calls and {} or nil,
 		last_call = nil
 	}
 
@@ -130,7 +133,10 @@ function Testing.fn(name)
 		local args = table.pack(...)
 		args.n = nil
 		Testing._functions[name].last_call = args
-		Testing._functions[name].calls = Testing._functions[name].calls + 1
+		if store_calls then
+			table.insert(Testing._functions[name].calls, args)
+		end
+		Testing._functions[name].total_calls = Testing._functions[name].total_calls + 1
 		if Testing._functions[name].queue.len > 0 then
 			return table.unpack(Testing._functions[name].queue.pop())
 		end
@@ -167,15 +173,24 @@ function Testing.set_return_many(name, count, ...)
 	end
 end
 
----@name string The function name
+---@param name string The function name
 function Testing.get_call_amount(name)
-	return Testing._functions[name].calls
+	return Testing._functions[name].total_calls
 end
 
----@name string The function name
+---@param name string The function name
 ---@return ... The arguments of the last call for the specified funciton
 function Testing.get_last_call(name)
 	return table.unpack(Testing._functions[name].last_call)
+end
+
+---@param name string The function name
+---@param call integer The call number
+---@return ... The arguments of the last call for the specified funciton
+function Testing.get_nth_call(name, call)
+	if Testing._functions[name].calls and #Testing._functions[name].calls >= call then
+		return table.unpack(Testing._functions[name].calls[call])
+	end
 end
 
 -- Add pre-built mockups
