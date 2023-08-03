@@ -192,3 +192,161 @@ Testing.test("go.axis", function()
 end)
 -- reset overwritten lib import
 navigate = require("lib.navigate")
+
+Testing.test("go.coords", function()
+	navigate.go.axis = Testing.fn("navigate.go.axis", true)
+	navigate.go.turn_dir = Testing.fn("navigate.go.turn_dir")
+	Testing.set_return("navigate.go.axis", true, nil, 10)
+	Testing.set_return("navigate.go.axis", true, nil, 0)
+	Testing.set_return("navigate.go.axis", true, nil, 10)
+	Testing.set_return("navigate.go.turn_dir", "south")
+	local current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	local target_pos = {
+		x = -10, y = 0, z = 10, dir = "south"
+	}
+	local ok, err, trav, new_pos = navigate.go.coords(current_pos, target_pos, nil, "xyz")
+	Testing.assert("go.coords returned true", { true }, { ok })
+	Testing.assert("go.coords returned no error", {}, { err })
+	Testing.assert("go.coords returned the total distance travelled", { 20 }, { trav })
+	Testing.assert("go.coords returned the new position",
+		{ x = -10, y = 0, z = 10, dir = "south" }, new_pos
+	)
+	Testing.assert("go.axis has been called three times",
+		{ 3 }, { Testing.get_call_amount("navigate.go.axis") }
+	)
+	Testing.assert("go.axis has been called correctly",
+		{ "x", "north", 0, -10 }, { Testing.get_nth_call("navigate.go.axis", 1) })
+	Testing.assert("go.axis has been called correctly",
+		{ "y", "north", 0, 0 }, { Testing.get_nth_call("navigate.go.axis", 2) })
+	Testing.assert("go.axis has been called correctly",
+		{ "z", "north", 0, 10 }, { Testing.get_last_call("navigate.go.axis") })
+
+	-- different axis order: yzx
+	Testing.reset_fns()
+	Testing.set_return("navigate.go.axis", true, nil, 25)
+	Testing.set_return("navigate.go.axis", true, nil, 10)
+	Testing.set_return("navigate.go.axis", true, nil, 30)
+	Testing.set_return("navigate.go.turn_dir", "south")
+	current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	target_pos = {
+		x = 30, y = -25, z = 10, dir = "south"
+	}
+	ok, err, trav, new_pos = navigate.go.coords(current_pos, target_pos, nil, "yzx")
+	Testing.assert("go.coords returned true", { true }, { ok })
+	Testing.assert("go.coords returned no error", {}, { err })
+	Testing.assert("go.coords returned the total distance travelled", { 65 }, { trav })
+	Testing.assert("go.coords returned the new position",
+		{ x = 30, y = -25, z = 10, dir = "south" }, new_pos
+	)
+	Testing.assert("go.axis has been called three times",
+		{ 3 }, { Testing.get_call_amount("navigate.go.axis") }
+	)
+	Testing.assert("go.axis has been called correctly",
+		{ "y", "north", 0, -25 }, { Testing.get_nth_call("navigate.go.axis", 1) })
+	Testing.assert("go.axis has been called correctly",
+		{ "z", "north", 0, 10 }, { Testing.get_nth_call("navigate.go.axis", 2) })
+	Testing.assert("go.axis has been called correctly",
+		{ "x", "north", 0, 30 }, { Testing.get_last_call("navigate.go.axis") })
+	-- error while navigating
+	Testing.reset_fns()
+	Testing.set_return("navigate.go.axis", true, nil, 25)
+	Testing.set_return("navigate.go.axis", false, "test: path blocked", 7)
+	current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	target_pos = {
+		x = 30, y = -25, z = 10, dir = "south"
+	}
+	ok, err, trav, new_pos = navigate.go.coords(current_pos, target_pos, nil, "yzx")
+	Testing.assert("go.coords returned false", { false }, { ok })
+	Testing.assert("go.coords returned the correct error", { "test: path blocked" }, { err })
+	Testing.assert("go.coords returned the total distance travelled", { 32 }, { trav })
+	Testing.assert("go.coords returned the new position",
+		{ x = 0, y = -25, z = 7, dir = "north" }, new_pos
+	)
+	Testing.assert("go.axis has been called two times",
+		{ 2 }, { Testing.get_call_amount("navigate.go.axis") }
+	)
+	Testing.assert("go.axis has been called correctly",
+		{ "y", "north", 0, -25 }, { Testing.get_nth_call("navigate.go.axis", 1) })
+	Testing.assert("go.axis has been called correctly",
+		{ "z", "north", 0, 10 }, { Testing.get_nth_call("navigate.go.axis", 2) })
+	Testing.assert("current_pos.dir has not been changed", { "north" }, { current_pos.dir })
+end)
+-- reset overwritten lib import
+navigate = require("lib.navigate")
+
+Testing.test("navigate.go.coords_or_return", function()
+	navigate.go.coords = Testing.fn("navigate.go.coords", true)
+	local current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	local target_pos = {
+		x = 30, y = -25, z = 10, dir = "south"
+	}
+	Testing.set_return("navigate.go.coords", true, nil, 65, target_pos)
+	local ok, err, trav, new_pos = navigate.go.coords_or_return(current_pos, target_pos, nil, "xyz")
+	Testing.assert("go.coords_or_return returned true", { true }, { ok })
+	Testing.assert("go.coords_or_return returned no error", {}, { err })
+	Testing.assert("go.coords_or_return returned the total distance travelled", { 65 }, { trav })
+	Testing.assert("go.coords_or_return returned the new position",
+		{ x = 30, y = -25, z = 10, dir = "south" }, new_pos
+	)
+	Testing.assert("go.coords has been called correctly",
+		{ current_pos, target_pos, nil, "xyz" }, { Testing.get_last_call("navigate.go.coords") }
+	)
+	-- fail on initial move
+	Testing.reset_fns()
+	Testing.set_return("navigate.go.coords", false, "test: path blocked", 32, { x = 30, y = -2, z = 0 })
+	Testing.set_return("navigate.go.coords", true, nil, 32, current_pos)
+	current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	target_pos = {
+		x = 30, y = -25, z = 10, dir = "south"
+	}
+	ok, err, trav, new_pos = navigate.go.coords_or_return(current_pos, target_pos, nil, "xyz")
+	Testing.assert("go.coords_or_return returned false", { false }, { ok })
+	Testing.assert("go.coords_or_return returned the correct error", { "test: path blocked" }, { err })
+	Testing.assert("go.coords_or_return returned the total distance travelled", { 32 }, { trav })
+	Testing.assert("go.coords_or_return returned the new position",
+		current_pos, new_pos
+	)
+	Testing.assert("go.coords has been called correctly",
+		{ current_pos, target_pos, nil, "xyz" }, { Testing.get_nth_call("navigate.go.coords", 1) }
+	)
+	Testing.assert("go.coords has been called correctly when returning",
+		{ { x = 30, y = -2, z = 0 }, current_pos, nil, "zyx" }, { Testing.get_last_call("navigate.go.coords") }
+	)
+	-- fail on initial move, also fail on return move
+	Testing.reset_fns()
+	Testing.set_return("navigate.go.coords", false, "test: path blocked", 32, { x = 30, y = -2, z = 0 })
+	Testing.set_return("navigate.go.coords", false, "test: path blocked", 5, { x = 27, y = 0, z = 0 })
+	current_pos = {
+		x = 0, y = 0, z = 0, dir = "north"
+	}
+	target_pos = {
+		x = 30, y = -25, z = 10, dir = "south"
+	}
+	ok, err, trav, new_pos = navigate.go.coords_or_return(current_pos, target_pos, nil, "xyz")
+	Testing.assert("go.coords_or_return returned false", { false }, { ok })
+	Testing.assert("go.coords_or_return returned the correct error",
+		{ "could not return after failed initial move" }, { err }
+	)
+	Testing.assert("go.coords_or_return returned the total distance while returning", { 5 }, { trav })
+	Testing.assert("go.coords_or_return returned the new position",
+		{ x = 27, y = 0, z = 0 }, new_pos
+	)
+	Testing.assert("go.coords has been called correctly",
+		{ current_pos, target_pos, nil, "xyz" }, { Testing.get_nth_call("navigate.go.coords", 1) }
+	)
+	Testing.assert("go.coords has been called correctly when returning",
+		{ { x = 30, y = -2, z = 0 }, current_pos, nil, "zyx" }, { Testing.get_last_call("navigate.go.coords") }
+	)
+end)
+-- reset overwritten lib import
+navigate = require("lib.navigate")
